@@ -32,6 +32,7 @@ features:
 - [よくある質問 (FAQ)](/docs/faq)
 - [タグ構造とグループコードの基本](/structure/tag-and-group-code)
 - [DXFの歴史とバージョン](/docs/history-versions)
+- **フォーマット比較**: [vs DWG](/comparison/dxf-vs-dwg) / [vs SVG](/comparison/dxf-vs-svg) / [vs ガーバー・Gコード](/comparison/dxf-vs-industrial-formats)
 :::
 
 ::: info 2. データ構造を深く知る（中級者・詳細リファレンス）
@@ -40,6 +41,9 @@ features:
 - [重要ヘッダー変数](/structure/header-variables)
 - [テーブルとレイヤー](/structure/tables-and-layers)
 - [共通エンティティ（LINE, CIRCLE, etc.）](/geometry/common-entities)
+- [ポリゴン・穴あき・塗りつぶし](/geometry/polygons-and-fills)
+- [線の太さ・厚み・幅](/geometry/line-thickness-and-weight)
+- [線種（点線・破線）と補助線](/geometry/linetypes-and-construction-lines)
 - [高度なエンティティ（SPLINE, NURBS, Brep）](/geometry/advanced-entities)
 :::
 
@@ -55,6 +59,7 @@ features:
 - [よくある罠と対処法](/implementation/common-pitfalls)
 - [主要ライブラリ紹介](/implementation/libraries)
 - [3D CADとの互換性](/implementation/3d-cad-interoperability)
+- [フリーソフトでの活用ガイドライン](/implementation/free-software-guide)
 - [CAE（ANSYS等）との互換性](/implementation/cae-interoperability)
 :::
 

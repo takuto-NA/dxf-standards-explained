@@ -204,3 +204,6 @@ def dxf_to_svg(dxf_file, output_svg):
 - **変換**: DXF → SVG は可能だが制限あり、SVG → DXF は推奨されない
 
 どちらの形式も、それぞれの用途に最適化されているため、用途に応じて適切に選択することが重要です。
+
+---
+関連：[DXF vs DWG](./dxf-vs-dwg.md) | [産業用フォーマット（ガーバー、Gコード）との比較](./dxf-vs-industrial-formats.md)

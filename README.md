@@ -42,8 +42,9 @@ npm run docs:build
 
 - `docs/`: 入門、用語集、歴史、**FAQ**など
 - `structure/`: DXFのファイル構造、タグ、セクション解説
-- `geometry/`: 座標系、共通エンティティ、**高度なエンティティ（SPLINE/Brep）**、数学的アルゴリズム
-- `implementation/`: パーサー設計、主要ライブラリ（Python/JS/C++）、**3D CAD/CAE互換性**、落とし穴
+- `geometry/`: 座標系、共通エンティティ、**ポリゴンと塗りつぶし**、**線の太さと厚み**、**線種と補助線**、**高度なエンティティ（SPLINE/Brep）**、数学的アルゴリズム
+- `implementation/`: パーサー設計、主要ライブラリ、**フリーソフト活用ガイド**、**3D CAD/CAE互換性**、落とし穴
+- `comparison/`: **DWG, SVG, ガーバー, Gコード, フォント**等との比較
 - `samples/`: 学習・テスト用のDXFサンプルファイル
 
 ## 📄 ライセンス
