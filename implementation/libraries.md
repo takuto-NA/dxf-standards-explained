@@ -2,29 +2,29 @@
 
 各プログラミング言語で利用可能なDXFライブラリを紹介します。実装の参考や、既存のソリューションの評価に役立ちます。
 
-## Python
-
-### ezdxf
-
-**公式サイト**: https://ezdxf.readthedocs.io/
+## Python: ezdxf (最も推奨)
 
 **特徴**:
 - 最も人気が高く、機能が豊富なPythonライブラリ
 - DXF R12から最新バージョンまで幅広く対応
 - 読み書き両方に対応
-- アクティブにメンテナンスされている
+- OCS/WCS変換などの数学的処理も強力にサポート
 
-**使用例**:
+### クイックスタート
 ```python
 import ezdxf
 
 # DXFファイルの読み込み
-doc = ezdxf.readfile("drawing.dxf")
-msp = doc.modelspace()
-
-# エンティティの取得
-for entity in msp:
-    print(f"{entity.dxftype()}: {entity}")
+try:
+    doc = ezdxf.readfile("drawing.dxf")
+    msp = doc.modelspace()
+    
+    for entity in msp:
+        if entity.dxftype() == "LINE":
+            # 始点と終点の取得
+            print(f"Line: {entity.dxf.start} -> {entity.dxf.end}")
+except IOError:
+    print("ファイルが見つかりません")
 
 # DXFファイルの作成
 doc = ezdxf.new('R2010')
@@ -33,9 +33,7 @@ msp.add_line((0, 0), (10, 10))
 doc.saveas("output.dxf")
 ```
 
-**適用範囲**: 汎用的なDXF処理、CADデータの変換、図面の自動生成
-
-### python-dxf
+### python-dxf (dxfgrabber)
 
 **GitHub**: https://github.com/mozman/dxfgrabber
 
@@ -100,6 +98,38 @@ newDoc.Save("output.dxf");
 
 ## C++
 
+### dxflib (推奨)
+
+**公式サイト**: https://www.qcad.org/en/dxflib-downloads
+
+**特徴**:
+- QCADで採用されている、実績のあるオープンソースライブラリ
+- 非常に高速で軽量
+- イベント駆動型（SAX）のパーサー
+
+### クイックスタート
+```cpp
+#include "dl_dxf.h"
+#include "dl_creationadapter.h"
+
+// コールバックを受け取るクラス
+class MyDxfReader : public DL_CreationAdapter {
+public:
+    virtual void addLine(const DL_LineData& data) override {
+        printf("Line found!\n");
+    }
+};
+
+int main() {
+    MyDxfReader reader;
+    DL_Dxf dxf;
+    if (!dxf.in("drawing.dxf", &reader)) {
+        return 1; // 読み込み失敗
+    }
+    return 0;
+}
+```
+
 ### LibreDWG
 
 **公式サイト**: https://www.gnu.org/software/libredwg/
@@ -122,31 +152,32 @@ newDoc.Save("output.dxf");
 
 **適用範囲**: 商用CADアプリケーション
 
-## JavaScript / TypeScript
-
-### dxf-parser
-
-**GitHub**: https://github.com/gdsestimating/dxf-parser
+## JavaScript / TypeScript: dxf-parser
 
 **特徴**:
-- Node.js向けのDXFパーサー
+- Node.jsおよびブラウザで動作するDXFパーサー
 - 読み込み専用
-- シンプルなAPI
+- シンプルなJSON形式への変換
 
-**使用例**:
+### クイックスタート
 ```javascript
 const DxfParser = require('dxf-parser');
 const fs = require('fs');
 
 const parser = new DxfParser();
-const dxf = parser.parseSync(fs.readFileSync('drawing.dxf', 'utf-8'));
-
-dxf.entities.forEach(entity => {
-    console.log(entity.type, entity);
-});
+try {
+    const fileContent = fs.readFileSync('drawing.dxf', 'utf-8');
+    const dxf = parser.parseSync(fileContent);
+    
+    dxf.entities.forEach(entity => {
+        if (entity.type === 'LINE') {
+            console.log(`Line from (${entity.vertices[0].x}, ${entity.vertices[0].y})`);
+        }
+    });
+} catch(err) {
+    console.error(err);
+}
 ```
-
-**適用範囲**: Node.jsアプリケーション、Webアプリケーション（サーバーサイド）
 
 ### dxf-writer
 

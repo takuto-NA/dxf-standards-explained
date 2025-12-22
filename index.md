@@ -29,6 +29,7 @@ features:
 ::: info 1. DXFの基礎を理解する（初心者・入門）
 最短でDXFの正体を知りたい方向け。
 - [最初の1歩：最小構成のDXFを作る](/docs/getting-started)
+- [よくある質問 (FAQ)](/docs/faq)
 - [タグ構造とグループコードの基本](/structure/tag-and-group-code)
 - [DXFの歴史とバージョン](/docs/history-versions)
 :::
@@ -39,6 +40,7 @@ features:
 - [重要ヘッダー変数](/structure/header-variables)
 - [テーブルとレイヤー](/structure/tables-and-layers)
 - [共通エンティティ（LINE, CIRCLE, etc.）](/geometry/common-entities)
+- [高度なエンティティ（SPLINE, NURBS, Brep）](/geometry/advanced-entities)
 :::
 
 ::: info 3. 数学と座標系を攻略する（難所攻略）
@@ -52,6 +54,8 @@ features:
 - [パーサーの設計](/implementation/parsing-strategy)
 - [よくある罠と対処法](/implementation/common-pitfalls)
 - [主要ライブラリ紹介](/implementation/libraries)
+- [3D CADとの互換性](/implementation/3d-cad-interoperability)
+- [CAE（ANSYS等）との互換性](/implementation/cae-interoperability)
 :::
 
 ---

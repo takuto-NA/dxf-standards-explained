@@ -30,10 +30,10 @@ npm run docs:build
 
 ## 📂 構成
 
-- `docs/`: 入門、用語集、歴史など
+- `docs/`: 入門、用語集、歴史、**FAQ**など
 - `structure/`: DXFのファイル構造、タグ、セクション解説
-- `geometry/`: 座標系、エンティティ、数学的アルゴリズム
-- `implementation/`: パーサー設計、ライブラリ、落とし穴
+- `geometry/`: 座標系、共通エンティティ、**高度なエンティティ（SPLINE/Brep）**、数学的アルゴリズム
+- `implementation/`: パーサー設計、主要ライブラリ（Python/JS/C++）、**3D CAD/CAE互換性**、落とし穴
 - `samples/`: 学習・テスト用のDXFサンプルファイル
 
 ## 📄 ライセンス
