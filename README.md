@@ -6,33 +6,10 @@ DXF (Drawing Exchange Format) の構造と、実装に不可欠な数学的知�
 
 ---
 
-## 🧭 学習ロードマップ
+## 🚀 ドキュメントサイト
 
-あなたの目的に合わせて、以下のパスから読み進めてください。
-
-### 1. DXFの基礎を理解する（初心者・入門）
-最短でDXFの正体を知りたい方向け。
-- [最初の1歩：最小構成のDXFを作る](/docs/getting-started)
-- [タグ構造とグループコードの基本](/structure/tag-and-group-code)
-- [DXFの歴史とバージョン](/docs/history-versions)
-
-### 2. データ構造を深く知る（中級者・詳細リファレンス）
-特定のデータを取り出したい、または構造を厳密に理解したい方向け。
-- [セクション概要](/structure/sections-overview)
-- [重要ヘッダー変数](/structure/header-variables)
-- [テーブルとレイヤー](/structure/tables-and-layers)
-- [共通エンティティ（LINE, CIRCLE, etc.）](/geometry/common-entities)
-
-### 3. 数学と座標系を攻略する（難所攻略）
-3D配置や円弧の計算で詰まっている方向け。DXF実装の最難関です。
-- [座標系 (WCS/OCS/AAA)](/geometry/coordinate-systems)
-- [ブロックとインサート](/geometry/blocks-and-inserts)
-
-### 4. パーサーを実装する（実践・エンジニア）
-ライブラリの選定や、自作パーサーの設計を行いたい方向け。
-- [パーサーの設計](/implementation/parsing-strategy)
-- [よくある罠と対処法](/implementation/common-pitfalls)
-- [主要ライブラリ紹介](/implementation/libraries)
+詳細な解説と学習ロードマップは、以下のドキュメントサイトを参照してください。
+**[https://your-username.github.io/dxf-standards-explained/](https://your-username.github.io/dxf-standards-explained/)**
 
 ---
 
@@ -51,8 +28,18 @@ npm run docs:dev
 npm run docs:build
 ```
 
-## 📂 サンプルファイル
-[samples/](/samples/) ディレクトリには、学習用の様々なDXFファイルが用意されています。詳細は [samples/README.md](/samples/README.md) を参照してください。
+## 📂 構成
+
+- `docs/`: 入門、用語集、歴史など
+- `structure/`: DXFのファイル構造、タグ、セクション解説
+- `geometry/`: 座標系、エンティティ、数学的アルゴリズム
+- `implementation/`: パーサー設計、ライブラリ、落とし穴
+- `samples/`: 学習・テスト用のDXFサンプルファイル
 
 ## 📄 ライセンス
+
 MIT License
+
+## 🤝 貢献について
+
+不備の修正やコンテンツの追加は大歓迎です。[CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。

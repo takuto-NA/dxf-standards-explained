@@ -74,4 +74,4 @@ $$
 - **TEXT / INSERT**: 挿入点 (10, 20, 30) は **WCS** である場合が多いですが、法線ベクトルが指定されている場合は OCS 扱いに変わるエンティティもあり、非常に複雑です。
 
 ---
-関連：[共通エンティティ](./common-pitfalls.md) | [パーサーの設計](../implementation/parsing-strategy.md)
+関連：[共通エンティティ](./common-entities.md) | [パーサーの設計](../implementation/parsing-strategy.md)
