@@ -1,0 +1,25 @@
+{
+  "name": "dxf-standards-explained",
+  "version": "1.0.0",
+  "description": "DXF (Drawing Exchange Format) Standards Explained",
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "keywords": [
+    "dxf",
+    "cad",
+    "standards",
+    "documentation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vitepress": "^1.5.0",
+    "vitepress-plugin-mermaid": "^2.0.16",
+    "mermaid": "^10.9.0"
+  }
+}
+
