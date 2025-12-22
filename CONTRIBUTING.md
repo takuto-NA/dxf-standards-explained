@@ -5,7 +5,7 @@ DXF Standards Explained をより良くするための貢献を歓迎します�
 ## 🛠 貢献の方法
 
 ### 1. バグ報告や改善の提案
-- ドキュメントの誤字脱字、リンク切れ、内容の誤りを見つけた場合は [Issues](https://github.com/your-username/dxf-standards-explained/issues) で報告してください。
+- ドキュメントの誤字脱字、リンク切れ、内容の誤りを見つけた場合は [Issues](https://github.com/takuto-NA/dxf-standards-explained/issues) で報告してください。
 - 「この部分がわかりにくい」「このエンティティの解説を追加してほしい」といった提案も歓迎します。
 
 ### 2. プルリクエスト (Pull Requests)

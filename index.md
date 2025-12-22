@@ -61,6 +61,6 @@ features:
 ---
 
 ## 📂 サンプルファイル
-[samples/](https://github.com/your-username/dxf-standards-explained/tree/main/samples) ディレクトリには、学習用の様々なDXFファイルが用意されています。
+[samples/README](/samples/README) には、学習用の様々なDXFファイルが用意されています。
 実際のコードと見比べながら学習することで、より理解が深まります。
 

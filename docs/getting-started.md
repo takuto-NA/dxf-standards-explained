@@ -15,6 +15,10 @@ DXFは1982年にAutoCADと共に誕生した、40年以上の歴史を持つフ�
 
 以下のコードを `minimal.dxf` として保存してください。これは、座標 (0,0) から (10,10) まで線を引く、AutoCAD R12形式の最小構成に近いDXFです。
 
+参考：リポジトリには同等のサンプルとして `samples/minimal_r12.dxf` も置いてあります（差分比較に使えます）。
+- GitHub上で見る: [samples/minimal_r12.dxf](https://github.com/takuto-NA/dxf-standards-explained/blob/main/samples/minimal_r12.dxf)
+- サンプル一覧: [DXF Samples](../samples/README.md)
+
 ```text
   0
 SECTION
@@ -63,4 +67,12 @@ DXFは「グループコード」と「値」のペアで構成されていま�
 本来、DXFには `HEADER` や `TABLES` などのセクションが必要ですが、多くのCADソフトは `ENTITIES` セクションだけの「不完全なDXF」でも、デフォルト設定を補完して読み取ってくれる互換性を持っています。
 
 これがDXFが「交換形式」として長く愛されている理由の一つです。
+
+---
+
+## 次に読む
+
+- [タグ構造とグループコードの基本](../structure/tag-and-group-code.md)
+- [セクション概要](../structure/sections-overview.md)
+- [DXF Samples](../samples/README.md)
 

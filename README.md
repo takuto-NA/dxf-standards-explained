@@ -9,9 +9,19 @@ DXF (Drawing Exchange Format) の構造と、実装に不可欠な数学的知�
 ## 🚀 ドキュメントサイト
 
 詳細な解説と学習ロードマップは、以下のドキュメントサイトを参照してください。
-**[https://your-username.github.io/dxf-standards-explained/](https://your-username.github.io/dxf-standards-explained/)**
+
+- **GitHub Pages**: **[https://takuto-NA.github.io/dxf-standards-explained/](https://takuto-NA.github.io/dxf-standards-explained/)**
+- **リポジトリ内で読む（オフライン/PRレビュー向け）**: [学習ロードマップ（index.md）](./index.md)
 
 ---
+
+## 🧭 最短で迷わない読み方（初見向け）
+
+- **まず1本**: [最初の1歩：最小構成のDXFを作る](./docs/getting-started.md)
+- **全体像（何をどの順で読むか）**: [学習ロードマップ](./index.md#-学習ロードマップ)
+- **最低限のDXF文法**: [タグ構造とグループコードの基本](./structure/tag-and-group-code.md)
+- **つまずきやすい難所**: [座標系 (WCS/OCS/AAA)](./geometry/coordinate-systems.md) / [よくある罠と対処法](./implementation/common-pitfalls.md)
+- **サンプルで手を動かす**: [DXF Samples](./samples/README.md)
 
 ## 🛠 開発環境
 

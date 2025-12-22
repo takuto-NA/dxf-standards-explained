@@ -2,7 +2,12 @@
   "name": "dxf-standards-explained",
   "version": "1.0.0",
   "description": "DXF (Drawing Exchange Format) Standards Explained",
-  "main": "index.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/takuto-NA/dxf-standards-explained.git"
+  },
+  "homepage": "https://takuto-NA.github.io/dxf-standards-explained/",
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
@@ -17,9 +22,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "markdown-it-mathjax3": "^4.3.2",
+    "mermaid": "^10.9.0",
     "vitepress": "^1.5.0",
-    "vitepress-plugin-mermaid": "^2.0.16",
-    "mermaid": "^10.9.0"
+    "vitepress-plugin-mermaid": "^2.0.16"
   }
 }
-
