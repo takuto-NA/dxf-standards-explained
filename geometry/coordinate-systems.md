@@ -48,8 +48,8 @@ graph TD
 ```mermaid
 graph TD
     Normal[法線ベクトル N を単位ベクトル化] --> Decision{"|Nx| < 1/64 かつ\n|Ny| < 1/64 か？"}
-    Decision -->|Yes (世界Z軸に近い)| W_Y["基準軸 W = (0, 1, 0)"]
-    Decision -->|No| W_Z["基準軸 W = (0, 0, 1)"]
+    Decision -->|"Yes (世界Z軸に近い)"| W_Y["基準軸 W = (0, 1, 0)"]
+    Decision -->|"No"| W_Z["基準軸 W = (0, 0, 1)"]
     W_Y --> CrossX["Ax = W × N"]
     W_Z --> CrossX
     CrossX --> NormalizeX["Ax を正規化"]
