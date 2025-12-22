@@ -1,160 +1,67 @@
 # 用語集
 
-DXFで使用される重要な用語をまとめています。実装やドキュメントを読む際の参考にしてください。
+DXFで使用される重要な用語をまとめています。各用語のリンクから詳細な解説記事へ移動できます。
 
 ## A
 
-### Arbitrary Axis Algorithm (AAA)
+### [Arbitrary Axis Algorithm (AAA)](../geometry/coordinate-systems.md#3-任意軸アルゴリズム-arbitrary-axis-algorithm)
 **任意軸アルゴリズム**
+法線ベクトルからOCS（オブジェクト座標系）のX軸とY軸を一意に算出するためのアルゴリズム。
 
-法線ベクトルからOCS（オブジェクト座標系）のX軸とY軸を算出するアルゴリズム。DXFの3Dエンティティで使用される。
-
-詳細は [座標系の解説](../geometry/coordinate-systems.md) を参照。
+### [ASCII DXF](../structure/tag-and-group-code.md#3-binary-dxf-バイナリ形式)
+テキスト形式で記述されたDXF。人間が読み書きできるが、ファイルサイズは大きくなる。
 
 ## B
 
-### Block（ブロック）
-**ブロック定義**
+### [Binary DXF](../structure/tag-and-group-code.md#3-binary-dxf-バイナリ形式)
+バイナリ形式で記述されたDXF。ファイルサイズが小さく、読み込み速度が速い。
 
-再利用可能な図形の定義。BLOCKSセクションで定義され、ENTITIESセクションのINSERTエンティティで参照される。
+### [Block（ブロック）](../geometry/blocks-and-inserts.md)
+再利用可能な図形の定義。図面内で何度も使い回す部品（ボルト、机など）を定義するために使用する。
 
-### ByLayer（バイレイヤー）
-**画層に従う**
-
-エンティティの色や線種を、所属する画層の設定に従わせる指定方法。色番号 `256` がこれに相当する。
-
-### ByBlock（バイブロック）
-**ブロックに従う**
-
-エンティティの色や線種を、ブロック定義の設定に従わせる指定方法。色番号 `0` がこれに相当する。
-
-## C
-
-### CLASSES Section（クラスセクション）
-**クラスセクション**
-
-アプリケーション定義のクラス情報を格納するセクション。通常は最小限の情報しか含まれない。
+### [Bulge（バルジ）](../geometry/common-entities.md#lwpolyline軽量ポリライン)
+LWPOLYLINEの頂点間で円弧を表現するための数値。角度の1/4のタンジェント。
 
 ## D
 
-### DCS (Display Coordinate System)
-**表示座標系**
-
-画面表示用の座標系。ビューポートやレイアウト空間で使用される。
-
-### DWG
-**Drawing**
-
-AutoCADのネイティブバイナリ形式。DXFのバイナリ版に相当するが、より効率的で機能が豊富。
+### [DICTIONARY（辞書）](../structure/objects-section.md#2-dictionary辞書構造)
+非図形データの階層構造を管理するコンテナ。OBJECTSセクションの核となる要素。
 
 ## E
 
-### Entity（エンティティ）
-**図形要素**
+### [Entity（エンティティ）](../geometry/common-entities.md)
+実際に描画される図形要素（LINE, CIRCLEなど）の総称。
 
-実際に描画される図形要素（LINE, CIRCLE, ARCなど）の総称。ENTITIESセクションに格納される。
-
-### Extrusion Direction（押し出し方向）
-**法線ベクトル**
-
-3Dエンティティの向きを定義するベクトル。グループコード `210, 220, 230` で指定される。OCSの計算に使用される。
+### [Extrusion Direction（押し出し方向）](../geometry/coordinate-systems.md#2-なぜ-ocs-が必要なのか)
+エンティティがどの向き（平面）を向いているかを示す法線ベクトル。
 
 ## G
 
-### Group Code（グループコード）
-**グループコード**
-
-DXFファイル内のデータ型と意味を定義する数値タグ。すべてのデータは「グループコード + 値」のペアで構成される。
-
-詳細は [タグ構造とグループコード](../structure/tag-and-group-code.md) を参照。
+### [Group Code（グループコード）](../structure/tag-and-group-code.md)
+データの「意味」と「型」を定義する数値タグ。すべてのDXFデータはこれに基づいている。
 
 ## H
 
-### Handle（ハンドル）
-**オブジェクトID**
-
-AutoCAD 2000以降で導入された、各オブジェクトの一意識別子。16進数文字列として保存される。グループコード `5` で指定される。
-
-## L
-
-### Layer（レイヤー/画層）
-**画層**
-
-エンティティをグループ化し、表示/非表示や色、線種を一括管理する仕組み。LAYERテーブルで定義される。
-
-### LTYPE (Line Type)
-**線種**
-
-線の種類（実線、破線、一点鎖線など）の定義。LTYPEテーブルで定義される。
-
-### LWPOLYLINE (Lightweight Polyline)
-**軽量ポリライン**
-
-2D専用の効率的なポリライン表現。`POLYLINE` よりも軽量で、2D図面で推奨される。
+### [Handle（ハンドル）](../structure/tag-and-group-code.md#2-主要なグループコードとデータ型)
+オブジェクトに割り当てられた一意の16進数ID。オブジェクト間の参照解決に使用される。
 
 ## O
 
-### OCS (Object Coordinate System)
-**オブジェクト座標系**
+### [OBJECTS セクション](../structure/objects-section.md)
+非図形データや論理構造を格納するセクション。AutoCAD 2000以降で重要度が増した。
 
-各エンティティが個別に持つ座標系。3D空間内に傾いて配置された2Dエンティティ（円、円弧など）で使用される。
-
-詳細は [座標系の解説](../geometry/coordinate-systems.md) を参照。
+### [OCS (Object Coordinate System)](../geometry/coordinate-systems.md)
+各エンティティが独自に持つ座標系。3D空間内の2D図形を表現するために使用される。
 
 ## S
 
-### Section（セクション）
-**セクション**
-
-DXFファイルを論理的に分割する単位。HEADER, TABLES, BLOCKS, ENTITIES, OBJECTSなどのセクションが存在する。
-
-詳細は [セクション概要](../structure/sections-overview.md) を参照。
-
-### STYLE (Text Style)
-**文字スタイル**
-
-テキストのフォント、高さ、幅係数などの定義。STYLEテーブルで定義される。
-
-## T
-
-### TABLE（テーブル）
-**テーブル**
-
-再利用可能なスタイル定義（レイヤー、線種、文字スタイルなど）を格納する構造。TABLESセクション内に複数のテーブルが存在する。
+### [Subclass Marker（サブクラスマーカー）](../structure/tag-and-group-code.md#2-主要なグループコードとデータ型)
+オブジェクトの型情報を厳密に定義するためのタグ（コード100）。パースの正確性を担保する。
 
 ## W
 
-### WCS (World Coordinate System)
-**世界座標系**
+### [WCS (World Coordinate System)](../geometry/coordinate-systems.md)
+図面全体の基準となる絶対的な座標系。
 
-図面全体の基準となる絶対座標系。すべてのエンティティは、最終的にWCSで表現される。
-
-詳細は [座標系の解説](../geometry/coordinate-systems.md) を参照。
-
-## その他の重要な用語
-
-### Bulge（バルジ）
-**バルジ**
-
-LWPOLYLINEの頂点で、円弧の接続を表現する値。バルジが `0` でない場合、その頂点は円弧の接続点として扱われる。
-
-### Extents（範囲）
-**バウンディングボックス**
-
-図面内のすべてのエンティティを含む最小/最大の境界ボックス。`$EXTMIN` と `$EXTMAX` ヘッダー変数で定義される。
-
-### Seed（シード）
-**シード値**
-
-次に割り当てるハンドルの初期値。`$HANDSEED` ヘッダー変数で管理される。
-
-### Subclass Marker（サブクラスマーカー）
-**サブクラスマーカー**
-
-グループコード `100` で指定される、特定のオブジェクト定義を識別するマーカー。
-
-## 関連ドキュメント
-
-- [タグ構造とグループコード](../structure/tag-and-group-code.md)
-- [座標系の解説](../geometry/coordinate-systems.md)
-- [セクション概要](../structure/sections-overview.md)
+---
+関連：[学習ロードマップ](../README.md#🧭-学習ロードマップ)

@@ -12,16 +12,15 @@ export default withMermaid(
       ],
       sidebar: [
         {
-          text: 'DXF学習パス',
+          text: '🚀 導入',
           items: [
-            { text: '1. DXFとは？（概要）', link: '/docs/getting-started' },
-            { text: '2. タグとグループコードの基本', link: '/structure/tag-and-group-code' },
-            { text: '3. 最初のエンティティを描く', link: '/geometry/common-entities' },
-            { text: '4. 座標系の壁を越える(OCS)', link: '/geometry/coordinate-systems' }
+            { text: 'はじめに（最小構成を作る）', link: '/docs/getting-started' },
+            { text: 'DXFの歴史とバージョン', link: '/docs/history-versions' },
+            { text: '用語集', link: '/docs/glossary' }
           ]
         },
         {
-          text: 'データ構造',
+          text: '🧱 データ構造',
           collapsed: false,
           items: [
             { text: 'タグ構造とデータ型', link: '/structure/tag-and-group-code' },
@@ -31,17 +30,17 @@ export default withMermaid(
           ]
         },
         {
-          text: '幾何学と図形',
+          text: '📐 幾何学と図形',
           collapsed: false,
           items: [
             { text: '共通エンティティ', link: '/geometry/common-entities' },
-            { text: 'ブロックとインサート', link: '/geometry/blocks-and-inserts' },
-            { text: '座標系 (WCS/OCS/AAA)', link: '/geometry/coordinate-systems' }
+            { text: '座標系 (WCS/OCS/AAA)', link: '/geometry/coordinate-systems' },
+            { text: 'ブロックとインサート', link: '/geometry/blocks-and-inserts' }
           ]
         },
         {
-          text: '実装ガイド',
-          collapsed: true,
+          text: '💻 実装ガイド',
+          collapsed: false,
           items: [
             { text: 'パーサーの設計', link: '/implementation/parsing-strategy' },
             { text: 'よくある罠', link: '/implementation/common-pitfalls' },
@@ -49,13 +48,11 @@ export default withMermaid(
           ]
         },
         {
-          text: '比較と背景',
+          text: '📊 比較と背景',
           collapsed: true,
           items: [
-            { text: 'DXFの歴史とバージョン', link: '/docs/history-versions' },
             { text: 'DXF vs DWG', link: '/comparison/dxf-vs-dwg' },
-            { text: 'DXF vs SVG', link: '/comparison/dxf-vs-svg' },
-            { text: '用語集', link: '/docs/glossary' }
+            { text: 'DXF vs SVG', link: '/comparison/dxf-vs-svg' }
           ]
         }
       ],
