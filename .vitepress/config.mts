@@ -44,6 +44,9 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: '共通エンティティ', link: '/geometry/common-entities' },
+            { text: 'ポリゴン・穴あき・塗りつぶし', link: '/geometry/polygons-and-fills' },
+            { text: '線の太さ・厚み・幅', link: '/geometry/line-thickness-and-weight' },
+            { text: '線種と補助線', link: '/geometry/linetypes-and-construction-lines' },
             { text: '座標系 (WCS/OCS/AAA)', link: '/geometry/coordinate-systems' },
             { text: 'ブロックとインサート', link: '/geometry/blocks-and-inserts' },
             { text: '高度なエンティティ', link: '/geometry/advanced-entities' }
@@ -56,6 +59,7 @@ export default withMermaid(
             { text: 'パーサーの設計', link: '/implementation/parsing-strategy' },
             { text: 'よくある罠', link: '/implementation/common-pitfalls' },
             { text: '主要ライブラリ', link: '/implementation/libraries' },
+            { text: 'フリーソフト活用ガイド', link: '/implementation/free-software-guide' },
             { text: '3D CADとの互換性', link: '/implementation/3d-cad-interoperability' },
             { text: 'CAE（ANSYS等）との互換性', link: '/implementation/cae-interoperability' }
           ]
@@ -65,7 +69,8 @@ export default withMermaid(
           collapsed: true,
           items: [
             { text: 'DXF vs DWG', link: '/comparison/dxf-vs-dwg' },
-            { text: 'DXF vs SVG', link: '/comparison/dxf-vs-svg' }
+            { text: 'DXF vs SVG', link: '/comparison/dxf-vs-svg' },
+            { text: '産業用フォーマットとの比較', link: '/comparison/dxf-vs-industrial-formats' }
           ]
         }
       ],
