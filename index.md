@@ -14,6 +14,8 @@ hero:
       link: /structure/tag-and-group-code
 
 features:
+  - title: 歴史と文法
+    details: なぜ「数字（グループコード）」を使うのか？その誕生の背景から、現代における存在意義までを解説。
   - title: 概念分離
     details: HEADER, TABLES, BLOCKS, ENTITIESの役割を論理的に分離して解説。
   - title: 実装者目線
