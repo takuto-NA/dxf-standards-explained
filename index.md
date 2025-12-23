@@ -32,6 +32,7 @@ features:
 最短でDXFの正体を知りたい方向け。
 - [最初の1歩：最小構成のDXFを作る](/docs/getting-started)
 - [よくある質問 (FAQ)](/docs/faq)
+- [国際標準規格とDXFの立ち位置](/comparison/standardization-and-iso)
 - [タグ構造とグループコードの基本](/structure/tag-and-group-code)
 - [DXFの歴史とバージョン](/docs/history-versions)
 - **フォーマット比較**: [vs DWG](/comparison/dxf-vs-dwg) / [vs SVG](/comparison/dxf-vs-svg) / [vs ガーバー・Gコード](/comparison/dxf-vs-industrial-formats)
