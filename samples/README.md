@@ -25,6 +25,16 @@
   <DxfViewer src="/samples/lwpolyline_example.dxf" />
 </ClientOnly>
 
+### Block and Insert
+<ClientOnly>
+  <DxfViewer src="/samples/block_example.dxf" />
+</ClientOnly>
+
+### Minimal R12
+<ClientOnly>
+  <DxfViewer src="/samples/minimal_r12.dxf" />
+</ClientOnly>
+
 ## 🖼 視覚的イメージ
 
 各ファイルがどのような図形を含んでいるかのイメージです。（CADビューワーでの表示結果）
