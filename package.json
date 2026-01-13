@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "dxf-parser": "^1.1.2",
-    "three": "^0.182.0",
+    "three": "^0.171.0",
     "three-dxf-viewer": "^1.0.44"
   }
 }
