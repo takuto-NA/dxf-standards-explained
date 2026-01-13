@@ -25,13 +25,11 @@ let camera = null
 let scene = null
 let controls = null
 
-// CDN上のフォントURL (バージョンを固定)
 const FONT_URL = 'https://unpkg.com/three@0.171.0/examples/fonts/helvetiker_regular.typeface.json'
 
 onMounted(async () => {
   try {
-    // 全てをマウント後に動的な一括インポート
-    const [THREE, { DXFViewer }, { OrbitControls }] = await Promise.all([
+    const [THREE, { DXFViewer, Merger }, { OrbitControls }] = await Promise.all([
       import('three'),
       import('three-dxf-viewer'),
       import('three/examples/jsm/controls/OrbitControls.js')
@@ -43,10 +41,7 @@ onMounted(async () => {
     const height = container.value.clientHeight
 
     scene = new THREE.Scene()
-    
-    // 2D図面用に平行投影カメラ (OrthographicCamera)
-    // 初期サイズはダミー。後で調整。
-    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000000)
+    camera = new THREE.OrthographicCamera(-width/2, width/2, height/2, -height/2, 0.1, 1000000)
     
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setSize(width, height)
@@ -54,7 +49,7 @@ onMounted(async () => {
     container.value.appendChild(renderer.domElement)
 
     controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableRotate = false // 3D回転を無効化
+    controls.enableRotate = false
     controls.enableDamping = true
     controls.screenSpacePanning = true
     
@@ -76,25 +71,35 @@ onMounted(async () => {
     const dxfScene = await dxfViewer.getFromFile(file, FONT_URL)
     if (!dxfScene) throw new Error('DXFのパースに失敗しました')
     
-    scene.add(dxfScene)
-
-    // NaNエラー対策: ジオメトリの計算を確実に行う
-    dxfScene.traverse((child) => {
-      if (child.isMesh || child.isLine) {
-        if (child.geometry) {
-          child.geometry.computeBoundingBox()
-          child.geometry.computeBoundingSphere()
+    // Mergerを使用して、ブロック定義(BLOCK)を実体(INSERT)として正しく展開・統合する
+    const merger = new Merger()
+    const finalScene = merger.merge(dxfScene)
+    
+    // NaNデータのクリーンアップと更新
+    finalScene.traverse((child) => {
+      if (child.geometry && child.geometry.attributes.position) {
+        const pos = child.geometry.attributes.position
+        let hasNan = false
+        for (let i = 0; i < pos.array.length; i++) {
+          if (isNaN(pos.array[i])) {
+            pos.array[i] = 0
+            hasNan = true
+          }
         }
+        if (hasNan) pos.needsUpdate = true
+        child.geometry.computeBoundingBox()
+        child.geometry.computeBoundingSphere()
       }
     })
 
+    scene.add(finalScene)
+
     // 表示範囲の自動調整
-    const box = new THREE.Box3().setFromObject(dxfScene)
+    const box = new THREE.Box3().setFromObject(finalScene)
     
     if (!box.isEmpty() && !isNaN(box.min.x)) {
       const center = box.getCenter(new THREE.Vector3())
       const size = box.getSize(new THREE.Vector3())
-      
       const maxDim = Math.max(size.x, size.y)
       const aspect = width / height
       
@@ -107,21 +112,16 @@ onMounted(async () => {
         viewH = maxDim / aspect
       }
       
-      // カメラのクリッピングプレーンを更新
       camera.left = -viewW / 2
       camera.right = viewW / 2
       camera.top = viewH / 2
       camera.bottom = -viewH / 2
-      camera.zoom = 0.8 // 少し余白
+      camera.zoom = 0.8
       camera.updateProjectionMatrix()
       
       camera.position.set(center.x, center.y, 5000)
       camera.lookAt(center)
       controls.target.copy(center)
-    } else {
-      // ジオメトリがない場合などのデフォルト
-      camera.position.set(0, 0, 1000)
-      controls.target.set(0, 0, 0)
     }
     
     controls.update()
@@ -149,16 +149,10 @@ const onWindowResize = () => {
   const w = container.value.clientWidth
   const h = container.value.clientHeight
   const aspect = w / h
-  
-  // 表示範囲を維持したままアスペクト比を修正
   const currentHeight = camera.top - camera.bottom
-  const viewH = currentHeight
-  const viewW = viewH * aspect
-  
+  const viewW = currentHeight * aspect
   camera.left = -viewW / 2
   camera.right = viewW / 2
-  camera.top = viewH / 2
-  camera.bottom = -viewH / 2
   camera.updateProjectionMatrix()
   renderer.setSize(w, h)
 }
@@ -166,11 +160,6 @@ const onWindowResize = () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onWindowResize)
   if (animationId) cancelAnimationFrame(animationId)
-  if (renderer) {
-    renderer.dispose()
-    if (renderer.domElement && renderer.domElement.parentNode) {
-      renderer.domElement.parentNode.removeChild(renderer.domElement)
-    }
-  }
+  if (renderer) renderer.dispose()
 })
 </script>
