@@ -26,5 +26,10 @@
     "mermaid": "^10.9.0",
     "vitepress": "^1.5.0",
     "vitepress-plugin-mermaid": "^2.0.16"
+  },
+  "dependencies": {
+    "dxf-parser": "^1.1.2",
+    "three": "^0.182.0",
+    "three-dxf-viewer": "^1.0.44"
   }
 }

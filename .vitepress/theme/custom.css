@@ -1,0 +1,22 @@
+.dxf-viewer-container {
+  width: 100%;
+  height: 400px;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1em 0;
+  position: relative;
+}
+
+.dxf-viewer-container canvas {
+  display: block;
+}
+
+.dxf-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-family: sans-serif;
+}

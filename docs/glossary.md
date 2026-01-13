@@ -27,6 +27,15 @@ DXFで使用される重要な用語をカテゴリ別にまとめています�
 ### [OCS (Object Coordinate System)](../geometry/coordinate-systems.md)
 各エンティティが独自に持つ座標系。3D空間内の2D図形を表現するために使用される。
 
+### [Geometric Entity（幾何エンティティ）](../geometry/common-entities.md)
+CAD全般で使われる一般用語。LINEやCIRCLEなど、形を持つ図形を指す。DXFの仕様書内では単に「Entities」と記述されることが多いが、アノテーション（注釈）と区別する際に便利な呼称。
+
+### [Segment（セグメント）](../geometry/common-entities.md#lwpolyline軽量ポリライン)
+一般用語。ポリラインを構成する頂点間の1区間を指す。DXFの仕様書内でも「polyline segments」といった表現で説明に使われる。
+
+### [Closed / Open（閉じた / 開いた）](../geometry/polygons-and-fills.md#1-閉じたポリゴン-closed-polygons)
+**公式な概念**。ポリラインやスプラインの「フラグ（Group Code 70）」などで、図形が閉じている（始点と終点が一致している）かどうかを定義する際に使われる。
+
 ### [Arbitrary Axis Algorithm (AAA)](../geometry/coordinate-systems.md#3-任意軸アルゴリズム-arbitrary-axis-algorithm)
 法線ベクトルからOCSのX軸とY軸を一意に算出するためのアルゴリズム。
 
@@ -36,7 +45,12 @@ DXFで使用される重要な用語をカテゴリ別にまとめています�
 ## 🧱 オブジェクトと要素
 
 ### [Entity（エンティティ）](../geometry/common-entities.md)
-実際に描画される図形要素（LINE, CIRCLEなど）の総称。
+DXFの仕様における**公式用語**。実際に描画される図形要素（LINE, CIRCLEなど）の総称。仕様書では「Graphical Object（グラフィカル・オブジェクト）」とも呼ばれる。
+
+### Graphical Object / Non-graphical Object
+DXFの仕様における**公式な分類**。
+- **Graphical Object**: 描画される要素（＝エンティティ）。
+- **Non-graphical Object**: 描画されない管理データ（DICTIONARY, LAYERなど）。
 
 ### [Block（ブロック）](../geometry/blocks-and-inserts.md)
 再利用可能な図形の定義。図面内で何度も使い回す部品（ボルト、机など）を定義するために使用する。
