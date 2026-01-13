@@ -3,74 +3,74 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(
   defineConfig({
-    lang: 'ja-JP',
+    lang: 'en-US',
     base: '/dxf-standards-explained/',
     title: "DXF Standards Explained",
     description: "A comprehensive guide to the Drawing Exchange Format (DXF)",
     lastUpdated: true,
     themeConfig: {
       nav: [
-        { text: 'ホーム', link: '/' },
-        { text: 'はじめに', link: '/docs/getting-started' },
-        { text: 'ロードマップ', link: '/#-学習ロードマップ' },
+        { text: 'Home', link: '/' },
+        { text: 'Get Started', link: '/docs/getting-started' },
+        { text: 'Roadmap', link: '/#-learning-roadmap' },
         { text: 'FAQ', link: '/docs/faq' },
-        { text: 'サンプル', link: '/samples/README' }
+        { text: 'Samples', link: '/samples/README' }
       ],
       search: {
         provider: 'local'
       },
       sidebar: [
         {
-          text: '🚀 導入',
+          text: '🚀 Getting Started',
           items: [
-            { text: 'はじめに（最小構成を作る）', link: '/docs/getting-started' },
-            { text: 'よくある質問 (FAQ)', link: '/docs/faq' },
-            { text: 'DXFの歴史とバージョン', link: '/docs/history-versions' },
-            { text: '用語集', link: '/docs/glossary' }
+            { text: 'First Steps (Create Minimal DXF)', link: '/docs/getting-started' },
+            { text: 'FAQ', link: '/docs/faq' },
+            { text: 'DXF History and Versions', link: '/docs/history-versions' },
+            { text: 'Glossary', link: '/docs/glossary' }
           ]
         },
         {
-          text: '🧱 データ構造',
+          text: '🧱 Data Structure',
           collapsed: false,
           items: [
-            { text: 'タグ構造とデータ型', link: '/structure/tag-and-group-code' },
-            { text: 'セクション概要', link: '/structure/sections-overview' },
-            { text: '重要ヘッダー変数', link: '/structure/header-variables' },
-            { text: 'テーブルとレイヤー', link: '/structure/tables-and-layers' }
+            { text: 'Tag Structure and Group Codes', link: '/structure/tag-and-group-code' },
+            { text: 'Section Overview', link: '/structure/sections-overview' },
+            { text: 'Important Header Variables', link: '/structure/header-variables' },
+            { text: 'Tables and Layers', link: '/structure/tables-and-layers' }
           ]
         },
         {
-          text: '📐 幾何学と図形',
+          text: '📐 Geometry and Shapes',
           collapsed: false,
           items: [
-            { text: '共通エンティティ', link: '/geometry/common-entities' },
-            { text: 'ポリゴン・穴あき・塗りつぶし', link: '/geometry/polygons-and-fills' },
-            { text: '線の太さ・厚み・幅', link: '/geometry/line-thickness-and-weight' },
-            { text: '線種と補助線', link: '/geometry/linetypes-and-construction-lines' },
-            { text: '座標系 (WCS/OCS/AAA)', link: '/geometry/coordinate-systems' },
-            { text: 'ブロックとインサート', link: '/geometry/blocks-and-inserts' },
-            { text: '高度なエンティティ', link: '/geometry/advanced-entities' }
+            { text: 'Common Entities', link: '/geometry/common-entities' },
+            { text: 'Polygons, Holes, and Fills', link: '/geometry/polygons-and-fills' },
+            { text: 'Line Thickness, Depth, and Width', link: '/geometry/line-thickness-and-weight' },
+            { text: 'Linetypes and Construction Lines', link: '/geometry/linetypes-and-construction-lines' },
+            { text: 'Coordinate Systems (WCS/OCS/AAA)', link: '/geometry/coordinate-systems' },
+            { text: 'Blocks and Inserts', link: '/geometry/blocks-and-inserts' },
+            { text: 'Advanced Entities', link: '/geometry/advanced-entities' }
           ]
         },
         {
-          text: '💻 実装ガイド',
+          text: '💻 Implementation Guide',
           collapsed: false,
           items: [
-            { text: 'パーサーの設計', link: '/implementation/parsing-strategy' },
-            { text: 'よくある罠', link: '/implementation/common-pitfalls' },
-            { text: '主要ライブラリ', link: '/implementation/libraries' },
-            { text: 'フリーソフト活用ガイド', link: '/implementation/free-software-guide' },
-            { text: '3D CADとの互換性', link: '/implementation/3d-cad-interoperability' },
-            { text: 'CAE（ANSYS等）との互換性', link: '/implementation/cae-interoperability' }
+            { text: 'Parser Design', link: '/implementation/parsing-strategy' },
+            { text: 'Common Pitfalls', link: '/implementation/common-pitfalls' },
+            { text: 'Major Libraries', link: '/implementation/libraries' },
+            { text: 'Free Software Usage Guide', link: '/implementation/free-software-guide' },
+            { text: '3D CAD Interoperability', link: '/implementation/3d-cad-interoperability' },
+            { text: 'CAE (ANSYS, etc.) Interoperability', link: '/implementation/cae-interoperability' }
           ]
         },
         {
-          text: '📊 比較と背景',
+          text: '📊 Comparison and Background',
           collapsed: true,
           items: [
             { text: 'DXF vs DWG', link: '/comparison/dxf-vs-dwg' },
             { text: 'DXF vs SVG', link: '/comparison/dxf-vs-svg' },
-            { text: '産業用フォーマットとの比較', link: '/comparison/dxf-vs-industrial-formats' }
+            { text: 'Comparison with Industrial Formats', link: '/comparison/dxf-vs-industrial-formats' }
           ]
         }
       ],
@@ -79,7 +79,7 @@ export default withMermaid(
       ],
       editLink: {
         pattern: 'https://github.com/takuto-NA/dxf-standards-explained/edit/main/:path',
-        text: 'このページをGitHubで編集'
+        text: 'Edit this page on GitHub'
       },
       footer: {
         message: 'MIT License',

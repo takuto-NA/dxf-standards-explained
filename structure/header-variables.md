@@ -1,34 +1,34 @@
-# 重要ヘッダー変数
+# Important Header Variables
 
-HEADERセクションには、図面全体の設定やプロパティを定義する変数が格納されます。すべての変数名は `$` で始まり、グループコード `9` で指定されます。
+The HEADER section stores variables that define settings and properties for the entire drawing. All variable names start with `$` and are specified with group code `9`.
 
-## 変数の読み方
+## How to Read Variables
 
-ヘッダー変数は以下の形式で記述されます：
+Header variables are written in the following format:
 
 ```text
-  9        <-- 「次は変数名です」という合図
-$変数名
- グループコード <-- その変数の「型」に応じたコード
-値          <-- 具体的な設定値
+  9        <-- Signal indicating "next is variable name"
+$VariableName
+ Group Code <-- Code according to the variable's "type"
+Value          <-- Specific setting value
 ```
 
-例：
+Example:
 ```text
-  9        <-- 変数名の開始
+  9        <-- Variable name start
 $ACADVER
-  1        <-- 文字列型の値
+  1        <-- String type value
 AC1015
 ```
 
-## 必須・推奨変数
+## Required/Recommended Variables
 
 ### $ACADVER (AutoCAD Version)
 
-**グループコード**: `1` (文字列)  
-**説明**: DXFファイルが作成されたAutoCADのバージョンを表します。
+**Group Code**: `1` (string)  
+**Description**: Represents the AutoCAD version in which the DXF file was created.
 
-| 値 | バージョン |
+| Value | Version |
 | :--- | :--- |
 | `AC1009` | AutoCAD R11/R12 |
 | `AC1012` | AutoCAD R13 |
@@ -38,114 +38,114 @@ AC1015
 | `AC1021` | AutoCAD 2007/2008/2009 |
 | `AC1024` | AutoCAD 2010/2011/2012 |
 | `AC1027` | AutoCAD 2013/2014/2015/2016/2017 |
-| `AC1032` | AutoCAD 2018以降 |
+| `AC1032` | AutoCAD 2018 and later |
 
-**実装上の注意**: バージョンによって、使用可能なグループコードやエンティティタイプが異なります。パーサーはこの値に基づいて処理を分岐させる必要があります。
+**Implementation Notes**: Available group codes and entity types differ by version. Parsers need to branch processing based on this value.
 
 ### $INSUNITS (Insertion Units)
 
-**グループコード**: `70` (整数)  
-**説明**: 図面の単位系を指定します。
+**Group Code**: `70` (integer)  
+**Description**: Specifies the unit system of the drawing.
 
-| 値 | 単位 |
+| Value | Unit |
 | :--- | :--- |
-| `0` | 単位なし |
-| `1` | インチ |
-| `2` | フィート |
-| `3` | マイル |
-| `4` | ミリメートル |
-| `5` | センチメートル |
-| `6` | メートル |
-| `7` | キロメートル |
-| `8` | マイクロインチ |
-| `9` | ミル |
-| `10` | ヤード |
-| `11` | オングストローム |
-| `12` | ナノメートル |
-| `13` | マイクロメートル |
-| `14` | デシメートル |
-| `15` | デカメートル |
-| `16` | ヘクトメートル |
-| `17` | ギガメートル |
-| `18` | 天文単位 |
-| `19` | 光年 |
-| `20` | パーセク |
+| `0` | Unitless |
+| `1` | Inches |
+| `2` | Feet |
+| `3` | Miles |
+| `4` | Millimeters |
+| `5` | Centimeters |
+| `6` | Meters |
+| `7` | Kilometers |
+| `8` | Microinches |
+| `9` | Mils |
+| `10` | Yards |
+| `11` | Angstroms |
+| `12` | Nanometers |
+| `13` | Micrometers |
+| `14` | Decimeters |
+| `15` | Decameters |
+| `16` | Hectometers |
+| `17` | Gigameters |
+| `18` | Astronomical Units |
+| `19` | Light Years |
+| `20` | Parsecs |
 
-**実装上の注意**: この値は主にメタデータとして使用されます。実際の座標値は単位情報を持たないため、アプリケーション側で適切に解釈する必要があります。
+**Implementation Notes**: This value is mainly used as metadata. Actual coordinate values don't have unit information, so applications need to interpret them appropriately.
 
 ### $EXTMIN / $EXTMAX (Extents)
 
-**グループコード**: `10, 20, 30` (浮動小数点、X, Y, Z)  
-**説明**: 図面内のすべてのエンティティを含む最小/最大の境界ボックス（バウンディングボックス）を定義します。
+**Group Code**: `10, 20, 30` (floating point, X, Y, Z)  
+**Description**: Defines the minimum/maximum bounding box that contains all entities in the drawing.
 
 ```text
-  9        <-- 変数名
+  9        <-- Variable name
 $EXTMIN
- 10        <-- 最小 X
+ 10        <-- Minimum X
 -10.0
- 20        <-- 最小 Y
+ 20        <-- Minimum Y
 -5.0
- 30        <-- 最小 Z
+ 30        <-- Minimum Z
 0.0
-  9        <-- 変数名
+  9        <-- Variable name
 $EXTMAX
- 10        <-- 最大 X
+ 10        <-- Maximum X
 100.0
- 20        <-- 最大 Y
+ 20        <-- Maximum Y
 50.0
- 30        <-- 最大 Z
+ 30        <-- Maximum Z
 0.0
 ```
 
-**実装上の注意**: これらの値は、図面の表示範囲を決定するために使用されます。エンティティを追加・削除した際は、これらの値を再計算する必要があります。
+**Implementation Notes**: These values are used to determine the display range of the drawing. When adding or removing entities, these values need to be recalculated.
 
 ### $HANDSEED (Handle Seed)
 
-**グループコード**: `5` (文字列、ハンドル)  
-**説明**: 次に割り当てるハンドル（オブジェクトの一意識別子）のシード値です。
+**Group Code**: `5` (string, handle)  
+**Description**: Seed value for the next handle (unique identifier for objects) to be assigned.
 
-AutoCAD 2000以降で導入されました。各オブジェクトには一意のハンドル（16進数文字列、例: `"FF"`）が割り当てられます。
+Introduced in AutoCAD 2000 and later. Each object is assigned a unique handle (hexadecimal string, e.g., `"FF"`).
 
-**実装上の注意**: ハンドルはオブジェクト間の参照（例: ブロック参照）で使用されます。新しいオブジェクトを作成する際は、この値をインクリメントして使用します。
+**Implementation Notes**: Handles are used for references between objects (e.g., block references). When creating new objects, increment this value and use it.
 
-## その他の重要な変数
+## Other Important Variables
 
 ### $LUNITS (Linear Units)
 
-**グループコード**: `70` (整数)  
-**説明**: 線形単位の表示形式を指定します。
+**Group Code**: `70` (integer)  
+**Description**: Specifies the display format of linear units.
 
-- `1`: 科学記数法
-- `2`: 小数
-- `3`: 建築用（フィート-インチ）
-- `4`: 分数
-- `5`: 建築用（分数）
+- `1`: Scientific notation
+- `2`: Decimal
+- `3`: Architectural (feet-inches)
+- `4`: Fractional
+- `5`: Architectural (fractional)
 
 ### $AUNITS (Angular Units)
 
-**グループコード**: `70` (整数)  
-**説明**: 角度単位を指定します。
+**Group Code**: `70` (integer)  
+**Description**: Specifies angular units.
 
-- `0`: 十進度
-- `1`: 度/分/秒
-- `2`: グラジアン
-- `3`: ラジアン
-- `4`: 測量単位
+- `0`: Decimal degrees
+- `1`: Degrees/minutes/seconds
+- `2`: Gradians
+- `3`: Radians
+- `4`: Surveyor's units
 
 ### $CLAYER (Current Layer)
 
-**グループコード**: `8` (文字列)  
-**説明**: 現在の画層（レイヤー）名を指定します。
+**Group Code**: `8` (string)  
+**Description**: Specifies the current layer name.
 
-新しいエンティティが画層を明示的に指定しない場合、このレイヤーが使用されます。
+If a new entity doesn't explicitly specify a layer, this layer is used.
 
 ### $TEXTSTYLE (Text Style)
 
-**グループコード**: `7` (文字列)  
-**説明**: 現在の文字スタイル名を指定します。
+**Group Code**: `7` (string)  
+**Description**: Specifies the current text style name.
 
-## 実装のベストプラクティス
+## Implementation Best Practices
 
-1. **バージョンチェック**: `$ACADVER` を最初に読み込み、対応する機能を有効化します。
-2. **デフォルト値の提供**: 変数が存在しない場合でも、合理的なデフォルト値（例: `$INSUNITS = 6` (メートル)）を提供します。
-3. **単位の一貫性**: `$INSUNITS` と実際の座標値の単位が一致していることを確認します（DXFファイル自体は単位情報を持たないため、ドキュメントやメタデータで明示する必要があります）。
+1. **Version Check**: Read `$ACADVER` first and enable corresponding features.
+2. **Provide Default Values**: Even if variables don't exist, provide reasonable default values (e.g., `$INSUNITS = 6` (meters)).
+3. **Unit Consistency**: Ensure that `$INSUNITS` and the units of actual coordinate values match (DXF files themselves don't have unit information, so it needs to be explicitly stated in documentation or metadata).

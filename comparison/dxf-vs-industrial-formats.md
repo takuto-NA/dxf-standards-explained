@@ -1,81 +1,79 @@
-# 産業用フォーマット・フォントとの比較
+# Comparison with Industrial Formats and Fonts
 
-DXFは汎用的な設計データ交換形式ですが、製造現場やデザイン分野では、特定の用途に特化した他の2D形式（ガーバー、Gコード、フォントデータ等）も併用されます。これらの形式とDXFの違い、および変換時の注意点を解説します。
+DXF is a general-purpose design data exchange format, but in manufacturing sites and design fields, other 2D formats specialized for specific uses (Gerber, G-code, font data, etc.) are also used together. This explains the differences between these formats and DXF, and notes for conversion.
 
 ---
 
-## 1. DXF vs ガーバーデータ (Gerber / RS-274X)
+## 1. DXF vs Gerber Data (Gerber / RS-274X)
 
-ガーバーデータは、プリント基板（PCB）製造の業界標準フォーマットです。
+Gerber data is the industry standard format for printed circuit board (PCB) manufacturing.
 
-| 特徴 | DXF | ガーバー (RS-274X) |
+| Feature | DXF | Gerber (RS-274X) |
 | :--- | :--- | :--- |
-| **主な用途** | 機械設計、汎用2D/3D図面 | プリント基板のパターン、マスク、シルク印刷 |
-| **構造** | ベクター幾何学（線、円弧、ポリライン） | アパーチャ（絞り）による「フラッシュ」と「ドロー」 |
-| **レイヤーの意味** | 設計者の任意の分類（外形、寸法など） | 製造工程に直結（表面銅箔、レジスト、穴あけ） |
-| **座標系** | 任意（WCS/OCS） | 基板の絶対座標（通常はインチまたはmm） |
+| **Main Use** | Mechanical design, general 2D/3D drawings | PCB patterns, masks, silk printing |
+| **Structure** | Vector geometry (lines, arcs, polylines) | "Flash" and "draw" via apertures |
+| **Layer Meaning** | Designer's arbitrary classification (outline, dimensions, etc.) | Directly linked to manufacturing process (surface copper, resist, drilling) |
+| **Coordinate System** | Arbitrary (WCS/OCS) | Absolute board coordinates (usually inches or mm) |
 
-### 変換時の注意点
-- **極性 (Polarity)**: ガーバーには「ポジ（描画）」と「ネガ（除去）」の概念がありますが、DXFにはありません。
-- **塗りの扱い**: DXFの `HATCH` や太い `POLYLINE` をガーバーに変換する場合、基板製造機が理解できるパスに「塗りつぶし」処理を行う必要があります。
+### Conversion Notes
+- **Polarity**: Gerber has concepts of "positive (draw)" and "negative (remove)" but DXF does not.
+- **Fill Handling**: When converting DXF `HATCH` or thick `POLYLINE` to Gerber, "fill" processing needs to be performed to paths that board manufacturing machines can understand.
 
 ---
 
-## 2. DXF vs Gコード (G-code / RS-274)
+## 2. DXF vs G-code (G-code / RS-274)
 
-Gコードは、CNC工作機械や3Dプリンターを制御するための数値制御（NC）言語です。
+G-code is a numerical control (NC) language for controlling CNC machine tools and 3D printers.
 
-| 特徴 | DXF | Gコード |
+| Feature | DXF | G-code |
 | :--- | :--- | :--- |
-| **役割** | **「設計データ」**（何を書きたいか） | **「加工命令」**（どう動かすか） |
-| **内容** | 形状の定義（始点、終点、半径など） | 座標移動、主軸回転、冷却液ON/OFFなどの逐次実行 |
-| **抽象度** | 高い（幾何学的エンティティ） | 低い（工具径補正後の移動パス） |
-| **互換性** | 多くのCADで共通 | 機械（コントローラー）ごとに方言がある |
+| **Role** | **"Design Data"** (what to draw) | **"Machining Commands"** (how to move) |
+| **Content** | Shape definitions (start point, end point, radius, etc.) | Sequential execution of coordinate movement, spindle rotation, coolant ON/OFF, etc. |
+| **Abstraction Level** | High (geometric entities) | Low (movement paths after tool radius compensation) |
+| **Compatibility** | Common in many CAD | Has dialects for each machine (controller) |
 
-### ワークフローの関係
-通常、**CAD (DXF)** → **CAM (変換)** → **NC (Gコード)** という流れで処理されます。CAMソフトはDXFを読み込み、工具の太さや切削速度を考慮してGコードを生成します。
+### Workflow Relationship
+Usually processed in the flow: **CAD (DXF)** → **CAM (Conversion)** → **NC (G-code)**. CAM software reads DXF and generates G-code considering tool thickness and cutting speed.
 
 ---
 
-## 3. DXF vs フォントデータ (TTF / OTF / SHX)
+## 3. DXF vs Font Data (TTF / OTF / SHX)
 
-文字データは、CADにおいて最もトラブルの多い領域の一つです。
+Text data is one of the most problematic areas in CAD.
 
-| 形式 | 種類 | CADでの扱い |
+| Format | Type | Handling in CAD |
 | :--- | :--- | :--- |
-| **TTF / OTF** | アウトラインフォント | Windows/Mac共通。CAD内ではベジェ曲線として表示。 |
-| **SHX** | ストロークフォント | AutoCAD独自の形式。線（ストローク）のみで構成される。 |
-| **DXF (Exploded)** | 幾何形状 | フォントを「分解」して線分や円弧にしたもの。 |
+| **TTF / OTF** | Outline Font | Common to Windows/Mac. Displayed as Bezier curves in CAD. |
+| **SHX** | Stroke Font | AutoCAD-specific format. Composed only of lines (strokes). |
+| **DXF (Exploded)** | Geometric Shapes | Fonts "exploded" into line segments and arcs. |
 
-### CADにおける文字の落とし穴
-- **「文字」か「形状」か**: 加工機（レーザーカッター等）に送る場合、DXF内のテキストエンティティ (`TEXT`, `MTEXT`) は無視されることが多いです。
-- **解決策**: フォントを幾何形状に「アウトライン化（分解/Explode）」する必要があります。
-- **SHXフォントの不在**: AutoCAD以外でSHXを含むDXFを開くと、フォントが標準フォントに置き換わり、文字の位置や大きさが狂うことがあります。
+### Text Traps in CAD
+- **"Text" or "Shape"**: When sending to machines (laser cutters, etc.), text entities (`TEXT`, `MTEXT`) in DXF are often ignored.
+- **Solution**: Need to "outline (explode)" fonts into geometric shapes.
+- **Missing SHX Fonts**: When opening DXF containing SHX in software other than AutoCAD, fonts may be replaced with standard fonts, causing text positions and sizes to go wrong.
 
 ---
 
-## 4. その他の関連フォーマット
+## 4. Other Related Formats
 
 ### HPGL / PLT (Hewlett-Packard Graphics Language)
-- **用途**: プロッター（大型プリンター）や古い切削機。
-- **特徴**: ペンの上げ下げ (`PU`, `PD`) と移動 (`PA`) で構成される、非常に単純なコマンド形式です。DXFよりもさらに機械制御に近いフォーマットです。
+- **Use**: Plotters (large printers) and old cutting machines.
+- **Features**: Very simple command format composed of pen up/down (`PU`, `PD`) and movement (`PA`). A format closer to machine control than DXF.
 
 ### PDF (Vector PDF)
-- **用途**: 図面の配布、閲覧。
-- **比較**: PDFも内部にベクターデータを持てますが、レイヤー情報やCAD的な幾何属性（円の半径など）を正確に復元するのは困難です。
+- **Use**: Drawing distribution and viewing.
+- **Comparison**: PDF can also hold vector data internally, but accurately restoring layer information or CAD-like geometric attributes (like circle radius) is difficult.
 
 ---
 
-## 5. どのフォーマットを選ぶべきか？
+## 5. Which Format Should You Choose?
 
-| 目的 | 推奨フォーマット | 理由 |
+| Purpose | Recommended Format | Reason |
 | :--- | :--- | :--- |
-| **機械設計・データ交換** | **DXF** | ほとんどのCADがサポートしており、精度が高い。 |
-| **基板製造 (PCB)** | **Gerber (RS-274X)** | 基板工場の製造ラインがこの形式を前提としている。 |
-| **工作機械の直接制御** | **G-code** | 機械のコントローラーが解釈できる唯一の言語。 |
-| **グラフィックデザイン** | **SVG / AI** | 色、グラデーション、ベジェ曲線の扱いが得意。 |
+| **Mechanical Design/Data Exchange** | **DXF** | Supported by most CAD and has high precision. |
+| **Board Manufacturing (PCB)** | **Gerber (RS-274X)** | Board factories' manufacturing lines assume this format. |
+| **Direct Machine Control** | **G-code** | The only language that machine controllers can interpret. |
+| **Graphic Design** | **SVG / AI** | Good at handling colors, gradients, Bezier curves. |
 
 ---
-
-関連：[DXF vs SVG](./dxf-vs-svg.md) | [DXF vs DWG](./dxf-vs-dwg.md)
-
+Related: [DXF vs SVG](./dxf-vs-svg.md) | [DXF vs DWG](./dxf-vs-dwg.md)

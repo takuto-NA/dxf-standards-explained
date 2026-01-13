@@ -1,82 +1,81 @@
-# ポリゴン・穴あき・塗りつぶし
+# Polygons, Holes, and Fills
 
-DXFにおいて「面」や「塗りつぶされた領域」をどのように表現するかは、実装者が混乱しやすいポイントです。DXFには単一の「Polygon」というエンティティがあるわけではなく、用途に応じて複数の方法を使い分けます。
-
----
-
-## 1. 閉じたポリゴン (Closed Polygons)
-
-単に「閉じられた境界線」を表現したい場合は、`LWPOLYLINE`（軽量ポリライン）を使用します。
-
-- **仕組み**: 頂点リストの最後に、最初の頂点に戻る線を手動で追加する必要はありません。
-- **フラグ**: **グループコード 70** のビット 1（値 `1`）をセットすると、最終頂点と開始頂点が自動的に接続され、「閉じている」とみなされます。
-- **注意**: これはあくまで「線」であり、中が塗りつぶされるわけではありません。
+How to represent "surfaces" and "filled areas" in DXF is a point that often confuses implementers. DXF doesn't have a single "Polygon" entity; instead, multiple methods are used depending on the purpose.
 
 ---
 
-## 2. 塗りつぶし (Fills)
+## 1. Closed Polygons
 
-領域を特定の色やパターンで埋めるには、以下のエンティティを使用します。
+To simply represent "closed boundary lines," use `LWPOLYLINE` (lightweight polyline).
 
-### HATCH (ハッチング) - 推奨
-現代のDXFで最も一般的な方法です。
-- **SOLID塗りつぶし**: グループコード `2`（パターン名）を `SOLID` に設定することで、単色塗りつぶしが可能です。
-- **境界の定義**: 複数の `LINE` や `ARC`, `LWPOLYLINE` を組み合わせて境界線を定義します。
-
-### SOLID (平面) - 非常に古い
-AutoCADの最初期からあるエンティティです（`HATCH` とは別物）。
-- **制限**: 3点（三角形）または4点（四辺形）の塗りつぶししかできません。
-- **描画順序**: 4点の場合、頂点順序が `1-2-4-3` （Z型）になるという独特のルールがあります。複雑な多角形には向きません。
+- **Mechanism**: You don't need to manually add a line back to the first vertex at the end of the vertex list.
+- **Flag**: Setting bit 1 (value `1`) of **group code 70** automatically connects the final vertex and starting vertex, making it "closed."
+- **Note**: This is still just a "line" and doesn't fill the interior.
 
 ---
 
-## 3. 穴あき形状 (Holes / Islands)
+## 2. Fills
 
-「ドーナツ型」のように、外側の境界の中に穴がある形状を表現する方法です。
+To fill an area with a specific color or pattern, use the following entities.
 
-### HATCH の「島 (Island)」構造
-`HATCH` エンティティは、複数の「境界パス（Boundary Path）」を持つことができます。
-- **外部ループ (External)**: 一番外側の境界。
-- **内部ループ (Internal)**: 穴（島）となる境界。
-- **ハッチングスタイル (コード 75)**:
-    - `0`: 奇数番目の境界の内側を塗り、偶数番目を抜く（交互）。
-    - `1`: 一番外側の境界のみを塗り、中の島はすべて抜く。
+### HATCH (Hatching) - Recommended
+The most common method in modern DXF.
+- **SOLID Fill**: Setting group code `2` (pattern name) to `SOLID` enables solid color filling.
+- **Boundary Definition**: Define boundary lines by combining multiple `LINE`, `ARC`, or `LWPOLYLINE`.
 
-### MPOLYGON (マルチポリゴン)
-GIS（地図情報システム）データとの互換性のために導入されたエンティティです。
-- 内部に「外周」と「穴」の情報をネイティブに保持できます。
-- ただし、フリーソフトや一部のライブラリでは対応していないことが多いため、互換性重視の場合は `HATCH` を推奨します。
+### SOLID (Plane) - Very Old
+An entity that has existed since the earliest days of AutoCAD (different from `HATCH`).
+- **Limitation**: Can only fill 3 points (triangle) or 4 points (quadrilateral).
+- **Drawing Order**: For 4 points, there's a unique rule where vertex order becomes `1-2-4-3` (Z-shape). Not suitable for complex polygons.
 
 ---
 
-## 4. 複雑な面 (3D Face / Mesh)
+## 3. Shapes with Holes (Holes / Islands)
 
-3D的な「面」を表現したい場合に使用します。
+Methods to represent shapes like "donut shapes" with holes inside outer boundaries.
 
-- **3DFACE**: 3点または4点で構成される面。穴あきは表現できません（複数の `3DFACE` を組み合わせて表現します）。
-- **MESH**: 多数の頂点と面（Face）のリストで構成されるポリゴンメッシュ。
+### HATCH "Island" Structure
+`HATCH` entities can have multiple "boundary paths."
+- **External Loop**: Outermost boundary.
+- **Internal Loop**: Boundaries that become holes (islands).
+- **Hatching Style (code 75)**:
+    - `0`: Fill inside odd-numbered boundaries, skip even-numbered ones (alternating).
+    - `1`: Fill only the outermost boundary, skip all inner islands.
+
+### MPOLYGON (Multi-polygon)
+An entity introduced for compatibility with GIS (Geographic Information System) data.
+- Can natively hold "outer perimeter" and "hole" information internally.
+- However, many free software and some libraries don't support it, so `HATCH` is recommended for compatibility.
 
 ---
 
-## 比較まとめ
+## 4. Complex Surfaces (3D Face / Mesh)
 
-| 実現したいこと | 推奨エンティティ | 備考 |
+Used when you want to represent 3D "surfaces."
+
+- **3DFACE**: A face composed of 3 or 4 points. Cannot represent holes (express by combining multiple `3DFACE`).
+- **MESH**: A polygon mesh composed of many vertices and a list of faces.
+
+---
+
+## Comparison Summary
+
+| What You Want to Achieve | Recommended Entity | Notes |
 | :--- | :--- | :--- |
-| **単なる閉じられた線** | `LWPOLYLINE` (Flag 70=1) | 加工機の外形線などに使用 |
-| **単色の塗りつぶし面** | `HATCH` (Pattern: `SOLID`) | 図面内の着色に使用 |
-| **穴あき多角形** | `HATCH` (Multiple loops) | 最も一般的で互換性が高い |
-| **3Dのポリゴン面** | `3DFACE` または `MESH` | 3Dモデルの表面表現に使用 |
+| **Simply closed line** | `LWPOLYLINE` (Flag 70=1) | Used for machine outer contours, etc. |
+| **Solid filled surface** | `HATCH` (Pattern: `SOLID`) | Used for coloring in drawings |
+| **Polygon with holes** | `HATCH` (Multiple loops) | Most common and highest compatibility |
+| **3D polygon surface** | `3DFACE` or `MESH` | Used for 3D model surface representation |
 
 ---
 
-## 実装上のヒント：どちらが「外」か？
+## Implementation Hint: Which is "Outside"?
 
-加工機（レーザーカッター等）にデータを送る際、`LWPOLYLINE` が「外周」なのか「穴」なのかを判定する必要がある場合があります。DXF自体にはこのメタデータが欠けていることが多いため、パーサー側で以下の計算を行うのが一般的です。
+When sending data to machines (laser cutters, etc.), you may need to determine whether `LWPOLYLINE` is an "outer perimeter" or a "hole." Since DXF itself often lacks this metadata, parsers commonly perform the following calculations.
 
-1. **面積の符号**: 頂点順序（時計回りか反時計回りか）から面積を計算し、その符号で判定する。
-2. **包含判定**: あるポリラインが別のポリラインの内部にあるかを幾何計算（点包含判定アルゴリズム等）で確認する。
+1. **Area Sign**: Calculate area from vertex order (clockwise or counterclockwise) and determine by its sign.
+2. **Containment Test**: Check if one polyline is inside another using geometric calculations (point-in-polygon algorithms, etc.).
 
 ---
 
-関連：[共通エンティティ](./common-entities.md) | [高度なエンティティ](./advanced-entities.md) | [座標系](./coordinate-systems.md)
-
+Related: [Common Entities](./common-entities.md) | [Advanced Entities](./advanced-entities.md) | [Coordinate Systems](./coordinate-systems.md)

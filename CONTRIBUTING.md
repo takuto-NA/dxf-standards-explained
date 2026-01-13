@@ -1,40 +1,39 @@
-# 貢献ガイド (Contributing Guide)
+# Contributing Guide
 
-DXF Standards Explained をより良くするための貢献を歓迎します。
+Contributions to make DXF Standards Explained better are welcome.
 
-## 🛠 貢献の方法
+## 🛠 How to Contribute
 
-### 1. バグ報告や改善の提案
-- ドキュメントの誤字脱字、リンク切れ、内容の誤りを見つけた場合は [Issues](https://github.com/takuto-NA/dxf-standards-explained/issues) で報告してください。
-- 「この部分がわかりにくい」「このエンティティの解説を追加してほしい」といった提案も歓迎します。
+### 1. Bug Reports and Improvement Suggestions
+- If you find typos, broken links, or errors in the documentation, please report them in [Issues](https://github.com/takuto-NA/dxf-standards-explained/issues).
+- Suggestions such as "this part is unclear" or "please add an explanation for this entity" are also welcome.
 
-### 2. プルリクエスト (Pull Requests)
-1. このリポジトリをフォークします。
-2. 新しいブランチを作成します (`git checkout -b feature/amazing-feature`)。
-3. 変更をコミットします (`git commit -m 'Add some amazing feature'`)。
-4. ブランチをプッシュします (`git push origin feature/amazing-feature`)。
-5. プルリクエストを作成してください。
+### 2. Pull Requests
+1. Fork this repository.
+2. Create a new branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Create a Pull Request.
 
-## 📝 執筆ルール
+## 📝 Writing Guidelines
 
-- **言語**: 原則として日本語で執筆してください。技術用語は適宜英語を併記してください。
-- **図解**: 構造やフローの解説には [Mermaid](https://mermaid.js.org/) を使用してください。
-- **数学**: 数式は LaTeX 形式（`$...$` または `$$...$$`）で記述してください。
-- **リンク**: 他のページへの参照は相対パスで行ってください。
+- **Language**: Please write in English. Technical terms should be used appropriately.
+- **Diagrams**: Use [Mermaid](https://mermaid.js.org/) for explaining structures and flows.
+- **Mathematics**: Write formulas in LaTeX format (`$...$` or `$$...$$`).
+- **Links**: Use relative paths for references to other pages.
 
-## 💻 開発環境のセットアップ
+## 💻 Development Environment Setup
 
 ```bash
-# インストール
+# Install
 npm install
 
-# ローカルサーバー起動
+# Start local server
 npm run docs:dev
 ```
 
-変更を加えた後は、ローカルサーバーで表示崩れがないか確認してください。
+After making changes, please verify that there are no display issues on the local server.
 
 ---
 
-あなたの知見が、他の実装者の助けになります。ご協力ありがとうございます！
-
+Your insights will help other implementers. Thank you for your cooperation!

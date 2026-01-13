@@ -3,72 +3,71 @@ layout: home
 
 hero:
   name: DXF Standards Explained
-  text: CADデータの「読み書き」を解き明かす
-  tagline: 歴史あるDrawing Exchange Formatの構造と数学を、実装者目線で徹底解説。
+  text: Unraveling CAD Data "Reading and Writing"
+  tagline: A thorough explanation of the structure and mathematics of the historic Drawing Exchange Format from an implementer's perspective.
   actions:
     - theme: brand
-      text: はじめに
+      text: Get Started
       link: /docs/getting-started
     - theme: alt
-      text: タグ構造を学ぶ
+      text: Learn Tag Structure
       link: /structure/tag-and-group-code
 
 features:
-  - title: 歴史と文法
-    details: なぜ「数字（グループコード）」を使うのか？その誕生の背景から、現代における存在意義までを解説。
-  - title: 概念分離
-    details: HEADER, TABLES, BLOCKS, ENTITIESの役割を論理的に分離して解説。
-  - title: 実装者目線
-    details: パーサーの設計、浮動小数点誤差、文字化け対策など、実際の開発に役立つ知見を提供。
-  - title: 数学と座標系
-    details: OCS（オブジェクト座標系）や任意軸アルゴリズム（AAA）など、2D/3D変換の難所を可視化。
+  - title: History and Grammar
+    details: Why use "numbers (group codes)"? Explains from the background of its birth to its significance in modern times.
+  - title: Conceptual Separation
+    details: Logically separates and explains the roles of HEADER, TABLES, BLOCKS, and ENTITIES.
+  - title: Implementer's Perspective
+    details: Provides insights useful for actual development, such as parser design, floating-point errors, and character encoding countermeasures.
+  - title: Mathematics and Coordinate Systems
+    details: Visualizes difficult aspects of 2D/3D transformation, such as OCS (Object Coordinate System) and Arbitrary Axis Algorithm (AAA).
 ---
 
-## 🧭 学習ロードマップ
+## 🧭 Learning Roadmap
 
-あなたの目的に合わせて、以下のパスから読み進めてください。
+Please proceed through the following paths according to your objectives.
 
-::: info 1. DXFの基礎を理解する（初心者・入門）
-最短でDXFの正体を知りたい方向け。
-- [最初の1歩：最小構成のDXFを作る](/docs/getting-started)
-- [よくある質問 (FAQ)](/docs/faq)
-- [国際標準規格とDXFの立ち位置](/comparison/standardization-and-iso)
-- [タグ構造とグループコードの基本](/structure/tag-and-group-code)
-- [DXFの歴史とバージョン](/docs/history-versions)
-- **フォーマット比較**: [vs DWG](/comparison/dxf-vs-dwg) / [vs SVG](/comparison/dxf-vs-svg) / [vs ガーバー・Gコード](/comparison/dxf-vs-industrial-formats)
+::: info 1. Understanding DXF Basics (Beginner/Introduction)
+For those who want to quickly understand what DXF is.
+- [First Steps: Creating a Minimal DXF](/docs/getting-started)
+- [Frequently Asked Questions (FAQ)](/docs/faq)
+- [International Standards and DXF's Position](/comparison/standardization-and-iso)
+- [Tag Structure and Group Code Basics](/structure/tag-and-group-code)
+- [DXF History and Versions](/docs/history-versions)
+- **Format Comparison**: [vs DWG](/comparison/dxf-vs-dwg) / [vs SVG](/comparison/dxf-vs-svg) / [vs Gerber/G-code](/comparison/dxf-vs-industrial-formats)
 :::
 
-::: info 2. データ構造を深く知る（中級者・詳細リファレンス）
-特定のデータを取り出したい、または構造を厳密に理解したい方向け。
-- [セクション概要](/structure/sections-overview)
-- [重要ヘッダー変数](/structure/header-variables)
-- [テーブルとレイヤー](/structure/tables-and-layers)
-- [共通エンティティ（LINE, CIRCLE, etc.）](/geometry/common-entities)
-- [ポリゴン・穴あき・塗りつぶし](/geometry/polygons-and-fills)
-- [線の太さ・厚み・幅](/geometry/line-thickness-and-weight)
-- [線種（点線・破線）と補助線](/geometry/linetypes-and-construction-lines)
-- [高度なエンティティ（SPLINE, NURBS, Brep）](/geometry/advanced-entities)
+::: info 2. Deep Understanding of Data Structure (Intermediate/Detailed Reference)
+For those who want to extract specific data or strictly understand the structure.
+- [Section Overview](/structure/sections-overview)
+- [Important Header Variables](/structure/header-variables)
+- [Tables and Layers](/structure/tables-and-layers)
+- [Common Entities (LINE, CIRCLE, etc.)](/geometry/common-entities)
+- [Polygons, Holes, and Fills](/geometry/polygons-and-fills)
+- [Line Thickness, Depth, and Width](/geometry/line-thickness-and-weight)
+- [Linetypes (Dashed/Dotted) and Construction Lines](/geometry/linetypes-and-construction-lines)
+- [Advanced Entities (SPLINE, NURBS, Brep)](/geometry/advanced-entities)
 :::
 
-::: info 3. 数学と座標系を攻略する（難所攻略）
-3D配置や円弧の計算で詰まっている方向け。DXF実装の最難関です。
-- [座標系 (WCS/OCS/AAA)](/geometry/coordinate-systems)
-- [ブロックとインサート](/geometry/blocks-and-inserts)
+::: info 3. Mastering Mathematics and Coordinate Systems (Tackling Difficult Areas)
+For those stuck with 3D placement or arc calculations. The most difficult aspect of DXF implementation.
+- [Coordinate Systems (WCS/OCS/AAA)](/geometry/coordinate-systems)
+- [Blocks and Inserts](/geometry/blocks-and-inserts)
 :::
 
-::: info 4. パーサーを実装する（実践・エンジニア）
-ライブラリの選定や、自作パーサーの設計を行いたい方向け。
-- [パーサーの設計](/implementation/parsing-strategy)
-- [よくある罠と対処法](/implementation/common-pitfalls)
-- [主要ライブラリ紹介](/implementation/libraries)
-- [3D CADとの互換性](/implementation/3d-cad-interoperability)
-- [フリーソフトでの活用ガイドライン](/implementation/free-software-guide)
-- [CAE（ANSYS等）との互換性](/implementation/cae-interoperability)
+::: info 4. Implementing a Parser (Practice/Engineer)
+For those who want to select libraries or design their own parser.
+- [Parser Design](/implementation/parsing-strategy)
+- [Common Pitfalls and Solutions](/implementation/common-pitfalls)
+- [Major Libraries Introduction](/implementation/libraries)
+- [3D CAD Interoperability](/implementation/3d-cad-interoperability)
+- [Free Software Usage Guidelines](/implementation/free-software-guide)
+- [CAE (ANSYS, etc.) Interoperability](/implementation/cae-interoperability)
 :::
 
 ---
 
-## 📂 サンプルファイル
-[samples/README](/samples/README) には、学習用の様々なDXFファイルが用意されています。
-実際のコードと見比べながら学習することで、より理解が深まります。
-
+## 📂 Sample Files
+[samples/README](/samples/README) contains various DXF files for learning.
+Learning while comparing with actual code will deepen your understanding.

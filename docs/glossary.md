@@ -1,65 +1,65 @@
-# 用語集
+# Glossary
 
-DXFで使用される重要な用語をカテゴリ別にまとめています。
+Important terms used in DXF are organized by category.
 
-## 📂 ファイル構造と基本
+## 📂 File Structure and Basics
 
-### [Group Code（グループコード）](../structure/tag-and-group-code.md)
-データの「意味」と「型」を定義する数値タグ。すべてのDXFデータはこれに基づいている。
+### [Group Code](../structure/tag-and-group-code.md)
+A numeric tag that defines the "meaning" and "type" of data. All DXF data is based on this.
 
-### [Handle（ハンドル）](../structure/tag-and-group-code.md#2-主要なグループコードとデータ型)
-オブジェクトに割り当てられた一意の16進数ID。オブジェクト間の参照解決に使用される。
+### [Handle](../structure/tag-and-group-code.md#2-主要なグループコードとデータ型)
+A unique hexadecimal ID assigned to an object. Used for resolving references between objects.
 
-### [Subclass Marker（サブクラスマーカー）](../structure/tag-and-group-code.md#2-主要なグループコードとデータ型)
-オブジェクトの型情報を厳密に定義するためのタグ（コード100）。パースの正確性を担保する。
+### [Subclass Marker](../structure/tag-and-group-code.md#2-主要なグループコードとデータ型)
+A tag (code 100) for strictly defining object type information. Ensures parsing accuracy.
 
 ### [ASCII DXF](../structure/tag-and-group-code.md#3-binary-dxf-バイナリ形式)
-テキスト形式で記述されたDXF。人間が読み書きできるが、ファイルサイズは大きくなる。
+DXF written in text format. Human-readable but file size becomes larger.
 
 ### [Binary DXF](../structure/tag-and-group-code.md#3-binary-dxf-バイナリ形式)
-バイナリ形式で記述されたDXF。ファイルサイズが小さく、読み込み速度が速い。
+DXF written in binary format. Smaller file size and faster loading speed.
 
-## 📐 幾何学と座標系
+## 📐 Geometry and Coordinate Systems
 
 ### [WCS (World Coordinate System)](../geometry/coordinate-systems.md)
-図面全体の基準となる絶対的な座標系。
+The absolute coordinate system that serves as the reference for the entire drawing.
 
 ### [OCS (Object Coordinate System)](../geometry/coordinate-systems.md)
-各エンティティが独自に持つ座標系。3D空間内の2D図形を表現するために使用される。
+A coordinate system unique to each entity. Used to represent 2D shapes in 3D space.
 
-### [Geometric Entity（幾何エンティティ）](../geometry/common-entities.md)
-CAD全般で使われる一般用語。LINEやCIRCLEなど、形を持つ図形を指す。DXFの仕様書内では単に「Entities」と記述されることが多いが、アノテーション（注釈）と区別する際に便利な呼称。
+### [Geometric Entity](../geometry/common-entities.md)
+A general term used in CAD. Refers to shapes with form like LINE and CIRCLE. In DXF specifications, it's often simply written as "Entities," but this term is convenient when distinguishing from annotations.
 
-### [Segment（セグメント）](../geometry/common-entities.md#lwpolyline軽量ポリライン)
-一般用語。ポリラインを構成する頂点間の1区間を指す。DXFの仕様書内でも「polyline segments」といった表現で説明に使われる。
+### [Segment](../geometry/common-entities.md#lwpolyline軽量ポリライン)
+A general term. Refers to one section between vertices that make up a polyline. Also used in DXF specifications with expressions like "polyline segments."
 
-### [Closed / Open（閉じた / 開いた）](../geometry/polygons-and-fills.md#1-閉じたポリゴン-closed-polygons)
-**公式な概念**。ポリラインやスプラインの「フラグ（Group Code 70）」などで、図形が閉じている（始点と終点が一致している）かどうかを定義する際に使われる。
+### [Closed / Open](../geometry/polygons-and-fills.md#1-閉じたポリゴン-closed-polygons)
+**Official concept**. Used in "flags (Group Code 70)" of polylines and splines to define whether a shape is closed (start and end points match).
 
 ### [Arbitrary Axis Algorithm (AAA)](../geometry/coordinate-systems.md#3-任意軸アルゴリズム-arbitrary-axis-algorithm)
-法線ベクトルからOCSのX軸とY軸を一意に算出するためのアルゴリズム。
+An algorithm for uniquely calculating the X and Y axes of OCS from a normal vector.
 
-### [Extrusion Direction（法線ベクトル）](../geometry/coordinate-systems.md#2-なぜ-ocs-が必要なのか)
-エンティティがどの向き（平面）を向いているかを示すベクトル。
+### [Extrusion Direction](../geometry/coordinate-systems.md#2-なぜ-ocs-が必要なのか)
+A vector indicating which direction (plane) an entity is facing.
 
-## 🧱 オブジェクトと要素
+## 🧱 Objects and Elements
 
-### [Entity（エンティティ）](../geometry/common-entities.md)
-DXFの仕様における**公式用語**。実際に描画される図形要素（LINE, CIRCLEなど）の総称。仕様書では「Graphical Object（グラフィカル・オブジェクト）」とも呼ばれる。
+### [Entity](../geometry/common-entities.md)
+**Official term** in DXF specifications. General term for graphic elements that are actually drawn (LINE, CIRCLE, etc.). In specifications, also called "Graphical Object."
 
 ### Graphical Object / Non-graphical Object
-DXFの仕様における**公式な分類**。
-- **Graphical Object**: 描画される要素（＝エンティティ）。
-- **Non-graphical Object**: 描画されない管理データ（DICTIONARY, LAYERなど）。
+**Official classification** in DXF specifications.
+- **Graphical Object**: Elements that are drawn (= entities).
+- **Non-graphical Object**: Management data that is not drawn (DICTIONARY, LAYER, etc.).
 
-### [Block（ブロック）](../geometry/blocks-and-inserts.md)
-再利用可能な図形の定義。図面内で何度も使い回す部品（ボルト、机など）を定義するために使用する。
+### [Block](../geometry/blocks-and-inserts.md)
+Definition of reusable shapes. Used to define parts (bolts, desks, etc.) that are reused multiple times in a drawing.
 
-### [Bulge（バルジ）](../geometry/common-entities.md#lwpolyline軽量ポリライン)
-LWPOLYLINEの頂点間で円弧を表現するための数値。角度の1/4のタンジェント。
+### [Bulge](../geometry/common-entities.md#lwpolyline軽量ポリライン)
+A numeric value for expressing arcs between vertices of LWPOLYLINE. Tangent of 1/4 of the angle.
 
-### [DICTIONARY（辞書）](../structure/objects-section.md#2-dictionary辞書構造)
-非図形データの階層構造を管理するコンテナ。OBJECTSセクションの核となる要素。
+### [DICTIONARY](../structure/objects-section.md#2-dictionary辞書構造)
+A container that manages the hierarchical structure of non-graphic data. A core element of the OBJECTS section.
 
 ---
-関連：[学習ロードマップ](../index.md#🧭-学習ロードマップ)
+Related: [Learning Roadmap](../index.md#🧭-learning-roadmap)

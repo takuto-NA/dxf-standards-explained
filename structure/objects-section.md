@@ -1,25 +1,25 @@
-# OBJECTS セクション
+# OBJECTS Section
 
-AutoCAD 2000 (AC1015) 以降で導入された **OBJECTS セクション** は、図面内の非図形データ（図形以外の論理構造や設定）を管理するための重要な場所です。
+The **OBJECTS section**, introduced in AutoCAD 2000 (AC1015) and later, is an important place for managing non-graphic data (logical structures and settings other than shapes) within drawings.
 
-パーサーの実装において、単純な「線や円の抽出」を超えて、「レイアウト構成の理解」や「カスタムプロパティの取得」を行う場合に、このセクションの理解が不可欠になります。
+In parser implementation, understanding this section becomes essential when going beyond simple "extraction of lines and circles" to "understanding layout structure" or "obtaining custom properties."
 
-## 1. 役割：図面の「頭脳」
+## 1. Role: The "Brain" of the Drawing
 
-`ENTITIES` セクションが図面の「見た目」を司るのに対し、`OBJECTS` セクションは図面の「論理」を管理します。
+While the `ENTITIES` section governs the "appearance" of the drawing, the `OBJECTS` section manages the "logic" of the drawing.
 
-主な役割：
-- **DICTIONARY（辞書）**: オブジェクト間の親子関係や名前付きデータの管理。
-- **LAYOUT（レイアウト）**: 空間（モデル空間・ペーパー空間）の設定。
-- **DIMSTYLE（寸法スタイル）**: 寸法線の詳細な設定情報。
-- **GROUP（グループ）**: エンティティの論理的なグループ化。
+Main roles:
+- **DICTIONARY**: Management of parent-child relationships between objects and named data.
+- **LAYOUT**: Settings for spaces (model space/paper space).
+- **DIMSTYLE**: Detailed setting information for dimension lines.
+- **GROUP**: Logical grouping of entities.
 
-## 2. DICTIONARY（辞書）構造
+## 2. DICTIONARY Structure
 
-`OBJECTS` セクションの根幹は **DICTIONARY** オブジェクトです。これは、キー（名前）と値（オブジェクトへのポインタ/ハンドル）のペアを保持するコンテナです。
+The foundation of the `OBJECTS` section is the **DICTIONARY** object. This is a container that holds pairs of keys (names) and values (pointers/handles to objects).
 
-### ルート辞書 (Named Object Dictionary)
-すべてのDXFファイルには、暗黙的に「ルート辞書」が存在します。ここから、レイアウト辞書やグループ辞書など、すべての論理データへ辿ることができます。
+### Root Dictionary (Named Object Dictionary)
+All DXF files implicitly have a "root dictionary." From here, you can traverse to all logical data such as layout dictionaries and group dictionaries.
 
 ```mermaid
 graph TD
@@ -30,32 +30,31 @@ graph TD
     ACAD_LAYOUT --> Layout2[Layout 1]
 ```
 
-## 3. 主要なオブジェクトタイプ
+## 3. Major Object Types
 
-| オブジェクト名 | 説明 |
+| Object Name | Description |
 | :--- | :--- |
-| **DICTIONARY** | 名前付きデータのコンテナ。 |
-| **LAYOUT** | 印刷設定やビューポート管理を行うレイアウト。 |
-| **ACAD_PROXY_OBJECT** | 他のアプリケーションで作成された不明なオブジェクトのプレースホルダ。 |
-| **XRECORD** | 任意のデータを保存するための汎用的なコンテナ（アプリケーション開発者が多用）。 |
-| **IDBUFFER** | 複数のオブジェクト参照を保持するバッファ。 |
+| **DICTIONARY** | Container for named data. |
+| **LAYOUT** | Layout for print settings and viewport management. |
+| **ACAD_PROXY_OBJECT** | Placeholder for unknown objects created by other applications. |
+| **XRECORD** | Generic container for storing arbitrary data (often used by application developers). |
+| **IDBUFFER** | Buffer that holds multiple object references. |
 
-## 4. パーサー実装における重要性
+## 4. Importance in Parser Implementation
 
-### レイアウトの識別
-`ENTITIES` セクションにある図形が「モデル空間」にあるのか、それとも特定の「レイアウト（ペーパー空間）」にあるのかを判別するには、`OBJECTS` セクション内の `LAYOUT` オブジェクトと、エンティティの `owner` ハンドルを照合する必要があります。
+### Layout Identification
+To determine whether shapes in the `ENTITIES` section are in "model space" or a specific "layout (paper space)," you need to match `LAYOUT` objects in the `OBJECTS` section with entities' `owner` handles.
 
-### ハンドルによる参照解決
-2000以降のDXFでは、ほぼすべての要素が `5` 番のコード（ハンドル）による一意なIDを持っています。`OBJECTS` セクション内のオブジェクトは、このハンドルを使って `TABLES` や `ENTITIES` と複雑にリンクしています。
+### Reference Resolution by Handles
+In DXF 2000 and later, almost all elements have unique IDs via code `5` (handle). Objects in the `OBJECTS` section are complexly linked with `TABLES` and `ENTITIES` using these handles.
 
-## 5. 最小限のパース戦略
+## 5. Minimal Parsing Strategy
 
-もし、単純な図形抽出だけが目的であれば、`OBJECTS` セクションを無視（スキップ）しても問題ありません。しかし、以下の場合はパースが必要です：
-1. **ペーパー空間の図形**を正しく除外、または分離したい場合。
-2. **寸法(DIMENSION)** の詳細な書式を再現したい場合。
-3. **グループ情報**を利用したい場合。
+If your goal is only simple shape extraction, you can ignore (skip) the `OBJECTS` section. However, parsing is needed in the following cases:
+1. When you want to correctly exclude or separate **paper space shapes**.
+2. When you want to reproduce detailed formatting of **dimensions (DIMENSION)**.
+3. When you want to use **group information**.
 
 ---
-関連：[セクション概要](./sections-overview.md) | [よくある罠](../implementation/common-pitfalls.md)
-
+Related: [Section Overview](./sections-overview.md) | [Common Pitfalls](../implementation/common-pitfalls.md)
 

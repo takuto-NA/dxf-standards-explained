@@ -1,106 +1,106 @@
-# よくある罠
+# Common Pitfalls
 
-DXFの実装において、実装者が遭遇しやすい問題とその対処法をまとめます。
+This summarizes problems frequently encountered by implementers in DXF implementation and their solutions.
 
-## 1. 文字エンコーディングの問題
+## 1. Character Encoding Issues
 
-### 問題
+### Problem
 
-DXFファイルの文字エンコーディングは、バージョンによって異なります：
+Character encoding of DXF files differs by version:
 
-- **R12以前**: ANSI/コードページ依存（環境によって異なる）
-- **AC1015 (AutoCAD 2000)**: ANSI（Windows-1252など）
-- **AC1021 (AutoCAD 2007)以降**: UTF-8が標準
+- **Before R12**: ANSI/code page dependent (varies by environment)
+- **AC1015 (AutoCAD 2000)**: ANSI (Windows-1252, etc.)
+- **AC1021 (AutoCAD 2007) and later**: UTF-8 is standard
 
-### 症状
+### Symptoms
 
-- 日本語や特殊文字が文字化けする
-- ファイルを開いたときに「Invalid character」エラーが発生する
+- Japanese and special characters become garbled
+- "Invalid character" errors occur when opening files
 
-### 対処法
+### Solution
 
 ```python
 def detect_encoding(file_path):
-    """DXFファイルのエンコーディングを検出"""
+    """Detect encoding of DXF file"""
     with open(file_path, 'rb') as f:
         header = f.read(100)
         
-        # UTF-8 BOMの確認
+        # Check UTF-8 BOM
         if header.startswith(b'\xEF\xBB\xBF'):
             return 'utf-8-sig'
         
-        # バージョン情報から判定
+        # Determine from version information
         version = extract_version(header)
         if version >= 'AC1021':
             return 'utf-8'
         else:
-            # 環境依存のコードページを推測
-            return 'windows-1252'  # またはシステムのデフォルト
+            # Guess environment-dependent code page
+            return 'windows-1252'  # or system default
 ```
 
-**ベストプラクティス**: 
-- 可能な限りUTF-8で保存する
-- 読み込み時は、まずUTF-8で試し、失敗したらフォールバックする
+**Best Practices**: 
+- Save in UTF-8 whenever possible
+- When reading, try UTF-8 first, then fallback if it fails
 
-## 2. 浮動小数点の精度問題
+## 2. Floating Point Precision Issues
 
-### 問題
+### Problem
 
-DXFファイルでは、浮動小数点値がテキストとして保存されるため、読み込み時に精度の問題が発生する可能性があります。
+Since floating point values are saved as text in DXF files, precision problems can occur when reading.
 
-### 症状
+### Symptoms
 
-- 座標値が微妙にずれる（例: `10.0` が `9.999999999` になる）
-- 幾何学的な計算（距離、角度など）で誤差が蓄積する
+- Coordinate values shift slightly (e.g., `10.0` becomes `9.999999999`)
+- Errors accumulate in geometric calculations (distance, angle, etc.)
 
-### 対処法
+### Solution
 
 ```python
 import decimal
 
 def parse_float(value_str):
-    """高精度な浮動小数点の読み込み"""
-    # 科学記数法にも対応
+    """High-precision floating point reading"""
+    # Also supports scientific notation
     try:
         return float(value_str)
     except ValueError:
-        # Decimal型を使用して精度を保つ（必要に応じて）
+        # Use Decimal type to maintain precision (if needed)
         return float(decimal.Decimal(value_str))
 
-# 比較時の許容誤差
+# Tolerance for comparisons
 EPSILON = 1e-9
 
 def float_equal(a, b):
     return abs(a - b) < EPSILON
 ```
 
-**ベストプラクティス**: 
-- 座標値の比較には許容誤差（epsilon）を使用する
-- 幾何学的な計算には、必要に応じて高精度ライブラリを使用する
+**Best Practices**: 
+- Use tolerance (epsilon) for coordinate value comparisons
+- Use high-precision libraries for geometric calculations as needed
 
-## 3. 不完全なDXFファイルへの対応
+## 3. Handling Incomplete DXF Files
 
-### 問題
+### Problem
 
-多くのCADソフトは、不完全なDXFファイル（HEADERやTABLESセクションが欠けている）でも、デフォルト値を補完して読み込みます。
+Many CAD software read incomplete DXF files (missing HEADER or TABLES sections) by supplementing default values.
 
-### 症状
+### Symptoms
 
-- パーサーが「必須セクションが見つからない」エラーを出す
-- 画層や線種が正しく解決されない
+- Parser outputs "required section not found" errors
+- Layers and linetypes are not correctly resolved
 
-### 対処法
+### Solution
 
 ```python
 class DxfParser:
     def __init__(self):
-        # デフォルト値を事前に設定
+        # Set default values in advance
         self.default_layer = Layer(name="0", color=7, ltype="CONTINUOUS")
         self.default_ltype = LineType(name="CONTINUOUS", pattern=[])
         self.default_style = TextStyle(name="STANDARD")
     
     def get_layer(self, name):
-        """画層を取得、存在しない場合はデフォルトを返す"""
+        """Get layer, return default if doesn't exist"""
         if name in self.layer_dict:
             return self.layer_dict[name]
         else:
@@ -108,26 +108,26 @@ class DxfParser:
             return self.default_layer
 ```
 
-**ベストプラクティス**: 
-- 必須ではないセクション（HEADER, TABLES）が欠けていても、処理を続行できるようにする
-- 警告をログに記録し、デフォルト値を使用する
+**Best Practices**: 
+- Allow processing to continue even if non-required sections (HEADER, TABLES) are missing
+- Log warnings and use default values
 
-## 4. OCS（オブジェクト座標系）の変換ミス
+## 4. OCS (Object Coordinate System) Conversion Mistakes
 
-### 問題
+### Problem
 
-`CIRCLE`, `ARC`, `LWPOLYLINE`などのエンティティは、OCSで定義されています。法線ベクトルが指定されていない場合、デフォルトは `(0, 0, 1)` ですが、これを忘れると2D図面が正しく表示されません。
+Entities like `CIRCLE`, `ARC`, `LWPOLYLINE` are defined in OCS. If a normal vector is not specified, the default is `(0, 0, 1)`, but forgetting this causes 2D drawings to not display correctly.
 
-### 症状
+### Symptoms
 
-- 3D空間に配置された円が、2Dビューで正しく表示されない
-- ポリラインの頂点が期待される位置にない
+- Circles placed in 3D space don't display correctly in 2D view
+- Polyline vertices are not at expected positions
 
-### 対処法
+### Solution
 
 ```python
 def get_extrusion_direction(entity):
-    """エンティティの押し出し方向（法線ベクトル）を取得"""
+    """Get entity's extrusion direction (normal vector)"""
     if hasattr(entity, 'extrusion_x') and entity.extrusion_x is not None:
         return (
             entity.extrusion_x,
@@ -135,32 +135,32 @@ def get_extrusion_direction(entity):
             entity.extrusion_z
         )
     else:
-        # デフォルト: 世界Z軸
+        # Default: world Z axis
         return (0.0, 0.0, 1.0)
 
 def ocs_to_wcs(point_ocs, extrusion):
-    """OCS座標をWCS座標に変換（任意軸アルゴリズム使用）"""
-    # 任意軸アルゴリズムの実装
-    # （詳細は coordinate-systems.md を参照）
+    """Convert OCS coordinates to WCS coordinates (using arbitrary axis algorithm)"""
+    # Implementation of arbitrary axis algorithm
+    # (see coordinate-systems.md for details)
     ...
 ```
 
-**ベストプラクティス**: 
-- すべてのOCSベースのエンティティに対して、明示的に変換を行う
-- テストデータに、様々な法線ベクトルを持つエンティティを含める
+**Best Practices**: 
+- Explicitly convert all OCS-based entities
+- Include entities with various normal vectors in test data
 
-## 5. ブロック参照の循環参照
+## 5. Circular References in Block References
 
-### 問題
+### Problem
 
-ブロック定義が、自分自身や他のブロックを参照する循環参照を含む場合、無限ループが発生する可能性があります。
+When block definitions contain circular references that reference themselves or other blocks, infinite loops can occur.
 
-### 症状
+### Symptoms
 
-- パーサーがスタックオーバーフローでクラッシュする
-- メモリ使用量が異常に増加する
+- Parser crashes with stack overflow
+- Memory usage abnormally increases
 
-### 対処法
+### Solution
 
 ```python
 class BlockResolver:
@@ -175,33 +175,33 @@ class BlockResolver:
         self.current_depth += 1
         try:
             block_def = self.block_dict[block_name]
-            # ブロック内のエンティティを解決
+            # Resolve entities within block
             entities = self.resolve_block_entities(block_def, insert_entity)
             return entities
         finally:
             self.current_depth -= 1
 ```
 
-**ベストプラクティス**: 
-- ブロック参照の深さに制限を設ける（例: 100レベル）
-- 循環参照を検出して警告を出す
+**Best Practices**: 
+- Set limits on block reference depth (e.g., 100 levels)
+- Detect circular references and issue warnings
 
-## 6. 単位系の混乱
+## 6. Unit System Confusion
 
-### 問題
+### Problem
 
-DXFファイル自体は単位情報を持たないため、`$INSUNITS` ヘッダー変数と実際の座標値の単位が一致しない場合があります。
+Since DXF files themselves don't have unit information, `$INSUNITS` header variable and actual coordinate value units may not match.
 
-### 症状
+### Symptoms
 
-- 図面のスケールが正しくない（インチとメートルが混在）
-- 寸法値が期待と異なる
+- Drawing scale is incorrect (inches and meters mixed)
+- Dimension values differ from expectations
 
-### 対処法
+### Solution
 
 ```python
 def get_units(self):
-    """図面の単位系を取得"""
+    """Get drawing unit system"""
     insunits = self.header_vars.get('$INSUNITS', 0)
     unit_map = {
         1: 'inches',
@@ -214,7 +214,7 @@ def get_units(self):
     return unit_map.get(insunits, 'unitless')
 
 def convert_units(value, from_unit, to_unit):
-    """単位変換（必要に応じて）"""
+    """Unit conversion (if needed)"""
     conversion_factors = {
         ('inches', 'millimeters'): 25.4,
         ('feet', 'meters'): 0.3048,
@@ -224,59 +224,59 @@ def convert_units(value, from_unit, to_unit):
     return value * factor
 ```
 
-**ベストプラクティス**: 
-- 単位情報をメタデータとして明示的に管理する
-- ユーザーに単位を確認するUIを提供する
+**Best Practices**: 
+- Explicitly manage unit information as metadata
+- Provide UI for users to confirm units
 
-## 7. ハンドルの扱い
+## 7. Handle Handling
 
-### 問題
+### Problem
 
-AutoCAD 2000以降では、各オブジェクトに一意のハンドル（16進数文字列）が割り当てられます。ハンドルは参照関係で使用されますが、すべてのDXFファイルに存在するわけではありません。
+From AutoCAD 2000 onward, each object is assigned a unique handle (hexadecimal string). Handles are used in reference relationships, but they don't exist in all DXF files.
 
-### 症状
+### Symptoms
 
-- ハンドルベースの参照が解決できない
-- 古いバージョンのDXFファイルでハンドルが欠けている
+- Handle-based references cannot be resolved
+- Handles are missing in old version DXF files
 
-### 対処法
+### Solution
 
 ```python
 def parse_handle(value_str):
-    """ハンドルを解析（16進数文字列）"""
+    """Parse handle (hexadecimal string)"""
     if not value_str:
         return None
     try:
-        return int(value_str, 16)  # 16進数として解釈
+        return int(value_str, 16)  # Interpret as hexadecimal
     except ValueError:
         logger.warning(f"Invalid handle: {value_str}")
         return None
 
 def resolve_handle_reference(handle):
-    """ハンドルでオブジェクトを参照"""
+    """Reference object by handle"""
     if handle is None:
         return None
     return self.handle_dict.get(handle)
 ```
 
-**ベストプラクティス**: 
-- ハンドルが存在しない場合でも、名前ベースの参照でフォールバックする
-- ハンドルの一意性をチェックする
+**Best Practices**: 
+- Fallback to name-based references even if handles don't exist
+- Check handle uniqueness
 
-## 8. パフォーマンスの問題
+## 8. Performance Issues
 
-### 問題
+### Problem
 
-大きなDXFファイル（数万エンティティ）を読み込む際、メモリ使用量や処理時間が問題になることがあります。
+When reading large DXF files (tens of thousands of entities), memory usage and processing time can become problems.
 
-### 対処法
+### Solution
 
-- **ストリーミングパーサー**: エンティティを1つずつ処理する
-- **遅延読み込み**: 必要な時だけデータを読み込む
-- **キャッシュ**: 頻繁に参照されるデータ（デフォルト画層など）をキャッシュする
+- **Streaming Parser**: Process entities one by one
+- **Lazy Loading**: Load data only when needed
+- **Caching**: Cache frequently referenced data (default layers, etc.)
 
-詳細は [パーサーの設計](./parsing-strategy.md) を参照してください。
+For details, see [Parser Design](./parsing-strategy.md).
 
-## まとめ
+## Summary
 
-これらの問題を事前に認識し、適切な対処法を実装することで、堅牢なDXFパーサーを構築できます。特に、**エラーハンドリング**と**デフォルト値の提供**は、実用性の高いパーサーには不可欠です。
+By recognizing these problems in advance and implementing appropriate solutions, you can build robust DXF parsers. Especially, **error handling** and **providing default values** are essential for practical parsers.

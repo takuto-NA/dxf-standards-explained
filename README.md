@@ -1,60 +1,60 @@
 # DXF Standards Explained
 
-DXF (Drawing Exchange Format) の構造と、実装に不可欠な数学的知識を凝縮した技術ガイドです。
+A technical guide that condenses the structure of DXF (Drawing Exchange Format) and the essential mathematical knowledge required for implementation.
 
-### 🎯 このプロジェクトの目的
+### 🎯 Project Purpose
 
-「仕様書を読んでもパースできない」「OCS（オブジェクト座標系）で円がどこかへ飛んでいく」といった、CADデータ処理の実装者が直面する課題を解決します。
+This project addresses challenges faced by CAD data processing implementers, such as "unable to parse even after reading the specification" and "circles flying away in OCS (Object Coordinate System)".
 
-1982年に誕生したこの古いフォーマットが、なぜ今も製造・建築・デザインの最前線で使われ続けているのか。その歴史的背景から、パーサーの実装、座標変換の数学までを網羅的に解説します。
+Why does this old format, born in 1982, continue to be used at the forefront of manufacturing, architecture, and design? This guide comprehensively explains everything from its historical background to parser implementation and coordinate transformation mathematics.
 
 ---
 
-## 🚀 ドキュメントサイト
+## 🚀 Documentation Site
 
-詳細な解説と学習ロードマップは、以下のドキュメントサイトを参照してください。
+For detailed explanations and learning roadmap, please refer to the following documentation site.
 
 - **GitHub Pages**: **[https://takuto-NA.github.io/dxf-standards-explained/](https://takuto-NA.github.io/dxf-standards-explained/)**
-- **リポジトリ内で読む（オフライン/PRレビュー向け）**: [学習ロードマップ（index.md）](./index.md)
+- **Read in repository (for offline/PR review)**: [Learning Roadmap (index.md)](./index.md)
 
 ---
 
-## 🧭 最短で迷わない読み方（初見向け）
+## 🧭 Quick Start Guide (For First-Time Readers)
 
-- **まず1本**: [最初の1歩：最小構成のDXFを作る](./docs/getting-started.md)
-- **全体像（何をどの順で読むか）**: [学習ロードマップ](./index.md#-学習ロードマップ)
-- **最低限のDXF文法**: [タグ構造とグループコードの基本](./structure/tag-and-group-code.md)
-- **つまずきやすい難所**: [座標系 (WCS/OCS/AAA)](./geometry/coordinate-systems.md) / [よくある罠と対処法](./implementation/common-pitfalls.md)
-- **サンプルで手を動かす**: [DXF Samples](./samples/README.md)
+- **Start here**: [First Steps: Creating a Minimal DXF](./docs/getting-started.md)
+- **Overview (what to read and in what order)**: [Learning Roadmap](./index.md#-learning-roadmap)
+- **Minimum DXF grammar**: [Tag Structure and Group Code Basics](./structure/tag-and-group-code.md)
+- **Common pitfalls**: [Coordinate Systems (WCS/OCS/AAA)](./geometry/coordinate-systems.md) / [Common Pitfalls and Solutions](./implementation/common-pitfalls.md)
+- **Hands-on with samples**: [DXF Samples](./samples/README.md)
 
-## 🛠 開発環境
+## 🛠 Development Environment
 
-このプロジェクトは [VitePress](https://vitepress.dev/) で構築されています。
+This project is built with [VitePress](https://vitepress.dev/).
 
 ```bash
-# 依存関係のインストール
+# Install dependencies
 npm install
 
-# ローカルでのプレビュー
+# Local preview
 npm run docs:dev
 
-# ビルド
+# Build
 npm run docs:build
 ```
 
-## 📂 構成
+## 📂 Structure
 
-- `docs/`: 入門、用語集、歴史、**FAQ**など
-- `structure/`: DXFのファイル構造、タグ、セクション解説
-- `geometry/`: 座標系、共通エンティティ、**ポリゴンと塗りつぶし**、**線の太さと厚み**、**線種と補助線**、**高度なエンティティ（SPLINE/Brep）**、数学的アルゴリズム
-- `implementation/`: パーサー設計、主要ライブラリ、**フリーソフト活用ガイド**、**3D CAD/CAE互換性**、落とし穴
-- `comparison/`: **DWG, SVG, ガーバー, Gコード, フォント**等との比較
-- `samples/`: 学習・テスト用のDXFサンプルファイル
+- `docs/`: Getting started, glossary, history, **FAQ**, etc.
+- `structure/`: DXF file structure, tags, section explanations
+- `geometry/`: Coordinate systems, common entities, **polygons and fills**, **line thickness and weight**, **linetypes and construction lines**, **advanced entities (SPLINE/Brep)**, mathematical algorithms
+- `implementation/`: Parser design, major libraries, **free software usage guide**, **3D CAD/CAE interoperability**, pitfalls
+- `comparison/`: Comparisons with **DWG, SVG, Gerber, G-code, fonts**, etc.
+- `samples/`: DXF sample files for learning and testing
 
-## 📄 ライセンス
+## 📄 License
 
 MIT License
 
-## 🤝 貢献について
+## 🤝 Contributing
 
-不備の修正やコンテンツの追加は大歓迎です。[CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。
+Bug fixes and content additions are very welcome. Please see [CONTRIBUTING.md](./CONTRIBUTING.md).

@@ -1,86 +1,85 @@
-# 3D CADとの互換性
+# 3D CAD Interoperability
 
-DXFはもともと2D CAD（AutoCAD）のために開発された形式ですが、現代の3D CAD（CATIA, Fusion 360, SolidWorks, Creo等）でも広く利用されています。しかし、3D CADでDXFを扱う際にはいくつかの重要な注意点があります。
+DXF was originally developed for 2D CAD (AutoCAD), but is also widely used in modern 3D CAD (CATIA, Fusion 360, SolidWorks, Creo, etc.). However, there are several important points to note when handling DXF in 3D CAD.
 
-## 主要3D CADの対応状況
+## Support Status of Major 3D CAD
 
-| CADソフト | 主な用途 | DXFの扱い | 特徴 |
+| CAD Software | Main Use | DXF Handling | Features |
 | :--- | :--- | :--- | :--- |
-| **CATIA** | 航空宇宙・自動車 | インポート/エクスポート | 非常に厳格。R12〜R2000形式が安定。 |
-| **Fusion 360** | プロダクトデザイン | スケッチとして取り込み | 2Dスケッチのインポートに多用。最新形式に対応。 |
-| **SolidWorks** | 機械設計 | スケッチ/図面 | 2Dレイアウトの取り込みや、板金展開図の書き出しに必須。 |
-| **Creo** | ハイエンド機械設計 | インポート/エクスポート | 単位設定（mm vs inch）の不一致が起きやすい。 |
-| **Rhino** | 自由曲面・デザイン | 非常に強力な対応 | NURBS（曲線・曲面）を高い精度で保持。 |
+| **CATIA** | Aerospace/Automotive | Import/Export | Very strict. R12-R2000 formats are stable. |
+| **Fusion 360** | Product Design | Import as sketch | Often used for 2D sketch import. Supports latest formats. |
+| **SolidWorks** | Mechanical Design | Sketch/Drawing | Essential for importing 2D layouts or exporting sheet metal development drawings. |
+| **Creo** | High-end Mechanical Design | Import/Export | Unit setting (mm vs inch) mismatches occur easily. |
+| **Rhino** | Freeform Surfaces/Design | Very strong support | Maintains NURBS (curves/surfaces) with high precision. |
 
 ---
 
-## インポートとエクスポート
+## Import and Export
 
-3D CADにおいてDXFは「3Dモデルそのもの」をやり取りするのではなく、**「2Dの断面や下書き（スケッチ）」**として利用されるのが一般的です。
+In 3D CAD, DXF is generally used not for exchanging "3D models themselves" but as **"2D cross-sections or drafts (sketches)"**.
 
-### インポート（読み込み）の用途
-- **スケッチの作成**: イラストレーターや2D CADで描いたロゴや複雑な形状をスケッチとして取り込み、押し出して3D化する。
-- **図面の下地**: 既存の2D図面をベースに3Dモデリングを開始する。
+### Import (Read) Uses
+- **Sketch Creation**: Import logos or complex shapes drawn in Illustrator or 2D CAD as sketches, then extrude to make 3D.
+- **Drawing Base**: Start 3D modeling based on existing 2D drawings.
 
-### エクスポート（書き出し）の用途
-- **板金加工 (DXF Export)**: 3Dモデルを「展開図」にし、レーザーカッターやCNC加工機に送るためにエクスポートする。**最も頻繁に使われる操作です。**
-- **2D図面の配布**: 3Dモデルから作成した2D図面を、3D CADを持っていない担当者に渡す。
+### Export (Write) Uses
+- **Sheet Metal Processing (DXF Export)**: Export 3D models as "development drawings" to send to laser cutters or CNC machines. **Most frequently used operation.**
+- **2D Drawing Distribution**: Give 2D drawings created from 3D models to personnel who don't have 3D CAD.
 
 ---
 
-## 3D CADでのエクスポート操作例
+## Export Operation Examples in 3D CAD
 
 ### Fusion 360
-1. ブラウザ（左側のツリー）で、書き出したい「スケッチ」を右クリック。
-2. **「DXFとして保存」**を選択。
-3. これにより、スケッチ内の線分や円弧がDXFとして保存されます。
+1. Right-click the "sketch" you want to export in the browser (left tree).
+2. Select **"Save as DXF"**.
+3. This saves lines and arcs within the sketch as DXF.
 
 ### SolidWorks
-1. 板金モデルの場合、モデルを右クリックして「DXF/DWGへエクスポート」を選択。
-2. エクスポート設定で「外形線」や「曲げ線」などのレイヤーを割り当てる。
-3. 製造用のDXFが生成されます。
+1. For sheet metal models, right-click the model and select "Export to DXF/DWG."
+2. Assign layers like "outer contour" or "bend lines" in export settings.
+3. Manufacturing DXF is generated.
 
 ---
 
-## Rhino / Grasshopper との親和性
+## Compatibility with Rhino / Grasshopper
 
-RhinoはNURBS（曲線・曲面）ベースのモデラーであり、DXFとの相性が非常に良いのが特徴です。
+Rhino is a NURBS (curves/surfaces) based modeler, and has very good compatibility with DXF.
 
-### Rhinoでのインポート・エクスポート
-RhinoはDXFのインポート・エクスポート設定が非常に細かく、用途（AutoCAD用、CAM用など）に合わせてスキームを選択できます。
-- **インポート**: レイヤー構造やスプラインの制御点を正確に読み込めます。
-- **エクスポート**: 曲線（NURBS）をそのまま出力するか、線分（Polyline）に分解するかを選択可能です。
+### Import/Export in Rhino
+Rhino has very detailed DXF import/export settings and can select schemes according to purpose (for AutoCAD, for CAM, etc.).
+- **Import**: Can accurately read layer structure and spline control points.
+- **Export**: Can choose whether to output curves (NURBS) as-is or decompose into line segments (Polyline).
 
-### Grasshopperと「Boundary Surface」
-GrasshopperはRhino上のビジュアルプログラミングツールです。
-- **Boundary Surface**: 閉じた曲線から「面」を作成するコンポーネントです。
-- **DXFとの関係**: DXF自体には「面」という概念が希薄です。Grasshopperの Boundary Surface をDXFで書き出すと、通常は以下のいずれかになります：
-    1. **境界線のみ**: 単なる閉じたポリラインとして出力（最も一般的）。
-    2. **ハッチング (HATCH)**: 塗りつぶされた領域として出力。
-    3. **メッシュ (MESH)**: 面をポリゴンに分割して出力（3D情報を優先する場合）。
+### Grasshopper and "Boundary Surface"
+Grasshopper is a visual programming tool on Rhino.
+- **Boundary Surface**: Component that creates "surfaces" from closed curves.
+- **Relationship with DXF**: DXF itself has a weak concept of "surfaces." When exporting Grasshopper's Boundary Surface as DXF, it usually becomes one of the following:
+    1. **Boundary lines only**: Output as simple closed polylines (most common).
+    2. **Hatching (HATCH)**: Output as filled areas.
+    3. **Mesh (MESH)**: Output by dividing surfaces into polygons (when prioritizing 3D information).
 
-**注意**: Grasshopperで生成した複雑な幾何形状をDXFで他ソフトに渡す場合、相手側が「閉じたループ」を面として認識できるか（前述の[CAEとの互換性](./cae-interoperability.md)参照）が鍵となります。
-
----
-
-## 互換性の罠：3DモデルはDXFで送れるか？
-
-**結論：推奨しません。**
-DXFで3D形状を送ることは技術的に可能（`3DFACE`や`3DSOLID`を使用）ですが、以下の理由から3D CAD間でのデータ交換には向いていません。
-
-1. **ソリッド情報の欠落**: 多くのDXFインポーターは3Dソリッドを正しく解釈できません。
-2. **曲面の近似**: 円筒面などが細かい平面の集合（ポリゴン）に変換されてしまうことがあります。
-3. **代替案**: 3Dモデルをやり取りする場合は、**STEP (.step)** や **IGES (.iges)** 形式を使用するのが業界標準です。
+**Note**: When passing complex geometric shapes generated in Grasshopper to other software via DXF, whether the receiving side can recognize "closed loops" as surfaces (see [CAE Interoperability](./cae-interoperability.md)) is key.
 
 ---
 
-## バージョンごとの対応状況
+## Compatibility Trap: Can 3D Models Be Sent via DXF?
 
-3D CADにインポートする際は、以下の指針に従うとトラブルが少なくなります。
+**Conclusion: Not recommended.**
+Sending 3D shapes via DXF is technically possible (using `3DFACE` or `3DSOLID`), but not suitable for data exchange between 3D CAD for the following reasons.
 
-- **R12形式**: 最も安全。古いCATIAや特殊な加工機でも読み込めるが、曲線が線分に分解されることがある。
-- **R2000 / R2004**: バランスが良い。スプライン（曲線）を曲線のまま保持でき、多くの3D CADで標準的にサポートされている。
-- **最新版 (2018以降)**: Fusion 360などのクラウド系CADは対応しているが、製造現場の古いソフトでは開けないリスクがある。
+1. **Loss of Solid Information**: Many DXF importers cannot correctly interpret 3D solids.
+2. **Surface Approximation**: Cylindrical surfaces, etc. may be converted to collections of fine planes (polygons).
+3. **Alternative**: When exchanging 3D models, using **STEP (.step)** or **IGES (.iges)** formats is industry standard.
 
-**推奨設定**: 迷った場合は **AutoCAD 2000 (R15/AC1015) 形式** でエクスポートするのが、3D CAD間の互換性が最も高いです。
+---
 
+## Support Status by Version
+
+When importing to 3D CAD, following these guidelines reduces trouble.
+
+- **R12 Format**: Most safe. Readable by old CATIA and special machines, but curves may be decomposed into line segments.
+- **R2000 / R2004**: Good balance. Can keep splines (curves) as curves, and is standardly supported by many 3D CAD.
+- **Latest Version (2018 and later)**: Cloud-based CAD like Fusion 360 support it, but there's a risk that old software in manufacturing sites cannot open it.
+
+**Recommended Setting**: When in doubt, exporting in **AutoCAD 2000 (R15/AC1015) Format** has the highest compatibility between 3D CAD.

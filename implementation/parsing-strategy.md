@@ -1,10 +1,10 @@
-# パーサーの設計
+# Parser Design
 
-DXFファイルを効率的かつ堅牢に読み込むための、アーキテクチャ設計と実装戦略を解説します。
+This explains architecture design and implementation strategies for efficiently and robustly reading DXF files.
 
-## 1. パイプライン構造
+## 1. Pipeline Structure
 
-DXFパーサーは、以下の3つの主要なフェーズで構成されるパイプラインとして設計するのが最適です。
+DXF parsers are best designed as pipelines consisting of the following three main phases.
 
 ```mermaid
 graph TD
@@ -14,47 +14,47 @@ graph TD
     Resolver --> Output[DXF Document Object]
 ```
 
-## 2. 状態遷移表 (Parser States)
+## 2. State Transition Table (Parser States)
 
-DXFは階層構造を持つため、ステートマシンによる制御が推奨されます。以下は、主要な状態遷移の定義です。
+Since DXF has a hierarchical structure, control via state machine is recommended. Below are definitions of major state transitions.
 
-| 現在の状態 | 入力 (Code=0, Value) | 次の状態 | 処理内容 |
+| Current State | Input (Code=0, Value) | Next State | Processing Content |
 | :--- | :--- | :--- | :--- |
-| `ROOT` | `SECTION` | `SECTION_START` | セクション開始の準備 |
-| `SECTION_START` | `(Code 2: NAME)` | `IN_SECTION` | セクション名の識別（HEADER等） |
-| `IN_SECTION` | `ENDSEC` | `ROOT` | セクション終了、データの確定 |
-| `IN_SECTION (ENTITIES)` | `(Any Entity Type)` | `IN_ENTITY` | エンティティオブジェクトの生成 |
-| `IN_ENTITY` | `(Any Entity Type)` | `IN_ENTITY` | 直前のエンティティを保存し次を生成 |
-| `IN_ENTITY` | `ENDSEC` | `ROOT` | セクション終了、最後のエンティティ保存 |
-| `ANY` | `EOF` | `FINISHED` | 読み込み完了 |
+| `ROOT` | `SECTION` | `SECTION_START` | Prepare for section start |
+| `SECTION_START` | `(Code 2: NAME)` | `IN_SECTION` | Identify section name (HEADER, etc.) |
+| `IN_SECTION` | `ENDSEC` | `ROOT` | Section end, confirm data |
+| `IN_SECTION (ENTITIES)` | `(Any Entity Type)` | `IN_ENTITY` | Generate entity object |
+| `IN_ENTITY` | `(Any Entity Type)` | `IN_ENTITY` | Save previous entity and generate next |
+| `IN_ENTITY` | `ENDSEC` | `ROOT` | Section end, save last entity |
+| `ANY` | `EOF` | `FINISHED` | Reading complete |
 
-## 3. テスト戦略
+## 3. Testing Strategy
 
-DXFパーサーの品質を担保するために、以下のテスト手法を推奨します。
+The following testing methods are recommended to ensure DXF parser quality.
 
-### 1. ラウンドトリップ・テスト (Round-trip Test)
-「読み込み → そのまま書き出し」を行い、元ファイルと出力ファイルが論理的に同一（座標やハンドルが不変）であることを確認します。
-※ テキストの空白などは変わる可能性があるため、バイナリ比較ではなく、再度読み込んでデータ構造で比較します。
+### 1. Round-trip Test
+Perform "read → write as-is" and verify that the original file and output file are logically identical (coordinates and handles unchanged).
+※ Text spaces may change, so compare data structures after re-reading rather than binary comparison.
 
-### 2. 視覚的バリデーション
-パースしたデータを SVG や Canvas に描画し、オリジナルの図面（AutoCAD等で出力したPDF）と目視で比較します。特に **OCS（座標系）** のバグを発見するのに有効です。
+### 2. Visual Validation
+Draw parsed data to SVG or Canvas and visually compare with the original drawing (PDF output from AutoCAD, etc.). Particularly effective for discovering **OCS (coordinate system)** bugs.
 
-### 3. 不完全データの耐性テスト
-- `EOF` がないファイル
-- `HEADER` セクションがないファイル
-- グループコードの順序がバラバラなエンティティ
-これらのケースでもクラッシュせず、可能な限りデータを救い出せるかを確認します。
+### 3. Incomplete Data Tolerance Tests
+- Files without `EOF`
+- Files without `HEADER` section
+- Entities with group codes in random order
+Verify that these cases don't crash and can recover data as much as possible.
 
-## 4. 堅牢なパースの指針
+## 4. Guidelines for Robust Parsing
 
-1. **型安全な値の変換**: グループコードごとに期待される型（float, int, string）が厳密に決まっています。不正な型が来た場合にデフォルト値を返すか、エラーとしてスキップする機構を持たせましょう。
-2. **未知のコードの無視**: DXFの仕様は常に拡張されています。自分が知らないグループコードが出てきても、それを無視して次のペアに進む柔軟性が必要です。
-3. **文字コードのフォールバック**: UTF-8でパースに失敗した場合、CP932(Shift-JIS)やWindows-1252で再試行する機構があると、古い日本の図面データにも対応できます。
+1. **Type-safe Value Conversion**: Expected types (float, int, string) are strictly determined for each group code. Have a mechanism to return default values or skip as errors when invalid types come.
+2. **Ignoring Unknown Codes**: DXF specifications are constantly being extended. Flexibility is needed to ignore unknown group codes and proceed to the next pair.
+3. **Character Code Fallback**: If UTF-8 parsing fails, having a mechanism to retry with CP932 (Shift-JIS) or Windows-1252 enables support for old Japanese drawing data.
 
-## 5. パフォーマンス最適化
+## 5. Performance Optimization
 
-- **巨大ファイルのストリーミング**: `ENTITIES` セクションが数百万行に及ぶ場合、ファイル全体をメモリに載せず、1エンティティ読み込むごとにコールバック（ジェネレータ）を呼ぶ方式が有効です。
-- **ハンドルの事前インデックス化**: 参照解決フェーズを高速化するため、パース中に「ハンドル → オブジェクト」のハッシュマップを構築しておくことが必須です。
+- **Streaming for Large Files**: When the `ENTITIES` section reaches millions of lines, a method that calls callbacks (generators) for each entity read without loading the entire file into memory is effective.
+- **Pre-indexing Handles**: To speed up the reference resolution phase, building a hashmap of "handle → object" during parsing is essential.
 
 ---
-関連：[よくある罠](./common-pitfalls.md) | [主要ライブラリ](./libraries.md)
+Related: [Common Pitfalls](./common-pitfalls.md) | [Major Libraries](./libraries.md)

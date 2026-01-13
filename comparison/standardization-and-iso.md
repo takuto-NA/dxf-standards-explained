@@ -1,64 +1,62 @@
-# 国際標準規格とDXFの立ち位置
+# International Standards and DXF's Position
 
-DXFを扱う上で避けて通れないのが、「これは国際標準（ISO）なのか？」という疑問です。結論から言うと、**DXFは国際標準規格ではありません。**
+An unavoidable question when handling DXF is "Is this an international standard (ISO)?" To conclude, **DXF is not an international standard.**
 
-ここでは、DXFの法的・標準的な立ち位置と、なぜISOではない形式が世界を席巻しているのかを解説します。
-
----
-
-## 1. 「デファクトスタンダード」としてのDXF
-
-DXFは、Autodesk社が自社ソフト「AutoCAD」のために開発した**プロプライエタリ（所有者明確）**なフォーマットです。
-
-- **デファクトスタンダード（事実上の標準）**: 市場シェアによって広く普及し、標準として扱われているもの。DXFがこれに当たります。
-- **デジュリスタンダード（公的標準）**: ISOやJISなどの公的機関によって定められた規格。
-
-### ベンダーロックインのリスクは？
-通常、特定の会社が作ったフォーマットには「その会社の製品を買わないとデータが読めなくなる」というロックインのリスクがあります。しかし、DXFに関しては以下の理由でそのリスクが低いと考えられています。
-
-1. **仕様の公開**: AutodeskはDXFの仕様書を無料で公開しています。
-2. **テキストベース**: ASCII形式であれば、たとえAutodeskが倒産しても、最悪テキストエディタで中身を読み解くことが可能です。
-3. **圧倒的な採用数**: 世界中のCAD・加工機ソフトが実装しているため、もはや一企業のコントロールを越えたインフラとなっています。
+Here we explain DXF's legal and standard position, and why a format that is not ISO has conquered the world.
 
 ---
 
-## 2. 2D図面の国際標準 (ISO) はあるのか？
+## 1. DXF as a "De Facto Standard"
 
-「DXFがISOでないなら、2D図面のISO規格はないのか？」という疑問への答えは、**「規格はあるが、CADデータ交換としては普及していない」**です。
+DXF is a **proprietary** format developed by Autodesk for its own software "AutoCAD."
+
+- **De Facto Standard**: Something that has become widely adopted due to market share and is treated as a standard. DXF falls into this category.
+- **De Jure Standard**: Standards established by public institutions like ISO or JIS.
+
+### Risk of Vendor Lock-in?
+Usually, formats made by specific companies have the risk of lock-in: "you can't read data unless you buy that company's products." However, for DXF, this risk is considered low for the following reasons.
+
+1. **Specification Publication**: Autodesk publishes DXF specifications for free.
+2. **Text-based**: If ASCII format, even if Autodesk goes bankrupt, you can at worst read the contents with a text editor.
+3. **Overwhelming Adoption**: Since CAD and machine software worldwide have implemented it, it has become infrastructure beyond the control of a single company.
+
+---
+
+## 2. Are There International Standards (ISO) for 2D Drawings?
+
+The answer to "If DXF is not ISO, are there no ISO standards for 2D drawings?" is **"Standards exist but are not widespread for CAD data exchange."**
 
 ### ISO 10303 (STEP)
-3D CADの世界では、**STEP** 形式が国際標準として定着しています。STEPは2D図面も扱える規格（AP202など）を含んでいますが、構造が極めて複雑なため、単純な2Dデータのやり取りにはDXFの方が圧倒的に手軽でした。
+In the 3D CAD world, **STEP** format has become established as an international standard. STEP includes specifications (AP202, etc.) that can handle 2D drawings, but the structure is extremely complex, so DXF was overwhelmingly more convenient for simple 2D data exchange.
 
-### なぜ2D図面の公的標準はDXFに勝てなかったのか？
-1. **スピード感**: ISOの策定には数年単位の時間がかかりますが、DXFはAutoCADの進化に合わせて迅速に更新されました。
-2. **実装の難易度**: ISO規格は厳密すぎて、ソフトウェア開発者が自作のソフトに組み込むのが非常に困難でした。一方、DXFは「2行1ペア」という単純な構造だったため、多くの開発者が飛びつきました。
-
----
-
-## 3. 日本における公的標準：SXF
-
-日本では、公共事業（国土交通省など）の納品用として **SXF (SFC/P21)** という標準形式が定められています。
-
-- **背景**: 「DXFだとソフトによって見え方が違う（文字化けや縮尺のズレ）」という問題を解決するため、日本独自の標準として策定されました。
-- **ベース**: 内部的にはISO 10303 (STEP) の技術が使われています。
-- **現状**: 公共工事の納品には必須ですが、民間企業の設計や、製造現場（レーザー加工など）では今でも手軽なDXFが主流です。
+### Why Didn't Public Standards for 2D Drawings Beat DXF?
+1. **Speed**: ISO standardization takes years, but DXF was quickly updated along with AutoCAD's evolution.
+2. **Implementation Difficulty**: ISO standards were too strict, making it very difficult for software developers to incorporate into their own software. On the other hand, DXF's simple structure of "2 lines, 1 pair" attracted many developers.
 
 ---
 
-## 4. 比較まとめ
+## 3. Public Standards in Japan: SXF
 
-| 形式 | 立ち位置 | 特徴 |
+In Japan, **SXF (SFC/P21)** is established as a standard format for delivery to public works (Ministry of Land, Infrastructure, Transport and Tourism, etc.).
+
+- **Background**: Established as a Japanese standard to solve problems like "DXF looks different depending on software (character garbling or scale shifts)."
+- **Base**: Internally uses ISO 10303 (STEP) technology.
+- **Current Status**: Required for public works delivery, but convenient DXF is still mainstream in private company design and manufacturing sites (laser cutting, etc.).
+
+---
+
+## 4. Comparison Summary
+
+| Format | Position | Features |
 | :--- | :--- | :--- |
-| **DXF** | デファクト標準 | 実装が容易でどこでも開けるが、仕様はAutodesk次第。 |
-| **STEP** | 国際標準 (ISO) | 高機能で厳密だが、2D図面としては重厚すぎる。 |
-| **SXF** | 国内公的標準 | 公共事業に必須。見え方の一致を重視。 |
+| **DXF** | De Facto Standard | Easy to implement and opens anywhere, but specification depends on Autodesk. |
+| **STEP** | International Standard (ISO) | High functionality and strict, but too heavy for 2D drawings. |
+| **SXF** | Domestic Public Standard | Required for public works. Emphasizes consistency of appearance. |
 
-### 結論：どれを使うべき？
-- **一般的な設計・加工**: **DXF**。最もトラブルが少なく、ライブラリも豊富です。
-- **長期的なデータ保存・3D併用**: **STEP**。
-- **官公庁への図面納品**: **SXF**。
+### Conclusion: Which Should You Use?
+- **General Design/Manufacturing**: **DXF**. Fewest problems and rich libraries.
+- **Long-term Data Storage/3D Combined Use**: **STEP**.
+- **Drawing Delivery to Government Agencies**: **SXF**.
 
 ---
-
-関連：[DXFの歴史とバージョン](../docs/history-versions.md) | [DXF vs DWG](./dxf-vs-dwg.md)
-
+Related: [DXF History and Versions](../docs/history-versions.md) | [DXF vs DWG](./dxf-vs-dwg.md)

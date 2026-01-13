@@ -1,87 +1,86 @@
-# フリーソフトでのDXF活用ガイドライン
+# Free Software DXF Usage Guidelines
 
-AutoCAD以外のフリーソフト（LibreCAD, QCAD, FreeCAD, Inkscape等）でDXFファイルを扱う際、互換性の問題で図面が崩れたり、読み込めなかったりすることが頻繁にあります。本ガイドラインでは、これらのソフトを組み合わせて使用する際のベストプラクティスをまとめます。
+When handling DXF files with free software other than AutoCAD (LibreCAD, QCAD, FreeCAD, Inkscape, etc.), drawings often break or cannot be read due to compatibility issues. This guideline summarizes best practices when using these software together.
 
 ---
 
-## 1. 主要なフリーソフトとその特性
+## 1. Major Free Software and Their Characteristics
 
-| ソフト名 | 分類 | DXF内部エンジン | 得意なDXFバージョン | 注意点 |
+| Software Name | Category | DXF Internal Engine | Preferred DXF Version | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **LibreCAD** | 2D CAD | libdxfrw | R12, R14 | スプラインや複雑なエンティティに弱い |
-| **QCAD** | 2D CAD | dxflib / ODA | R12, R15 (AC1015) | コミュニティ版は最新形式(2018等)の保存に制限 |
-| **FreeCAD** | 3D CAD | libdxfrw | R12, R14, 2000 | 2D図面の微調整には不向き |
-| **Inkscape** | ベクター | 内蔵スクリプト | R12, R14 (Desktop) | 単位(mm vs px)やDPI設定でサイズが狂いやすい |
-| **Blender** | 3D | 内蔵アドオン | R12 (AC1009) | メッシュベースのため、円弧が多角形になる |
+| **LibreCAD** | 2D CAD | libdxfrw | R12, R14 | Weak with splines and complex entities |
+| **QCAD** | 2D CAD | dxflib / ODA | R12, R15 (AC1015) | Community version has limitations saving latest formats (2018, etc.) |
+| **FreeCAD** | 3D CAD | libdxfrw | R12, R14, 2000 | Not suitable for fine-tuning 2D drawings |
+| **Inkscape** | Vector | Built-in script | R12, R14 (Desktop) | Size can easily go wrong with unit (mm vs px) or DPI settings |
+| **Blender** | 3D | Built-in addon | R12 (AC1009) | Mesh-based, so arcs become polygons |
 
 ---
 
-## 2. 互換性を高める書き出し設定（エクスポート）
+## 2. Export Settings to Improve Compatibility
 
-他のソフトで開くことを前提にDXFを保存する場合、以下の設定を推奨します。
+When saving DXF with the assumption of opening in other software, the following settings are recommended.
 
-### バージョン選択のルール
-- **AutoCAD R12 (AC1009) 形式**: **最も安全。** 30年以上前の仕様ですが、ほぼすべてのフリーソフト、Webビューワー、加工機（レーザー、CNC）で読み込めます。ただし、曲線が細かい直線（ポリライン）に分解されることがあります。
-- **AutoCAD 2000 (R15/AC1015) 形式**: **バランス重視。** スプライン（曲線）を曲線のまま保持でき、QCADやFreeCADで扱う場合に適しています。
+### Version Selection Rules
+- **AutoCAD R12 (AC1009) Format**: **Most safe.** Although a specification from over 30 years ago, readable by almost all free software, web viewers, and machines (laser, CNC). However, curves may be decomposed into fine lines (polylines).
+- **AutoCAD 2000 (R15/AC1015) Format**: **Balanced.** Can keep splines (curves) as curves, suitable when handling with QCAD or FreeCAD.
 
-### 文字コードの注意
-- 日本語を含む図面の場合、最新ソフトは **UTF-8** を想定しますが、古いソフトや加工機は **Shift-JIS (CP932)** を期待することがあります。
-- 文字化けが発生した場合は、保存時のエンコーディング設定を確認してください。
-
----
-
-## 3. 読み込み時のトラブルシューティング（インポート）
-
-### 図面が真っ白、または一部の線が消えている
-1. **ズーム機能**: `全図面を表示 (Auto Zoom / Zoom Extents)` を試してください。座標が遠くに飛んでいるだけのケースが多いです。
-2. **非対応エンティティ**: `SPLINE`, `ELLIPSE`, `MTEXT`, `HATCH` などはソフトによって無視されます。
-    - **対策**: 元のソフトでこれらを「分解（Explode）」して、単純な `LINE` や `ARC` に変換してから保存してください。
-
-### スケール（大きさ）がおかしい
-- DXFには「単位」の概念が曖昧な部分があります（`$INSUNITS`）。
-- **Inkscape特有の罠**: Inkscape 0.92以降、内部解像度が 90 DPI から 96 DPI に変更されました。エクスポート時の `Base unit` や `DPI` 設定が加工機側と一致していないと、図面が 1.06 倍、あるいは 0.93 倍の大きさで出力されることがあります。
-- **対策**: インポート設定で `ミリメートル (mm)` が指定されているか確認し、既知の長さの線分（例：100mmの正方形）を必ず含めてテストカットや検図を行ってください。
+### Character Code Notes
+- For drawings containing Japanese, latest software assumes **UTF-8**, but old software or machines may expect **Shift-JIS (CP932)**.
+- If garbled characters occur, check encoding settings when saving.
 
 ---
 
-## 4. 運用ガイドライン（ベストプラクティス）
+## 3. Troubleshooting When Importing
 
-### ① 基本エンティティのみを使用する
-高度な機能（ダイナミックブロック、複雑なハッチング、プロキシオブジェクト）は避け、以下の基本要素で構成するのが最も安全です。
-- `LINE` (線分)
-- `CIRCLE` (円)
-- `ARC` (円弧)
-- `POLYLINE / LWPOLYLINE` (ポリライン)
+### Drawing is completely white, or some lines are missing
+1. **Zoom Function**: Try `Show Entire Drawing (Auto Zoom / Zoom Extents)`. Often coordinates are just far away.
+2. **Unsupported Entities**: `SPLINE`, `ELLIPSE`, `MTEXT`, `HATCH`, etc. are ignored by some software.
+    - **Solution**: In the original software, "explode" these and convert to simple `LINE` or `ARC` before saving.
 
-### ② ブロックを解除（分解）する
-独自のブロック定義は、フリーソフトで読み込んだ際に位置がずれたり、属性情報（ATTRIB）が消えたりすることがあります。最終的なデータ交換用には、ブロックを解除して「バラの線」にすることをお勧めします。
-
-### ③ 画層（レイヤー）名を英数字にする
-日本語の画層名は、ソフトをまたぐと文字化けし、表示・非表示の制御ができなくなることがあります。
-- 例: `外形線` → `OUTLINE`, `寸法` → `DIM`
-
-### ④ 閉じたループを確認する（加工用）
-レーザー加工やCNCで使用する場合、ポリラインが「閉じている（Closed）」ことが重要です。
-- LibreCADやQCADの「閉じたポリラインの作成」機能を使用して、端点が完全に一致しているか確認してください。
+### Scale (size) is wrong
+- DXF has ambiguous parts regarding "units" (`$INSUNITS`).
+- **Inkscape-specific Trap**: From Inkscape 0.92 onward, internal resolution changed from 90 DPI to 96 DPI. If `Base unit` or `DPI` settings at export don't match the machine side, drawings may be output at 1.06x or 0.93x size.
+- **Solution**: Check that `Millimeters (mm)` is specified in import settings, and always include a line of known length (e.g., 100mm square) for test cuts or inspection.
 
 ---
 
-## 5. 推奨されるワークフロー例
+## 4. Usage Guidelines (Best Practices)
 
-### イラストを加工機（DXF）に送る場合
-1. **Inkscape** でパスを作成。
-2. パスをすべて選択し、`パス -> オブジェクトをパスへ` を適用。
-3. `名前を付けて保存` で **Desktop Cutting Plotter (AutoCAD DXF R14)** を選択。
-4. **LibreCAD** で開き、寸法が正しいか確認して微調整。
-5. R12形式で最終保存。
+### ① Use Only Basic Entities
+Avoid advanced features (dynamic blocks, complex hatching, proxy objects), and compose with the following basic elements for maximum safety.
+- `LINE` (line segment)
+- `CIRCLE` (circle)
+- `ARC` (arc)
+- `POLYLINE / LWPOLYLINE` (polyline)
 
-### 3Dモデルの断面を2D図面にする場合
-1. **FreeCAD** でモデルを作成。
-2. `TechDraw` ワークベンチで2D投影図を作成。
-3. DXFエクスポート。
-4. **QCAD** で読み込み、線種や画層を整える。
+### ② Explode Blocks
+Custom block definitions may shift positions or lose attribute information (ATTRIB) when read in free software. For final data exchange, it's recommended to explode blocks into "loose lines."
+
+### ③ Use Alphanumeric Layer Names
+Japanese layer names can become garbled across software, making display/hide control impossible.
+- Example: `外形線` → `OUTLINE`, `寸法` → `DIM`
+
+### ④ Verify Closed Loops (for machining)
+When using for laser cutting or CNC, it's important that polylines are "closed."
+- Use LibreCAD or QCAD's "create closed polyline" function to verify endpoints match exactly.
 
 ---
 
-関連：[よくある罠](./common-pitfalls.md) | [3D CADとの互換性](./3d-cad-interoperability.md)
+## 5. Recommended Workflow Examples
 
+### When Sending Illustrations to Machines (DXF)
+1. Create paths in **Inkscape**.
+2. Select all paths and apply `Path -> Object to Path`.
+3. Choose **Desktop Cutting Plotter (AutoCAD DXF R14)** in `Save As`.
+4. Open in **LibreCAD**, verify dimensions are correct and fine-tune.
+5. Final save in R12 format.
+
+### When Making 2D Drawings from 3D Model Cross-sections
+1. Create model in **FreeCAD**.
+2. Create 2D projection in `TechDraw` workbench.
+3. Export DXF.
+4. Read in **QCAD** and organize linetypes and layers.
+
+---
+
+Related: [Common Pitfalls](./common-pitfalls.md) | [3D CAD Interoperability](./3d-cad-interoperability.md)

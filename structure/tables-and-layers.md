@@ -1,64 +1,64 @@
-# テーブルとレイヤー
+# Tables and Layers
 
-TABLESセクションには、図面全体で使用されるスタイル定義が格納されます。これらは「定義」であり、実際の図形要素（エンティティ）は ENTITIES セクションで参照されます。
+The TABLES section stores style definitions used throughout the drawing. These are "definitions," and actual graphic elements (entities) reference them in the ENTITIES section.
 
-## テーブルの構造
+## Table Structure
 
-すべてのテーブルは以下の構造を持ちます：
+All tables have the following structure:
 
 ```text
-  0        <-- テーブル開始の合図
+  0        <-- Signal for table start
 TABLE
-  2        <-- テーブル名（種類）
-テーブル名
-  5        <-- ハンドルID
-ハンドル
- 70        <-- このテーブルに含まれるエントリ数
-エントリ数
-  0        <-- エントリ1開始
-エントリ1
+  2        <-- Table name (type)
+TableName
+  5        <-- Handle ID
+Handle
+ 70        <-- Number of entries in this table
+EntryCount
+  0        <-- Entry 1 start
+Entry1
   ...
-  0        <-- エントリ2開始
-エントリ2
+  0        <-- Entry 2 start
+Entry2
   ...
-  0        <-- テーブル終了
+  0        <-- Table end
 ENDTAB
 ```
 
-## LAYER テーブル（画層）
+## LAYER Table
 
-**役割**: 画層（レイヤー）の定義を格納します。各エンティティは必ず1つの画層に属します。
+**Role**: Stores layer definitions. Each entity must belong to one layer.
 
-### LAYERエントリの構造
+### LAYER Entry Structure
 
 ```text
-  0        <-- レイヤーエントリ開始
+  0        <-- Layer entry start
 LAYER
-  5        <-- ハンドルID
-ハンドル
-  2        <-- 画層名
+  5        <-- Handle ID
+Handle
+  2        <-- Layer name
 LayerName
- 70        <-- 状態フラグ
-フラグ
- 62        <-- 色番号
-色番号
-  6        <-- 線種名
-線種名
+ 70        <-- Status flag
+Flag
+ 62        <-- Color number
+ColorNumber
+  6        <-- Linetype name
+LinetypeName
 ```
 
-**主要なグループコード**:
+**Major Group Codes**:
 
-| コード | 型 | 説明 |
+| Code | Type | Description |
 | :--- | :--- | :--- |
-| `2` | 文字列 | 画層名 |
-| `70` | 整数 | フラグ（1=凍結、2=新規ビューポートで凍結、4=ロック） |
-| `62` | 整数 | 色番号（0=ByBlock、256=ByLayer、1-255=RGBインデックス） |
-| `6` | 文字列 | 線種名（`CONTINUOUS` など） |
+| `2` | String | Layer name |
+| `70` | Integer | Flag (1=frozen, 2=frozen in new viewport, 4=locked) |
+| `62` | Integer | Color number (0=ByBlock, 256=ByLayer, 1-255=RGB index) |
+| `6` | String | Linetype name (`CONTINUOUS`, etc.) |
 
-### 例：画層の定義
+### Example: Layer Definition
 
 ```text
-  0        <-- テーブル開始
+  0        <-- Table start
 TABLE
   2
 LAYER
@@ -66,7 +66,7 @@ LAYER
 2
  70
 2
-  0        <-- デフォルトレイヤー "0"
+  0        <-- Default layer "0"
 LAYER
   5
 10
@@ -78,7 +78,7 @@ LAYER
 7
   6
 CONTINUOUS
-  0        <-- カスタムレイヤー "MyLayer"
+  0        <-- Custom layer "MyLayer"
 LAYER
   5
 11
@@ -86,63 +86,63 @@ LAYER
 MyLayer
  70
 0
- 62        <-- 赤色
+ 62        <-- Red color
 1
-  6        <-- 破線
+  6        <-- Dashed line
 DASHED
   0
 ENDTAB
 ```
 
-**実装上の注意**: 
-- 画層名 `"0"` は常に存在し、デフォルト画層として機能します。
-- 色番号 `256` は「ByLayer」（画層の色を使用）を意味します。
-- フラグ `70` のビット `1` が立っている場合、その画層は凍結（非表示）されます。
+**Implementation Notes**: 
+- Layer name `"0"` always exists and functions as the default layer.
+- Color number `256` means "ByLayer" (use layer's color).
+- If bit `1` of flag `70` is set, that layer is frozen (hidden).
 
-## LTYPE テーブル（線種）
+## LTYPE Table (Linetype)
 
-**役割**: 線種（実線、破線、一点鎖線など）の定義を格納します。
+**Role**: Stores linetype definitions (solid, dashed, center line, etc.).
 
-### LTYPEエントリの構造
+### LTYPE Entry Structure
 
 ```text
-  0        <-- 線種エントリ開始
+  0        <-- Linetype entry start
 LTYPE
   5
-ハンドル
-  2        <-- 線種名
-線種名
+Handle
+  2        <-- Linetype name
+LinetypeName
  70
-フラグ
-  3        <-- 説明文
-説明文
+Flag
+  3        <-- Description text
+Description
  72
-配置コード
- 73        <-- パターンの要素数
-ダッシュ要素数
- 40        <-- パターンの総延長
-総パターン長
- 49        <-- 要素1の長さ
-ダッシュ長1
- 49        <-- 要素2の長さ
-ダッシュ長2
+AlignmentCode
+ 73        <-- Number of pattern elements
+DashElementCount
+ 40        <-- Total pattern length
+TotalPatternLength
+ 49        <-- Element 1 length
+DashLength1
+ 49        <-- Element 2 length
+DashLength2
   ...
 ```
 
-**主要なグループコード**:
+**Major Group Codes**:
 
-| コード | 型 | 説明 |
+| Code | Type | Description |
 | :--- | :--- | :--- |
-| `2` | 文字列 | 線種名 |
-| `3` | 文字列 | 説明文 |
-| `40` | 浮動小数点 | パターンの総長さ |
-| `49` | 浮動小数点 | ダッシュ/スペースの長さ（正=線、負=空白、0=点） |
-| `73` | 整数 | ダッシュ要素の数 |
+| `2` | String | Linetype name |
+| `3` | String | Description text |
+| `40` | Floating point | Total pattern length |
+| `49` | Floating point | Dash/space length (positive=line, negative=space, 0=dot) |
+| `73` | Integer | Number of dash elements |
 
-### 例：破線の定義
+### Example: Dashed Line Definition
 
 ```text
-  0        <-- 線種定義開始
+  0        <-- Linetype definition start
 LTYPE
   5
 5
@@ -158,65 +158,65 @@ __ __ __
 2
  40
 19.05
- 49        <-- 12.7単位の「線」
+ 49        <-- "Line" of 12.7 units
 12.7
- 49        <-- 6.35単位の「空白」
+ 49        <-- "Space" of 6.35 units
 -6.35
   0
 ENDTAB
 ```
 
-この例では、`12.7` 単位の線と `6.35` 単位の空白を繰り返す破線パターンを定義しています。
+This example defines a dashed line pattern that repeats 12.7 units of line and 6.35 units of space.
 
-**実装上の注意**: 
-- `CONTINUOUS` は常に存在し、実線を表します。
-- パターンは循環的に繰り返されます。
+**Implementation Notes**: 
+- `CONTINUOUS` always exists and represents a solid line.
+- Patterns repeat cyclically.
 
-## STYLE テーブル（文字スタイル）
+## STYLE Table (Text Style)
 
-**役割**: 文字スタイル（フォント、高さ、幅係数など）の定義を格納します。
+**Role**: Stores text style definitions (font, height, width factor, etc.).
 
-### STYLEエントリの構造
+### STYLE Entry Structure
 
 ```text
-  0        <-- 文字スタイルエントリ開始
+  0        <-- Text style entry start
 STYLE
   5
-ハンドル
-  2        <-- スタイル名
-スタイル名
+Handle
+  2        <-- Style name
+StyleName
  70
-フラグ
- 40        <-- 固定の文字高さ
-固定高さ（0=可変）
- 41        <-- 幅の倍率
-幅係数
- 50        <-- 傾斜角度
-傾斜角度
+Flag
+ 40        <-- Fixed text height
+FixedHeight (0=variable)
+ 41        <-- Width multiplier
+WidthFactor
+ 50        <-- Oblique angle
+ObliqueAngle
  71
-テキスト生成フラグ
+TextGenerationFlag
  42
-最後に使用した高さ
-  3        <-- フォントファイル名
-フォントファイル名
-  4        <-- ビッグフォント名
-ビッグフォントファイル名
+LastUsedHeight
+  3        <-- Font file name
+FontFileName
+  4        <-- Big font name
+BigFontFileName
 ```
 
-**主要なグループコード**:
+**Major Group Codes**:
 
-| コード | 型 | 説明 |
+| Code | Type | Description |
 | :--- | :--- | :--- |
-| `2` | 文字列 | スタイル名 |
-| `40` | 浮動小数点 | 固定高さ（0の場合は可変） |
-| `41` | 浮動小数点 | 幅係数（1.0=標準） |
-| `50` | 浮動小数点 | 傾斜角度（度） |
-| `3` | 文字列 | フォントファイル名（例: `txt.shx`） |
+| `2` | String | Style name |
+| `40` | Floating point | Fixed height (0 if variable) |
+| `41` | Floating point | Width factor (1.0=standard) |
+| `50` | Floating point | Oblique angle (degrees) |
+| `3` | String | Font file name (e.g., `txt.shx`) |
 
-### 例：文字スタイルの定義
+### Example: Text Style Definition
 
 ```text
-  0        <-- 文字スタイル定義開始
+  0        <-- Text style definition start
 STYLE
   5
 3
@@ -234,42 +234,42 @@ STANDARD
 0
  42
 2.5
-  3        <-- 基本フォント
+  3        <-- Base font
 txt
   4
   0
 ENDTAB
 ```
 
-**実装上の注意**: 
-- スタイル名 `"STANDARD"` は常に存在します。
-- フォントファイル名は、SHXファイル（AutoCAD専用）またはTTFファイル名を指定します。
+**Implementation Notes**: 
+- Style name `"STANDARD"` always exists.
+- Font file names specify SHX files (AutoCAD-specific) or TTF file names.
 
-## その他のテーブル
+## Other Tables
 
-### VIEW テーブル
+### VIEW Table
 
-名前付きビュー（表示範囲と視点）の定義を格納します。
+Stores definitions of named views (display range and viewpoint).
 
-### UCS テーブル
+### UCS Table
 
-ユーザー座標系（User Coordinate System）の定義を格納します。
+Stores definitions of user coordinate systems (User Coordinate System).
 
-### VPORT テーブル
+### VPORT Table
 
-ビューポート（画面表示領域）の定義を格納します。モデル空間とレイアウト空間で異なる設定を持ちます。
+Stores definitions of viewports (screen display areas). Has different settings for model space and layout space.
 
-## エンティティでの参照
+## Entity References
 
-エンティティは、これらのテーブルエントリを**名前**で参照します：
+Entities reference these table entries by **name**:
 
 ```text
-  0        <-- エンティティ(LINE)開始
+  0        <-- Entity (LINE) start
 LINE
-  8        <-- 画層名の参照
-MyLayer        ← LAYERテーブルの "MyLayer" を参照
-  6        <-- 線種名の参照
-DASHED         ← LTYPEテーブル de "DASHED" を参照
+  8        <-- Layer name reference
+MyLayer        ← References "MyLayer" in LAYER table
+  6        <-- Linetype name reference
+DASHED         ← References "DASHED" in LTYPE table
  10
 0.0
  20
@@ -280,6 +280,6 @@ DASHED         ← LTYPEテーブル de "DASHED" を参照
 10.0
 ```
 
-**実装上の注意**: 
-- 参照される画層や線種が存在しない場合、多くのCADソフトはデフォルト値（画層 `"0"`、線種 `"CONTINUOUS"`）を使用します。
-- パーサーは、エンティティを読み込む前にテーブルを読み込み、名前解決のための辞書を構築する必要があります。
+**Implementation Notes**: 
+- If referenced layers or linetypes don't exist, many CAD software use default values (layer `"0"`, linetype `"CONTINUOUS"`).
+- Parsers need to read tables before reading entities and build dictionaries for name resolution.
