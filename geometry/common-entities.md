@@ -16,7 +16,9 @@ DXFで描画される個々の要素は、公式に **エンティティ (Entity
 
 ## 基本図形のプレビュー
 
-<DxfViewer src="/samples/simple_shapes.dxf" />
+<ClientOnly>
+  <DxfViewer src="/samples/simple_shapes.dxf" />
+</ClientOnly>
 
 ---
 

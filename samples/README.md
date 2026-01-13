@@ -16,10 +16,14 @@
 ドキュメント内で直接DXFファイルを確認できます。（マウスで操作可能）
 
 ### Simple Shapes
-<DxfViewer src="/samples/simple_shapes.dxf" />
+<ClientOnly>
+  <DxfViewer src="/samples/simple_shapes.dxf" />
+</ClientOnly>
 
 ### LWPolyline with Bulge
-<DxfViewer src="/samples/lwpolyline_example.dxf" />
+<ClientOnly>
+  <DxfViewer src="/samples/lwpolyline_example.dxf" />
+</ClientOnly>
 
 ## 🖼 視覚的イメージ
 
