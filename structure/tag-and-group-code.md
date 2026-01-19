@@ -1,69 +1,69 @@
-# タグ構造とグループコードの基本
+# Tag Structure and Group Code Basics
 
-DXFは、すべてのデータを **「グループコード」** と呼ばれる数値タグで管理する、タグベースのテキスト形式です。
+DXF is a tag-based text format that manages all data using numeric tags called **"group codes"**.
 
-## 1. グループコードの仕組み
+## 1. How Group Codes Work
 
-DXFファイル内のすべてのデータは、**「2行で1つの意味を持つ」**ペアで構成されます。
+All data in a DXF file consists of pairs that **"have one meaning in two lines"**.
 
-- **1行目**: グループコード（整数）。「次の行が何を表すか」という役割を示します。
-- **2行目**: 値（文字列、数値など）。そのグループコードに対応する具体的な中身です。
+- **Line 1**: Group code (integer). Indicates what the next line represents.
+- **Line 2**: Value (string, number, etc.). The specific content corresponding to that group code.
 
-### 例：画層名（レイヤー）の指定
+### Example: Specifying Layer Name
 ```text
-  8        <-- 「これは画層名ですよ」という合図
-Layer1     <-- 具体的な名前
+  8        <-- Signal indicating "this is a layer name"
+Layer1     <-- Specific name
 ```
 
-### なぜ文字列ではなく「数字」なのか？
-現代のフォーマット（JSONやXML）なら `"layer": "Layer1"` と書くところですが、DXFが誕生した1980年代初頭のコンピュータは非常に非力でした。
-パーサー（解析プログラム）にとって、長い英単語を比較するよりも、**「1つの整数を読み取って判断する」**方が遥かに処理が速く、メモリも節約できたため、このような数字ベースの設計になりました。
+### Why Use "Numbers" Instead of Strings?
+Modern formats (JSON, XML) would write `"layer": "Layer1"`, but computers in the early 1980s when DXF was born were very weak.
+For parsers (parsing programs), **"reading one integer and judging"** was much faster and saved memory compared to comparing long English words, which led to this number-based design.
 
-## 2. 主要なグループコードとデータ型
+## 2. Major Group Codes and Data Types
 
-グループコードの「数字の範囲」によって、その後に続くデータの型（文字列なのか、小数なのか、整数なのか）が厳密に決まっています。
+The "numeric range" of group codes strictly determines the type of data that follows (whether it's a string, decimal, or integer).
 
-| コード範囲 | データ型 | 主な意味 | 覚え方のヒント |
+| Code Range | Data Type | Main Meaning | Memory Hint |
 | :--- | :--- | :--- | :--- |
-| **0** | 文字列 | エンティティの開始宣言 | `LINE`, `CIRCLE`, `SECTION` など |
-| **2** | 文字列 | 名前 | セクション名、ブロック名など |
-| **5** | 文字列 | **ハンドル** | 16進数のID（オブジェクト固有の背番号） |
-| **8** | 文字列 | **画層名（レイヤー）** | 必須の属性 |
-| **10, 20, 30** | 浮動小数点 | **基準点 (X, Y, Z)** | 10=X, 20=Y, 30=Z と対応 |
-| **40 - 48** | 浮動小数点 | 数値 | 半径、高さ、倍率など |
-| **62** | 整数 | **色番号** | 1-255 のインデックスカラー |
-| **100** | 文字列 | サブクラスマーカー | 内部的な型定義（R13以降） |
-| **999** | 文字列 | **コメント** | CADに無視される自由なメモ |
+| **0** | String | Entity start declaration | `LINE`, `CIRCLE`, `SECTION`, etc. |
+| **2** | String | Name | Section names, block names, etc. |
+| **5** | String | **Handle** | Hexadecimal ID (unique serial number for objects) |
+| **8** | String | **Layer Name** | Required attribute |
+| **10, 20, 30** | Floating point | **Base Point (X, Y, Z)** | 10=X, 20=Y, 30=Z correspondence |
+| **40 - 48** | Floating point | Numeric value | Radius, height, scale, etc. |
+| **62** | Integer | **Color Number** | Index color 1-255 |
+| **100** | String | Subclass Marker | Internal type definition (R13 and later) |
+| **999** | String | **Comment** | Free memo ignored by CAD |
 
-## 3. コメントの書き方 (999番)
+## 3. Writing Comments (Code 999)
 
-DXFには人間が読むためのコメントを残すことができます。
+DXF allows comments for humans to read.
 
 ```text
 999
-この部分は自動生成スクリプトで作成されました
+This section was created by an auto-generation script
 ```
-このコード `999` の次の行は、多くのCADソフトで読み飛ばされます。デバッグや独自のメタデータを埋め込むのに便利です。
+The line following code `999` is skipped by many CAD software. Useful for debugging or embedding custom metadata.
 
-## 3. Binary DXF (バイナリ形式)
+## 3. Binary DXF
 
-DXFには通常のテキスト形式（ASCII）の他に、ファイルサイズを抑えるための **Binary形式** が存在します。
+In addition to the normal text format (ASCII), DXF has a **Binary format** to reduce file size.
 
-### ASCII と Binary の見分け方
-ファイルの先頭数バイトを確認します。
-- **ASCII**: `  0\nSECTION`（またはBOM `\xEF\xBB\xBF` で始まる）
-- **Binary**: `AutoCAD Binary DXF\r\n\x1a\x00` というシグネチャで始まります。
+### Distinguishing ASCII and Binary
+Check the first few bytes of the file.
+- **ASCII**: `  0\nSECTION` (or starts with BOM `\xEF\xBB\xBF`)
+- **Binary**: Starts with signature `AutoCAD Binary DXF\r\n\x1a\x00`.
 
-### Binary 形式の構造
-Binary DXFでは、グループコードと値がテキストではなく、バイナリデータとしてパックされています。
-- **グループコード**: 通常 1バイト、または 2バイト（R13以降）の整数。
-- **値**: コードの型に応じて、ヌル終端文字列、8バイト浮動小数点、整数などがそのまま格納されます。
+### Binary Format Structure
+In Binary DXF, group codes and values are packed as binary data instead of text.
+- **Group code**: Usually 1 byte, or 2 bytes (R13 and later) integer.
+- **Value**: Stored directly as null-terminated strings, 8-byte floating point, integers, etc., according to the code's type.
 
-パーサーを実装する場合、まずこのシグネチャを確認して「ASCIIパーサー」か「バイナリパーサー」かを切り替える必要があります。
+When implementing a parser, you need to check this signature first and switch between "ASCII parser" or "binary parser."
 
-## 4. ファイルの全体構造
+## 4. Overall File Structure
 
-DXFファイルは、複数の `SECTION` で構成されています。セクションの順序は厳密ではありませんが、AutoCADとの互換性のために以下の順序が推奨されます。
+DXF files consist of multiple `SECTION`s. The order of sections is not strict, but the following order is recommended for AutoCAD compatibility.
 
 ```mermaid
 graph TD
@@ -82,11 +82,11 @@ graph TD
     Objects --> |"DICTIONARY"| NonGraph["Metadata & Logic (AC1015+)"]
 ```
 
-## 5. 実装上の注意点
+## 5. Implementation Notes
 
-1. **固定精度のテキスト**: ASCII形式では数値がテキストとして保存されます。`1.23456789012345` のように非常に長い浮動小数点が来る可能性があるため、パース時には精度を失わないように注意してください。
-2. **空白の扱い**: 古いR12形式などでは、グループコードの前に 2つ（または 3つ）の空白が含まれるのが標準でした。現代のパーサーは `strip()` または `trim()` を行うのが一般的ですが、自作する場合はこの「緩さ」を受け入れる必要があります。
-3. **セクションの省略**: 多くのビューワーは `ENTITIES` 以外のセクションがなくても読み込みますが、`EOF`（End Of File）マーカーがないファイルは「壊れている」とみなされることが多いです。
+1. **Fixed-precision text**: In ASCII format, numbers are saved as text. Very long floating point numbers like `1.23456789012345` may appear, so be careful not to lose precision when parsing.
+2. **Handling spaces**: In older R12 format, it was standard to include 2 (or 3) spaces before group codes. Modern parsers generally perform `strip()` or `trim()`, but if you're making your own, you need to accept this "looseness."
+3. **Omitting sections**: Many viewers read files even without sections other than `ENTITIES`, but files without the `EOF` (End Of File) marker are often considered "broken."
 
 ---
-関連：[セクション概要](./sections-overview.md) | [用語集](../docs/glossary.md)
+Related: [Section Overview](./sections-overview.md) | [Glossary](../docs/glossary.md)

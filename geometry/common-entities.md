@@ -1,42 +1,62 @@
-# 共通エンティティ
+# Common Entities
 
-DXFの `ENTITIES` セクションで最も頻繁に使用される、基本的な図形要素（エンティティ）の構造を解説します。
+This explains the structure of basic graphic elements (entities) most frequently used in DXF's `ENTITIES` section.
 
-## 1. LINE (直線)
+## Entity Classification and Terminology
 
-2つの点を結ぶ単純な線です。
+Individual elements drawn in DXF are officially called **entities** or **graphical objects**.
+
+In implementation and design contexts, they are commonly distinguished by nature as follows, but these are more like general CAD concepts rather than strict DXF specification distinctions.
+
+- **Geometric Entity**: LINE, CIRCLE, ARC, etc., which have pure geometric shapes.
+- **Annotation**: TEXT, DIMENSION, etc., which add information.
+- **Segment**: Individual "sections" that make up a polyline. This term is also used in specifications for explanation.
+
+Also, things that loop like circles are called **"Closed"**, and things with endpoints like straight lines are called **"Open"**, but these are officially used concepts in flag settings for polylines, etc.
+
+## Basic Shape Preview
+
+<ClientOnly>
+  <DxfViewer src="/samples/simple_shapes.dxf" />
+</ClientOnly>
+
+---
+
+## 1. LINE
+
+A simple line connecting two points.
 
 ```text
-  0        <-- エンティティの種類
+  0        <-- Entity type
 LINE
-  5        <-- ハンドルID
+  5        <-- Handle ID
 A1
-100        <-- サブクラスマーカー
+100        <-- Subclass marker
 AcDbEntity
-  8        <-- 画層名
+  8        <-- Layer name
 0
-100        <-- サブクラスマーカー
+100        <-- Subclass marker
 AcDbLine
- 10        <-- 始点 X
+ 10        <-- Start point X
 0.0
- 20        <-- 始点 Y
+ 20        <-- Start point Y
 0.0
- 30        <-- 始点 Z
+ 30        <-- Start point Z
 0.0
- 11        <-- 終点 X
+ 11        <-- End point X
 10.0
- 21        <-- 終点 Y
+ 21        <-- End point Y
 10.0
- 31        <-- 終点 Z
+ 31        <-- End point Z
 0.0
 ```
 
-## 2. CIRCLE (円)
+## 2. CIRCLE
 
-中心点と半径で定義される円です。
+A circle defined by center point and radius.
 
 ```text
-  0        <-- エンティティの種類
+  0        <-- Entity type
 CIRCLE
   5
 A2
@@ -46,81 +66,81 @@ AcDbEntity
 0
 100
 AcDbCircle
- 10        <-- 中心点 X
+ 10        <-- Center point X
 5.0
- 20        <-- 中心点 Y
+ 20        <-- Center point Y
 5.0
- 30        <-- 中心点 Z
+ 30        <-- Center point Z
 0.0
- 40        <-- 半径
+ 40        <-- Radius
 2.5
 ```
 
-## 3. ARC (円弧)
+## 3. ARC
 
-中心点、半径、および開始/終了角度で定義される円弧です。角度は**反時計回り**の度単位で指定します。
+An arc defined by center point, radius, and start/end angles. Angles are specified in degrees **counterclockwise**.
 
 ```text
-  0        <-- エンティティの種類
+  0        <-- Entity type
 ARC
   8
 0
- 10        <-- 中心点 X
+ 10        <-- Center point X
 0.0
- 20        <-- 中心点 Y
+ 20        <-- Center point Y
 0.0
- 40        <-- 半径
+ 40        <-- Radius
 10.0
- 50        <-- 開始角度 (度)
+ 50        <-- Start angle (degrees)
 0.0
- 51        <-- 終了角度 (度)
+ 51        <-- End angle (degrees)
 90.0
 ```
 
-## 4. TEXT (一行文字)
+## 4. TEXT (Single-line Text)
 
-単一行のテキストです。
+Single-line text.
 
 ```text
-  0        <-- エンティティの種類
+  0        <-- Entity type
 TEXT
   8
 0
- 10        <-- 挿入点 X
+ 10        <-- Insertion point X
 0.0
- 20        <-- 挿入点 Y
+ 20        <-- Insertion point Y
 0.0
- 40        <-- 文字の高さ
+ 40        <-- Text height
 2.5
-  1        <-- テキストの内容
+  1        <-- Text content
 Hello DXF
- 50        <-- 回転角度 (度)
+ 50        <-- Rotation angle (degrees)
 0.0
 ```
 
-## 5. LWPOLYLINE (軽量ポリライン)
+## 5. LWPOLYLINE (Lightweight Polyline)
 
-複数の頂点を持つ連続した線です。R14以降で導入され、ファイルサイズが小さいため多用されます。
+A continuous line with multiple vertices. Introduced in R14 and later, widely used because of smaller file size.
 
 ```text
-  0        <-- エンティティの種類
+  0        <-- Entity type
 LWPOLYLINE
   8
 0
- 90        <-- 頂点の数
+ 90        <-- Number of vertices
 2
- 70        <-- フラグ (0=開いた線, 1=閉じた線)
+ 70        <-- Flag (0=open line, 1=closed line)
 0
- 10        <-- 頂点1 X
+ 10        <-- Vertex 1 X
 0.0
- 20        <-- 頂点1 Y
+ 20        <-- Vertex 1 Y
 0.0
- 10        <-- 頂点2 X
+ 10        <-- Vertex 2 X
 10.0
- 20        <-- 頂点2 Y
+ 20        <-- Vertex 2 Y
 10.0
 ```
 
-::: tip LWPOLYLINEの注意点
-`LWPOLYLINE` では、同じグループコード `10` や `20` が頂点の数だけ繰り返し登場します。パーサーはこれらを順番に読み取って配列に格納する必要があります。
+::: tip Notes on LWPOLYLINE
+In `LWPOLYLINE`, the same group codes `10` and `20` appear repeatedly for each vertex. Parsers need to read these sequentially and store them in an array.
 :::

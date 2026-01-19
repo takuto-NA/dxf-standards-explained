@@ -1,38 +1,38 @@
-# 最初の1歩：DXFの正体を知る
+# First Steps: Understanding DXF
 
-DXF（Drawing Exchange Format）を理解する最も近道は、その誕生の背景を知り、テキストエディタで最小限のコードを手書きしてみることです。
+The fastest way to understand DXF (Drawing Exchange Format) is to learn about its background and try writing minimal code by hand in a text editor.
 
-## 💡 DXFとは何か？
+## 💡 What is DXF?
 
-DXFは1982年にAutodesk社がAutoCADと共に発表した、**「異なるCADソフト間でデータをやり取りする（交換する）」**ためのフォーマットです。国際標準規格ではありませんが、世界中のCADが採用している「事実上の標準（デファクトスタンダード）」です。詳細は[標準規格との関係](../comparison/standardization-and-iso.md)を参照してください。
+DXF is a format announced by Autodesk in 1982 along with AutoCAD for **"exchanging data between different CAD software"**. It is not an international standard, but it is a "de facto standard" adopted by CAD software worldwide. For details, see [Relationship with Standards](../comparison/standardization-and-iso.md).
 
-### なぜSVGやDWGではないのか？
-現代には多くの画像・図面フォーマットがありますが、なぜ今でもDXFが使われ続けているのでしょうか？
+### Why not SVG or DWG?
+There are many image and drawing formats today, but why does DXF continue to be used?
 
-| 比較対象 | DXFを選ぶ理由 |
+| Comparison | Why Choose DXF |
 | :--- | :--- |
-| **vs SVG** | SVGはデザイン用で、座標の精度や「レイヤー」「ブロック」といったCAD特有の概念を持たないため、製造（CNC加工など）にはDXFが必須です。 |
-| **vs DWG** | DWGはAutoCADの標準形式ですが、中身が公開されていないバイナリ形式です。DXFは中身が公開されたテキスト（ASCII）形式なので、誰でもプログラムで読み書きできます。 |
+| **vs SVG** | SVG is for design and lacks CAD-specific concepts like coordinate precision, "layers," and "blocks," so DXF is essential for manufacturing (CNC machining, etc.). |
+| **vs DWG** | DWG is AutoCAD's standard format, but it's a proprietary binary format. DXF is an open text (ASCII) format, so anyone can read and write it programmatically. |
 
-## DXFの文法：「グループコード」と「値」
+## DXF Grammar: "Group Code" and "Value"
 
-DXFの構造は非常にシンプルです。すべてのデータは、**「グループコード（数字）」**と**「値」**の2行1セット（ペア）で構成されています。
+The structure of DXF is very simple. All data consists of a pair of two lines: **"group code (number)"** and **"value"**.
 
 ```text
-  0        <-- グループコード (何の種類かを示すID)
-SECTION    <-- 値 (具体的な内容)
+  0        <-- Group code (ID indicating what type)
+SECTION    <-- Value (specific content)
 ```
 
-- **グループコード**: 0番なら「エンティティの種類」、8番なら「レイヤー名」、10番なら「X座標」といったように、役割が数字で決まっています。
-- **値**: グループコードに応じた具体的な中身（名前や数値など）が入ります。
+- **Group code**: The role is determined by the number—0 means "entity type," 8 means "layer name," 10 means "X coordinate," etc.
+- **Value**: Contains specific content (names, numbers, etc.) corresponding to the group code.
 
-::: tip グループコードは暗記しなくてOK！
-数千種類あるグループコードを覚える必要はありません。必要なときに[リファレンス](../structure/tag-and-group-code.md)を確認すれば十分です。
+::: tip You don't need to memorize group codes!
+There are thousands of group codes, but you don't need to remember them all. Just refer to the [reference](../structure/tag-and-group-code.md) when needed.
 :::
 
-## 最小のDXFコード
+## Minimal DXF Code
 
-以下のコードを `minimal.dxf` として保存してください。これは、座標 (0,0) から (10,10) まで線を引く、最小構成のDXFです。
+Save the following code as `minimal.dxf`. This is a minimal DXF that draws a line from coordinates (0,0) to (10,10).
 
 ```text
   0
@@ -61,37 +61,36 @@ ENDSEC
 EOF
 ```
 
-## コードの解説（1行ずつ読み解く）
+## Code Explanation (Line by Line)
 
-このコードを「グループコード」と「値」のペアとして分解すると、以下のようになります。
+Breaking down this code as pairs of "group code" and "value":
 
-1. **`0` / `SECTION`**: 「セクション」の開始を宣言します。
-2. **`2` / `ENTITIES`**: ここから「図形データ（ENTITIES）」が始まることを示します。
-3. **`0` / `LINE`**: 「線（LINE）」という図形をここから描くことを宣言します。
-4. **`8` / `0`**: この線はレイヤー名「0」に属することを示します。
-5. **`10, 20, 30`**: 始点の X, Y, Z 座標です。
-6. **`11, 21, 31`**: 終点の X, Y, Z 座標です。
-7. **`0` / `ENDSEC`**: セクションの終了です。
-8. **`0` / `EOF`**: ファイルの終端（End Of File）です。
+1. **`0` / `SECTION`**: Declares the start of a "section."
+2. **`2` / `ENTITIES`**: Indicates that "entity data (ENTITIES)" starts here.
+3. **`0` / `LINE`**: Declares that a "line (LINE)" shape will be drawn from here.
+4. **`8` / `0`**: Indicates this line belongs to layer name "0."
+5. **`10, 20, 30`**: X, Y, Z coordinates of the start point.
+6. **`11, 21, 31`**: X, Y, Z coordinates of the end point.
+7. **`0` / `ENDSEC`**: End of section.
+8. **`0` / `EOF`**: End of file.
 
-## よくある疑問
+## Common Questions
 
-### なぜ数字（グループコード）を使うの？
-1980年代のコンピュータは非力だったため、"LayerName" といった長い文字列を解析するよりも、"8" という数字で判断する方が圧倒的に高速に処理できたからです。その仕組みが40年以上変わらずに続いています。
+### Why use numbers (group codes)?
+Computers in the 1980s were weak, so judging by a number like "8" was much faster than parsing long strings like "LayerName". This mechanism has continued unchanged for over 40 years.
 
-### DXFにコメントは書ける？
-はい、グループコード **`999`** を使うと、その次の行はコメントとして扱われます（多くのCADソフトで無視されます）。
+### Can I write comments in DXF?
+Yes, using group code **`999`**, the next line is treated as a comment (ignored by many CAD software).
 
 ```text
 999
-これは自分へのメモです
+This is a note to myself
 ```
 
 ---
 
-## 次に読む
+## Next Steps
 
-- [タグ構造とグループコードの基本](../structure/tag-and-group-code.md)
-- [セクション概要](../structure/sections-overview.md)
+- [Tag Structure and Group Code Basics](../structure/tag-and-group-code.md)
+- [Section Overview](../structure/sections-overview.md)
 - [DXF Samples](../samples/README.md)
-

@@ -1,8 +1,8 @@
-# セクション概要
+# Section Overview
 
-DXFファイルは、複数の **セクション（SECTION）** で構成されています。各セクションは特定の種類のデータを格納し、ファイル全体の構造を定義します。
+DXF files consist of multiple **sections (SECTION)**. Each section stores specific types of data and defines the overall file structure.
 
-## セクションの全体構造
+## Overall Section Structure
 
 ```mermaid
 graph TD
@@ -20,110 +20,110 @@ graph TD
     Entities --> |"Actual Drawing"| DrawingEntities["LINE<br/>CIRCLE<br/>ARC<br/>INSERT"]
 ```
 
-## HEADER セクション
+## HEADER Section
 
-**役割**: 図面全体の設定やプロパティを格納します。
+**Role**: Stores settings and properties for the entire drawing.
 
-すべてのヘッダー変数は `$` で始まる名前を持ち、グループコード `9` で指定されます。
+All header variables have names starting with `$` and are specified with group code `9`.
 
 ```text
-  0        <-- セクション開始
+  0        <-- Section start
 SECTION
-  2        <-- セクション名
+  2        <-- Section name
 HEADER
-  9        <-- 変数名
+  9        <-- Variable name
 $ACADVER
-  1        <-- 値
+  1        <-- Value
 AC1015
   9
 $INSUNITS
  70
 1
-  0        <-- セクション終了
+  0        <-- Section end
 ENDSEC
 ```
 
-**主要な変数**:
-- `$ACADVER`: AutoCADのバージョン（例: `AC1015` = AutoCAD 2000）
-- `$INSUNITS`: 単位系（0=単位なし、1=インチ、2=フィート、...、6=メートル）
-- `$EXTMIN`, `$EXTMAX`: 図面の範囲（最小/最大座標）
-- `$HANDSEED`: 次に割り当てるハンドル（オブジェクトID）のシード値
+**Major Variables**:
+- `$ACADVER`: AutoCAD version (e.g., `AC1015` = AutoCAD 2000)
+- `$INSUNITS`: Unit system (0=unitless, 1=inch, 2=feet, ..., 6=meter)
+- `$EXTMIN`, `$EXTMAX`: Drawing extents (minimum/maximum coordinates)
+- `$HANDSEED`: Seed value for the next handle (object ID) to be assigned
 
-## CLASSES セクション
+## CLASSES Section
 
-**役割**: アプリケーション定義のクラス情報を格納します。通常、カスタムオブジェクトや拡張機能で使用されます。
+**Role**: Stores application-defined class information. Typically used for custom objects or extensions.
 
-多くのDXFファイルでは空か、最小限の情報しか含まれません。
+Many DXF files contain minimal or no information here.
 
-## TABLES セクション
+## TABLES Section
 
-**役割**: 再利用可能なスタイル定義（レイヤー、線種、文字スタイルなど）を格納します。
+**Role**: Stores reusable style definitions (layers, linetypes, text styles, etc.).
 
 ```text
-  0        <-- セクション開始
+  0        <-- Section start
 SECTION
   2
 TABLES
-  0        <-- テーブル開始
+  0        <-- Table start
 TABLE
-  2        <-- テーブルの種類
+  2        <-- Table type
 LAYER
-  5        <-- ハンドルID
+  5        <-- Handle ID
 2
  70
 1
-  0        <-- 個別のエントリ(レイヤー)開始
+  0        <-- Individual entry (layer) start
 LAYER
   5
 10
-  2        <-- レイヤー名
+  2        <-- Layer name
 MyLayer
  70
 0
- 62        <-- 色番号
+ 62        <-- Color number
 7
-  6        <-- 線種名
+  6        <-- Linetype name
 CONTINUOUS
-  0        <-- テーブル終了
+  0        <-- Table end
 ENDTAB
   0
 ENDSEC
 ```
 
-**主要なテーブル**:
-- **LAYER**: 画層（レイヤー）の定義。各エンティティは画層に属します。
-- **LTYPE**: 線種（実線、破線、一点鎖線など）の定義。
-- **STYLE**: 文字スタイル（フォント、高さなど）の定義。
-- **VIEW**: 名前付きビューの定義。
-- **UCS**: ユーザー座標系の定義。
-- **VPORT**: ビューポートの定義。
+**Major Tables**:
+- **LAYER**: Definition of layers. Each entity belongs to a layer.
+- **LTYPE**: Definition of linetypes (solid, dashed, center line, etc.).
+- **STYLE**: Definition of text styles (font, height, etc.).
+- **VIEW**: Definition of named views.
+- **UCS**: Definition of user coordinate systems.
+- **VPORT**: Definition of viewports.
 
-## BLOCKS セクション
+## BLOCKS Section
 
-**役割**: 再利用可能な図形の定義（ブロック定義）を格納します。
+**Role**: Stores definitions of reusable shapes (block definitions).
 
-ブロックは、複数のエンティティを1つの単位としてグループ化したものです。定義自体はここに格納され、実際の配置は ENTITIES セクションの `INSERT` エンティティで参照されます。
+Blocks are groups of multiple entities as a single unit. The definitions themselves are stored here, and actual placements are referenced by `INSERT` entities in the ENTITIES section.
 
 ```text
-  0        <-- セクション開始
+  0        <-- Section start
 SECTION
   2
 BLOCKS
-  0        <-- ブロック定義開始
+  0        <-- Block definition start
 BLOCK
   5
 20
-  2        <-- ブロック名
+  2        <-- Block name
 MyBlock
  70
 0
- 10        <-- 基準点 X
+ 10        <-- Base point X
 0.0
- 20        <-- 基準点 Y
+ 20        <-- Base point Y
 0.0
- 30        <-- 基準点 Z
+ 30        <-- Base point Z
 0.0
-  0        <-- ブロック内の図形(LINE)開始
+  0        <-- Shape (LINE) in block start
 LINE
   8
 0
@@ -135,7 +135,7 @@ LINE
 10.0
  21
 10.0
-  0        <-- ブロック定義終了
+  0        <-- Block definition end
 ENDBLK
   5
 21
@@ -143,57 +143,57 @@ ENDBLK
 ENDSEC
 ```
 
-## ENTITIES セクション
+## ENTITIES Section
 
-**役割**: 実際に描画される図形要素（エンティティ）を格納します。
+**Role**: Stores graphic elements (entities) that are actually drawn.
 
-これがDXFファイルの「本体」です。LINE, CIRCLE, ARC, LWPOLYLINE, TEXT, INSERT など、すべての描画要素がここに記述されます。
+This is the "main body" of a DXF file. LINE, CIRCLE, ARC, LWPOLYLINE, TEXT, INSERT, and all other drawing elements are described here.
 
 ```text
-  0        <-- セクション開始
+  0        <-- Section start
 SECTION
   2
 ENTITIES
-  0        <-- 直線(LINE)開始
+  0        <-- Line (LINE) start
 LINE
   8
 0
- 10        <-- 始点 X
+ 10        <-- Start point X
 0.0
- 20        <-- 始点 Y
+ 20        <-- Start point Y
 0.0
- 11        <-- 終点 X
+ 11        <-- End point X
 10.0
- 21        <-- 終点 Y
+ 21        <-- End point Y
 10.0
-  0        <-- 円(CIRCLE)開始
+  0        <-- Circle (CIRCLE) start
 CIRCLE
   8
 0
- 10        <-- 中心 X
+ 10        <-- Center X
 5.0
- 20        <-- 中心 Y
+ 20        <-- Center Y
 5.0
  30
 0.0
- 40        <-- 半径
+ 40        <-- Radius
 2.5
   0
 ENDSEC
 ```
 
-## OBJECTS セクション
+## OBJECTS Section
 
-**役割**: 非図形データ（辞書、レイアウト、寸法スタイルなど）を格納します。
+**Role**: Stores non-graphic data (dictionaries, layouts, dimension styles, etc.).
 
-AutoCAD 2000以降で導入されました。図面の論理構造やメタデータを格納するために使用されます。
+Introduced in AutoCAD 2000 and later. Used to store the logical structure and metadata of drawings.
 
 ```text
-  0        <-- セクション開始
+  0        <-- Section start
 SECTION
   2
 OBJECTS
-  0        <-- 非図形オブジェクト(DICTIONARY)
+  0        <-- Non-graphic object (DICTIONARY)
 DICTIONARY
   5
 C
@@ -203,16 +203,16 @@ ACAD_GROUP
 ENDSEC
 ```
 
-## セクションの読み込み順序
+## Section Reading Order
 
-パーサーを実装する際は、以下の順序でセクションを処理するのが一般的です：
+When implementing a parser, it's common to process sections in the following order:
 
-1. **HEADER**: 図面の基本情報を取得（バージョン、単位など）
-2. **TABLES**: スタイル定義を読み込み、後続のエンティティで参照できるようにする
-3. **BLOCKS**: ブロック定義を読み込み、INSERTエンティティで参照できるようにする
-4. **ENTITIES**: 実際の図形を読み込み、画層やブロックの参照を解決する
-5. **OBJECTS**: 必要に応じて非図形データを処理
+1. **HEADER**: Get basic drawing information (version, units, etc.)
+2. **TABLES**: Read style definitions so they can be referenced by subsequent entities
+3. **BLOCKS**: Read block definitions so they can be referenced by INSERT entities
+4. **ENTITIES**: Read actual shapes and resolve layer and block references
+5. **OBJECTS**: Process non-graphic data as needed
 
-## 最小構成のDXF
+## Minimal DXF Structure
 
-技術的には、`ENTITIES` セクションだけでも動作するDXFファイルを作成できます（多くのCADソフトがデフォルト値を補完します）。しかし、正式なDXFファイルには、少なくとも `HEADER` と `ENTITIES` セクションが必要です。
+Technically, you can create a DXF file that works with just the `ENTITIES` section (many CAD software supplement default values). However, a formal DXF file requires at least `HEADER` and `ENTITIES` sections.

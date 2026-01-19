@@ -1,121 +1,121 @@
-# DXFの歴史とバージョン
+# DXF History and Versions
 
-DXF（Drawing Exchange Format）は、AutoCADが1982年に導入したCADデータ交換形式です。40年以上の歴史を持ち、多くのバージョンアップを経て現在に至ります。
+DXF (Drawing Exchange Format) is a CAD data exchange format introduced by AutoCAD in 1982. It has over 40 years of history and has undergone many version updates to reach its current state.
 
-## バージョンの変遷
+## Version Evolution
 
 ```mermaid
 timeline
-    title DXFバージョンの歴史
-    1982 : R1.0 リリース
-    1988 : R10 ASCII形式確立
-    1992 : R12 最後のDOS版
-    1995 : R13 Windows版
-    1997 : R14 安定版
-    1999 : 2000 ハンドル導入
-    2004 : 2004 Unicode準備
-    2007 : 2007 UTF-8標準化
-    2018 : 2018 最新版
+    title DXF Version History
+    1982 : R1.0 Release
+    1988 : R10 ASCII Format Established
+    1992 : R12 Last DOS Version
+    1995 : R13 Windows Version
+    1997 : R14 Stable Version
+    1999 : 2000 Handle Introduction
+    2004 : 2004 Unicode Preparation
+    2007 : 2007 UTF-8 Standardization
+    2018 : 2018 Latest Version
 ```
 
-## 主要バージョンと特徴
+## Major Versions and Features
 
-### R12 (AC1009) - 1992年
+### R12 (AC1009) - 1992
 
-**特徴**:
-- DOS版AutoCADの最後のバージョン
-- ASCII形式が確立
-- 固定幅フォーマット（グループコードが固定桁数）
-- 多くのCADソフトがこの形式をサポート
+**Features**:
+- Last DOS version of AutoCAD
+- ASCII format established
+- Fixed-width format (group codes have fixed digits)
+- Many CAD software support this format
 
-**互換性**: 非常に高い。ほぼすべてのCADソフトが読み込み可能。
+**Compatibility**: Very high. Almost all CAD software can read it.
 
-**実装上の注意**: 
-- グループコードの前後に固定数の空白が含まれる場合がある
-- 文字エンコーディングは環境依存（コードページ）
+**Implementation Notes**: 
+- Group codes may contain fixed numbers of spaces before and after
+- Character encoding is environment-dependent (code page)
 
-### R13 (AC1012) - 1995年
+### R13 (AC1012) - 1995
 
-**特徴**:
-- Windows版AutoCADの最初のバージョン
-- バイナリDXF形式の導入（オプション）
-- **SPLINE（NURBS）エンティティの導入**: 複雑な曲線を数学的に厳密に表現可能に
+**Features**:
+- First Windows version of AutoCAD
+- Introduction of binary DXF format (optional)
+- **Introduction of SPLINE (NURBS) entities**: Enables mathematically precise representation of complex curves
 
-**変更点**: 
-- セクション構造の拡張
-- より柔軟なフォーマット
-- `ELLIPSE` エンティティの追加
+**Changes**: 
+- Extension of section structure
+- More flexible format
+- Addition of `ELLIPSE` entity
 
-### R14 (AC1014) - 1997年
+### R14 (AC1014) - 1997
 
-**特徴**:
-- 安定性の向上
-- 多くのバグ修正
+**Features**:
+- Improved stability
+- Many bug fixes
 
-**互換性**: R12と高い互換性を維持。
+**Compatibility**: Maintains high compatibility with R12.
 
-### AutoCAD 2000 (AC1015) - 1999年
+### AutoCAD 2000 (AC1015) - 1999
 
-**特徴**:
-- **ハンドル（Handle）の導入**: 各オブジェクトに一意のIDが割り当てられる
-- オブジェクト参照の強化
-- OBJECTSセクションの追加
+**Features**:
+- **Introduction of Handles**: Unique IDs assigned to each object
+- Enhanced object references
+- Addition of OBJECTS section
 
-**変更点**:
-- グループコード `5` でハンドルを指定
-- `$HANDSEED` ヘッダー変数の追加
+**Changes**:
+- Handles specified with group code `5`
+- Addition of `$HANDSEED` header variable
 
-**実装上の注意**: ハンドルは16進数文字列として保存されます。
+**Implementation Notes**: Handles are saved as hexadecimal strings.
 
-### AutoCAD 2004 (AC1018) - 2004年
+### AutoCAD 2004 (AC1018) - 2004
 
-**特徴**:
-- ファイル形式の安定化
-- パフォーマンスの向上
+**Features**:
+- File format stabilization
+- Performance improvements
 
-### AutoCAD 2007 (AC1021) - 2007年
+### AutoCAD 2007 (AC1021) - 2007
 
-**特徴**:
-- **UTF-8エンコーディングの標準化**: 国際化対応が大幅に改善
-- 文字化け問題の解消
+**Features**:
+- **UTF-8 encoding standardization**: Significantly improved internationalization support
+- Resolution of character encoding issues
 
-**変更点**:
-- テキストデータがUTF-8で保存される
-- BOM（Byte Order Mark）の使用が推奨される
+**Changes**:
+- Text data saved in UTF-8
+- Use of BOM (Byte Order Mark) recommended
 
-**実装上の注意**: このバージョン以降は、UTF-8として読み込むことが安全です。
+**Implementation Notes**: From this version onward, it's safe to read as UTF-8.
 
-### AutoCAD 2010 (AC1024) - 2010年
+### AutoCAD 2010 (AC1024) - 2010
 
-**特徴**:
-- パフォーマンスの最適化
-- 新しいエンティティタイプの追加
+**Features**:
+- Performance optimization
+- Addition of new entity types
 
-### AutoCAD 2013-2017 (AC1027) - 2013-2017年
+### AutoCAD 2013-2017 (AC1027) - 2013-2017
 
-**特徴**:
-- 長期間にわたって同じバージョンコードを使用
-- 機能追加はあるが、ファイル形式の互換性を維持
+**Features**:
+- Same version code used over a long period
+- Features added while maintaining file format compatibility
 
-### AutoCAD 2018以降 (AC1032) - 2018年
+### AutoCAD 2018 and later (AC1032) - 2018
 
-**特徴**:
-- 最新のファイル形式
-- 後方互換性を維持
+**Features**:
+- Latest file format
+- Maintains backward compatibility
 
-## バージョン互換性のマトリックス
+## Version Compatibility Matrix
 
-| バージョン | 読み込み可能 | 書き込み可能 | 主な制限 |
+| Version | Readable | Writable | Main Limitations |
 | :--- | :--- | :--- | :--- |
-| R12 | すべて | R12以前 | ハンドルなし、固定幅フォーマット |
-| R13-R14 | R12以降 | R14以前 | ハンドルなし |
-| 2000 | R12以降 | 2000以降 | ハンドル必須 |
-| 2007 | R12以降 | 2007以降 | UTF-8推奨 |
-| 2018 | R12以降 | 2018以降 | 最新機能に対応 |
+| R12 | All | R12 and earlier | No handles, fixed-width format |
+| R13-R14 | R12 and later | R14 and earlier | No handles |
+| 2000 | R12 and later | 2000 and later | Handles required |
+| 2007 | R12 and later | 2007 and later | UTF-8 recommended |
+| 2018 | R12 and later | 2018 and later | Supports latest features |
 
-## バージョン判定方法
+## Version Detection Method
 
-DXFファイルのバージョンは、HEADERセクションの `$ACADVER` 変数で判定します：
+DXF file version is determined by the `$ACADVER` variable in the HEADER section:
 
 ```text
   9
@@ -124,9 +124,9 @@ $ACADVER
 AC1015
 ```
 
-**バージョンコード一覧**:
+**Version Code List**:
 
-| コード | バージョン | リリース年 |
+| Code | Version | Release Year |
 | :--- | :--- | :--- |
 | `AC1009` | R12 | 1992 |
 | `AC1012` | R13 | 1995 |
@@ -136,66 +136,66 @@ AC1015
 | `AC1021` | 2007/2008/2009 | 2007-2009 |
 | `AC1024` | 2010/2011/2012 | 2010-2012 |
 | `AC1027` | 2013/2014/2015/2016/2017 | 2013-2017 |
-| `AC1032` | 2018以降 | 2018- |
+| `AC1032` | 2018 and later | 2018- |
 
-## 後方互換性の原則
+## Backward Compatibility Principles
 
-AutoCADは、**後方互換性**を重視して設計されています：
+AutoCAD is designed with emphasis on **backward compatibility**:
 
-1. **古いバージョンで読み込める**: 新しいバージョンで作成したDXFファイルは、古いバージョンでも（機能制限はあるが）読み込める
-2. **新しい機能の無視**: 古いバージョンでは理解できない新しいグループコードやエンティティは無視される
-3. **デフォルト値の使用**: 欠けているデータは、合理的なデフォルト値で補完される
+1. **Readable in older versions**: DXF files created in newer versions can be read in older versions (with feature limitations)
+2. **Ignoring new features**: New group codes and entities that older versions cannot understand are ignored
+3. **Using default values**: Missing data is supplemented with reasonable default values
 
-## 実装上の推奨事項
+## Implementation Recommendations
 
-### 1. バージョンに応じた処理
+### 1. Version-Specific Processing
 
 ```python
 def parse_dxf(file_path):
-    # まずバージョンを確認
+    # First check version
     version = detect_version(file_path)
     
     if version < 'AC1015':
-        # ハンドルなしの処理
+        # Processing without handles
         parser = LegacyParser()
     elif version < 'AC1021':
-        # UTF-8以前のエンコーディング処理
+        # Encoding processing before UTF-8
         parser = AnsiParser()
     else:
-        # UTF-8標準の処理
+        # UTF-8 standard processing
         parser = Utf8Parser()
     
     return parser.parse(file_path)
 ```
 
-### 2. 最小バージョンの選択
+### 2. Minimum Version Selection
 
-新しい機能を使用しない場合は、**R12形式で保存**することで、最大限の互換性を確保できます：
+If you don't use new features, you can ensure maximum compatibility by **saving in R12 format**:
 
 ```python
-# ezdxfの例
-doc = ezdxf.new('R12')  # 最も互換性が高い
+# Example with ezdxf
+doc = ezdxf.new('R12')  # Highest compatibility
 doc.saveas("output.dxf")
 ```
 
-### 3. バージョンアップ時の注意
+### 3. Notes on Version Upgrades
 
-- **ハンドルの扱い**: AC1015以降では、ハンドルが必須になる場合がある
-- **文字エンコーディング**: AC1021以降では、UTF-8を使用する
-- **新しいエンティティ**: 古いバージョンでは認識されない可能性がある
+- **Handle handling**: From AC1015 onward, handles may become required
+- **Character encoding**: From AC1021 onward, use UTF-8
+- **New entities**: May not be recognized in older versions
 
-## 管理とガバナンス
+## Management and Governance
 
-DXFは、Autodesk社が著作権を保持している**プロプライエタリな規格**です。しかし、以下の運用によって、公共のインフラのような立ち位置を築いています。
+DXF is a **proprietary standard** for which Autodesk holds copyright. However, through the following operations, it has built a position like public infrastructure.
 
-1. **仕様の無償公開**: 新しいAutoCADのリリースに合わせて、仕様書（DXF Reference）がオンラインで無料公開されます。
-2. **ライセンスフリー**: 開発者は仕様書に基づいてパーサーを自由に実装・配布でき、Autodeskへのライセンス料も不要です。
-3. **後方互換性の重視**: 数十年前のR12形式でも、最新のAutoCADで開けることが保証されています。
+1. **Free specification publication**: With each new AutoCAD release, the specification (DXF Reference) is published online for free.
+2. **License-free**: Developers can freely implement and distribute parsers based on the specification without paying license fees to Autodesk.
+3. **Emphasis on backward compatibility**: Even R12 format from decades ago is guaranteed to open in the latest AutoCAD.
 
-詳細は[国際標準規格とDXFの立ち位置](../comparison/standardization-and-iso.md)を参照してください。
+For details, see [International Standards and DXF's Position](../comparison/standardization-and-iso.md).
 
-## まとめ
+## Summary
 
-DXFのバージョン管理は、互換性を維持しながら機能を拡張するという、バランスの取れたアプローチを取っています。実装者は、対象とするバージョンに応じて適切な処理を実装し、可能な限り後方互換性を保つことが重要です。
+DXF version management takes a balanced approach of extending functionality while maintaining compatibility. It's important for implementers to implement appropriate processing according to the target version and maintain backward compatibility as much as possible.
 
-**推奨**: 特に理由がなければ、**R12形式**で保存することで、最大限の互換性を確保できます。
+**Recommendation**: Unless there's a specific reason, saving in **R12 format** ensures maximum compatibility.

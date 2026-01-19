@@ -1,174 +1,174 @@
 # DXF vs SVG
 
-DXFとSVGは、どちらも2Dベクター形式ですが、設計思想と用途が大きく異なります。CAD図面とWebグラフィックスの違いを理解することで、適切な形式を選択できます。
+Both DXF and SVG are 2D vector formats, but their design philosophies and uses differ significantly. Understanding the difference between CAD drawings and web graphics helps you choose the appropriate format.
 
-## 形式の違い
+## Format Differences
 
 ### DXF (Drawing Exchange Format)
-**CAD図面形式**
+**CAD Drawing Format**
 
-- **用途**: 技術図面、建築図面、機械設計
-- **座標系**: 実世界の単位（メートル、インチなど）
-- **精度**: 非常に高い（浮動小数点、ミクロン単位まで）
-- **対象**: CADソフト、製造業、建設業
+- **Use**: Technical drawings, architectural drawings, mechanical design
+- **Coordinate System**: Real-world units (meters, inches, etc.)
+- **Precision**: Very high (floating point, down to microns)
+- **Target**: CAD software, manufacturing, construction
 
 ### SVG (Scalable Vector Graphics)
-**Webグラフィックス形式**
+**Web Graphics Format**
 
-- **用途**: Webページ、アイコン、イラスト
-- **座標系**: 画面座標（ピクセル）
-- **精度**: 画面表示に適した精度
-- **対象**: Webブラウザ、グラフィックソフト
+- **Use**: Web pages, icons, illustrations
+- **Coordinate System**: Screen coordinates (pixels)
+- **Precision**: Suitable for screen display
+- **Target**: Web browsers, graphics software
 
-## 比較表
+## Comparison Table
 
-| 項目 | DXF | SVG |
+| Item | DXF | SVG |
 | :--- | :--- | :--- |
-| **用途** | CAD図面 | Webグラフィックス |
-| **座標系** | 実世界単位 | 画面座標（ピクセル） |
-| **精度** | 非常に高い | 画面表示レベル |
-| **単位** | メートル、インチなど | ピクセル、パーセント |
-| **3D対応** | あり（制限的） | なし（2D専用） |
-| **レイヤー** | あり（画層） | あり（グループ） |
-| **テキスト** | 高度な制御 | 基本的な制御 |
-| **アニメーション** | なし | あり |
-| **インタラクティブ** | なし | あり（JavaScript） |
-| **ファイルサイズ** | 大きい | 小さい（圧縮可能） |
+| **Use** | CAD Drawings | Web Graphics |
+| **Coordinate System** | Real-world units | Screen coordinates (pixels) |
+| **Precision** | Very high | Screen display level |
+| **Units** | Meters, inches, etc. | Pixels, percentages |
+| **3D Support** | Yes (limited) | No (2D only) |
+| **Layers** | Yes (layers) | Yes (groups) |
+| **Text** | Advanced control | Basic control |
+| **Animation** | No | Yes |
+| **Interactive** | No | Yes (JavaScript) |
+| **File Size** | Large | Small (compressible) |
 
-## 詳細な比較
+## Detailed Comparison
 
-### 1. 座標系と単位
-
-**DXF**:
-- 実世界の単位（メートル、インチ、フィートなど）を使用
-- 座標値は実寸法を表す
-- 例: `10.0` = 10メートル（または10インチ、設定による）
-
-**SVG**:
-- 画面座標（ピクセル）を使用
-- 座標値は画面上の位置を表す
-- 例: `10` = 10ピクセル
-
-### 2. 精度
+### 1. Coordinate System and Units
 
 **DXF**:
-- 浮動小数点で高精度な座標を表現
-- ミクロン単位まで正確に表現可能
-- 製造や建設に必要な精度を満たす
+- Uses real-world units (meters, inches, feet, etc.)
+- Coordinate values represent actual dimensions
+- Example: `10.0` = 10 meters (or 10 inches, depending on settings)
 
 **SVG**:
-- 画面表示に適した精度
-- 整数または少数点以下数桁の精度
-- 印刷品質には対応しているが、CADレベルの精度は不要
+- Uses screen coordinates (pixels)
+- Coordinate values represent positions on screen
+- Example: `10` = 10 pixels
 
-### 3. 3D対応
+### 2. Precision
 
 **DXF**:
-- 3D座標（X, Y, Z）をサポート
-- OCS（オブジェクト座標系）による3Dエンティティの配置
-- 建築や機械設計で3Dモデルを扱う
+- Expresses high-precision coordinates with floating point
+- Can accurately express down to micron units
+- Meets precision required for manufacturing and construction
 
 **SVG**:
-- 2D専用（X, Yのみ）
-- 3D効果はCSS3DやWebGLで実現（SVG自体は2D）
+- Precision suitable for screen display
+- Integer or a few decimal places precision
+- Supports print quality but doesn't need CAD-level precision
 
-### 4. レイヤー/グループ
+### 3. 3D Support
 
 **DXF**:
-- **画層（Layer）**: エンティティをグループ化し、表示/非表示、色、線種を一括管理
-- 技術図面の標準的な管理方法
+- Supports 3D coordinates (X, Y, Z)
+- 3D entity placement via OCS (Object Coordinate System)
+- Handles 3D models in architecture and mechanical design
 
 **SVG**:
-- **グループ（`<g>`）**: 要素をグループ化し、変換やスタイルを適用
-- Webページの構造化に適している
+- 2D only (X, Y only)
+- 3D effects achieved with CSS3D or WebGL (SVG itself is 2D)
 
-### 5. テキスト
+### 4. Layers/Groups
 
 **DXF**:
-- 高度なテキスト制御（スタイル、高さ、幅係数、傾斜など）
-- 技術図面に必要な詳細な設定が可能
+- **Layers**: Group entities and manage display/hide, colors, linetypes collectively
+- Standard management method for technical drawings
 
 **SVG**:
-- 基本的なテキスト制御（フォント、サイズ、色など）
-- Webページのテキスト表示に適している
+- **Groups (`<g>`)**: Group elements and apply transformations and styles
+- Suitable for structuring web pages
 
-### 6. アニメーションとインタラクティブ
+### 5. Text
 
 **DXF**:
-- アニメーション機能なし
-- インタラクティブ機能なし
-- 静的図面専用
+- Advanced text control (style, height, width factor, oblique, etc.)
+- Enables detailed settings required for technical drawings
 
 **SVG**:
-- **アニメーション**: `<animate>` 要素やCSSアニメーション
-- **インタラクティブ**: JavaScriptによる操作が可能
-- **イベント**: クリック、ホバーなどのイベント処理
+- Basic text control (font, size, color, etc.)
+- Suitable for text display on web pages
 
-## デザインソフトとDXF
+### 6. Animation and Interactive
+
+**DXF**:
+- No animation features
+- No interactive features
+- Static drawings only
+
+**SVG**:
+- **Animation**: `<animate>` elements or CSS animation
+- **Interactive**: Can be manipulated with JavaScript
+- **Events**: Event handling like click, hover
+
+## Design Software and DXF
 
 ### Inkscape
-**特徴**: オープンソースのベクターグラフィックエディタ。DXFのインポート・エクスポートに標準で対応しています。
+**Features**: Open source vector graphics editor. Standard support for DXF import/export.
 
-- **インポート**: DXFを読み込んで編集可能なベクターデータとして扱えます。
-- **エクスポート**: 「名前を付けて保存」から `AutoCAD DXF R12` または `R14` を選択できます。
-- **用途**: 手書きのイラストをスキャンしてベクター化（トレース）し、DXFとして書き出してレーザーカッターで加工する、といったワークフローによく使われます。
+- **Import**: Can read DXF and handle as editable vector data.
+- **Export**: Can select `AutoCAD DXF R12` or `R14` from "Save As".
+- **Use**: Often used in workflows like scanning hand-drawn illustrations, vectorizing (tracing), exporting as DXF, and machining with laser cutters.
 
 ---
 
-## 変換の可能性
+## Conversion Possibilities
 
-### DXF → SVG 変換
+### DXF → SVG Conversion
 
-**可能**: 2D図面をSVGに変換することは可能ですが、以下の制限があります：
+**Possible**: Converting 2D drawings to SVG is possible, but with the following limitations:
 
-1. **3D情報の損失**: Z座標は無視される
-2. **精度の調整**: 実世界単位をピクセルに変換する必要がある
-3. **機能の簡略化**: DXFの高度な機能（寸法、ハッチングなど）は簡略化される
+1. **3D Information Loss**: Z coordinates are ignored
+2. **Precision Adjustment**: Need to convert real-world units to pixels
+3. **Feature Simplification**: DXF's advanced features (dimensions, hatching, etc.) are simplified
 
-**ツール**:
-- `ezdxf`（Python）+ SVGライブラリ
-- 専用変換ツール
+**Tools**:
+- `ezdxf` (Python) + SVG library
+- Dedicated conversion tools
 
-### SVG → DXF 変換
+### SVG → DXF Conversion
 
-**困難**: SVGをDXFに変換することは技術的に可能ですが、以下の問題があります：
+**Difficult**: Converting SVG to DXF is technically possible, but has the following problems:
 
-1. **単位の変換**: ピクセルを実世界単位に変換する必要がある
-2. **精度の不足**: SVGの精度ではCADレベルの精度を満たさない
-3. **機能の不足**: SVGにはCAD特有の機能（寸法、ブロックなど）がない
+1. **Unit Conversion**: Need to convert pixels to real-world units
+2. **Insufficient Precision**: SVG precision doesn't meet CAD-level precision
+3. **Missing Features**: SVG lacks CAD-specific features (dimensions, blocks, etc.)
 
-**推奨**: SVGからDXFへの変換は、単純な図形の場合のみ実用的です。
+**Recommendation**: SVG to DXF conversion is only practical for simple shapes.
 
-## 使用シーン別の推奨
+## Recommendations by Use Case
 
-### DXFを使用すべき場合
+### When to Use DXF
 
-1. **技術図面**: 建築、機械、電気などの技術図面
-2. **製造**: CNC加工、3Dプリンティングなどの製造データ
-3. **測量**: 土地測量、建設現場の図面
-4. **CAD作業**: AutoCADなどのCADソフトでの作業
-5. **高精度が必要**: ミクロン単位の精度が必要な場合
+1. **Technical Drawings**: Technical drawings for architecture, machinery, electrical, etc.
+2. **Manufacturing**: Manufacturing data for CNC machining, 3D printing, etc.
+3. **Surveying**: Land surveying, construction site drawings
+4. **CAD Work**: Work in CAD software like AutoCAD
+5. **High Precision Needed**: When micron-level precision is required
 
-### SVGを使用すべき場合
+### When to Use SVG
 
-1. **Webページ**: Webサイトのグラフィックス、アイコン
-2. **イラスト**: ベクターイラスト、ロゴ
-3. **インタラクティブ**: ユーザー操作が必要なグラフィックス
-4. **アニメーション**: 動的なグラフィックス
-5. **レスポンシブ**: 画面サイズに応じて拡大縮小するグラフィックス
+1. **Web Pages**: Graphics and icons for websites
+2. **Illustrations**: Vector illustrations, logos
+3. **Interactive**: Graphics requiring user interaction
+4. **Animation**: Dynamic graphics
+5. **Responsive**: Graphics that scale according to screen size
 
-## 実装上の考慮事項
+## Implementation Considerations
 
-### DXFからSVGへの変換
+### DXF to SVG Conversion
 
 ```python
-# 疑似コード
+# Pseudocode
 def dxf_to_svg(dxf_file, output_svg):
     doc = ezdxf.readfile(dxf_file)
     svg = SVG()
     
-    # 単位変換（メートル → ピクセル）
-    scale = 100  # 1メートル = 100ピクセル
+    # Unit conversion (meters → pixels)
+    scale = 100  # 1 meter = 100 pixels
     
     for entity in doc.modelspace():
         if entity.dxftype() == 'LINE':
@@ -177,33 +177,33 @@ def dxf_to_svg(dxf_file, output_svg):
             x2 = entity.end.x * scale
             y2 = entity.end.y * scale
             svg.add_line(x1, y1, x2, y2)
-        # ... 他のエンティティ
+        # ... other entities
     
     svg.save(output_svg)
 ```
 
-**注意点**:
-- スケールファクターの決定が重要
-- 3D情報は無視される
-- 複雑なエンティティ（スプライン、ハッチングなど）は簡略化が必要
+**Notes**:
+- Determining scale factor is important
+- 3D information is ignored
+- Complex entities (splines, hatching, etc.) need simplification
 
-### SVGからDXFへの変換
+### SVG to DXF Conversion
 
-**推奨されない**: 精度と機能の違いにより、実用的ではありません。
+**Not Recommended**: Not practical due to precision and feature differences.
 
-## まとめ
+## Summary
 
-| 形式 | 推奨用途 |
+| Format | Recommended Use |
 | :--- | :--- |
-| **DXF** | 技術図面、製造、CAD作業、高精度が必要な場合 |
-| **SVG** | Webページ、イラスト、インタラクティブグラフィックス |
+| **DXF** | Technical drawings, manufacturing, CAD work, when high precision is needed |
+| **SVG** | Web pages, illustrations, interactive graphics |
 
-**選択の指針**:
-- **CAD図面**: DXFを使用
-- **Webグラフィックス**: SVGを使用
-- **変換**: DXF → SVG は可能だが制限あり、SVG → DXF は推奨されない
+**Selection Guidelines**:
+- **CAD Drawings**: Use DXF
+- **Web Graphics**: Use SVG
+- **Conversion**: DXF → SVG is possible but limited, SVG → DXF is not recommended
 
-どちらの形式も、それぞれの用途に最適化されているため、用途に応じて適切に選択することが重要です。
+Both formats are optimized for their respective uses, so it's important to choose appropriately according to use case.
 
 ---
-関連：[DXF vs DWG](./dxf-vs-dwg.md) | [産業用フォーマット（ガーバー、Gコード）との比較](./dxf-vs-industrial-formats.md)
+Related: [DXF vs DWG](./dxf-vs-dwg.md) | [Comparison with Industrial Formats (Gerber, G-code)](./dxf-vs-industrial-formats.md)

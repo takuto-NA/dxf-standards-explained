@@ -1,8 +1,8 @@
-# ブロックとインサート
+# Blocks and Inserts
 
-DXFでは、**ブロック（BLOCK）** という仕組みを使って、図形の再利用を実現します。ブロックは「定義」と「参照（INSERT）」に分かれています。
+DXF uses a mechanism called **blocks (BLOCK)** to achieve shape reuse. Blocks are divided into "definitions" and "references (INSERT)".
 
-## ブロックの概念
+## Block Concept
 
 ```mermaid
 graph LR
@@ -15,53 +15,53 @@ graph LR
     Insert3 --> |"Transform"| Draw3[Drawing 3]
 ```
 
-1. **BLOCK定義**: BLOCKSセクションで、再利用可能な図形を1回だけ定義します。
-2. **INSERTエンティティ**: ENTITIESセクションで、ブロックを任意の位置・スケール・回転で配置します。
+1. **BLOCK Definition**: Define reusable shapes once in the BLOCKS section.
+2. **INSERT Entity**: Place blocks at arbitrary positions, scales, and rotations in the ENTITIES section.
 
-## BLOCK定義の構造
+## BLOCK Definition Structure
 
-BLOCK定義は、BLOCKSセクション内に記述されます。
+BLOCK definitions are written in the BLOCKS section.
 
-### BLOCKエントリの構造
+### BLOCK Entry Structure
 
 ```text
   0
 BLOCK
   5
-ハンドル
+Handle
   2
-ブロック名
+BlockName
  70
-フラグ
+Flag
  10
-基点X
+BasePointX
  20
-基点Y
+BasePointY
  30
-基点Z
+BasePointZ
   3
-ブロック名（繰り返し）
+BlockName (repeated)
   0
-[エンティティ1]
+[Entity1]
   ...
   0
-[エンティティ2]
+[Entity2]
   ...
   0
 ENDBLK
   5
-ハンドル
+Handle
 ```
 
-**主要なグループコード**:
+**Major Group Codes**:
 
-| コード | 型 | 説明 |
+| Code | Type | Description |
 | :--- | :--- | :--- |
-| `2` | 文字列 | ブロック名（一意である必要がある） |
-| `70` | 整数 | フラグ（1=匿名、2=非矩形クリッピング、4=外部参照） |
-| `10, 20, 30` | 浮動小数点 | 基点（INSERT時の挿入点）の座標 |
+| `2` | String | Block name (must be unique) |
+| `70` | Integer | Flag (1=anonymous, 2=non-rectangular clipping, 4=external reference) |
+| `10, 20, 30` | Floating point | Base point (insertion point) coordinates |
 
-### 例：シンプルなブロック定義
+### Example: Simple Block Definition
 
 ```text
   0
@@ -114,53 +114,53 @@ ENDBLK
 ENDSEC
 ```
 
-この例では、`MyBlock` という名前のブロックを定義しています。このブロックは、1本の線と1つの円を含みます。
+This example defines a block named `MyBlock`. This block contains one line and one circle.
 
-**実装上の注意**: 
-- ブロック名 `"*Model_Space"` と `"*Paper_Space"` は予約されており、モデル空間とレイアウト空間の区別に使用されます。
-- ブロック内のエンティティの座標は、**ブロックのローカル座標系**で定義されます。基点は `(0, 0, 0)` にすることが多いです。
+**Implementation Notes**: 
+- Block names `"*Model_Space"` and `"*Paper_Space"` are reserved and used to distinguish model space and layout space.
+- Entity coordinates within blocks are defined in the **block's local coordinate system**. The base point is often `(0, 0, 0)`.
 
-## INSERTエンティティ
+## INSERT Entity
 
-INSERTエンティティは、ENTITIESセクションでブロックを参照し、実際の図面に配置します。
+INSERT entities reference blocks in the ENTITIES section and place them in the actual drawing.
 
-### INSERTエンティティの構造
+### INSERT Entity Structure
 
 ```text
   0
 INSERT
   5
-ハンドル
+Handle
   8
-画層名
+LayerName
   2
-ブロック名
+BlockName
  10
-挿入点X
+InsertionPointX
  20
-挿入点Y
+InsertionPointY
  30
-挿入点Z
+InsertionPointZ
  41
-Xスケール
+XScale
  42
-Yスケール
+YScale
  43
-Zスケール
+ZScale
  50
-回転角度（度）
+RotationAngle (degrees)
 ```
 
-**主要なグループコード**:
+**Major Group Codes**:
 
-| コード | 型 | 説明 |
+| Code | Type | Description |
 | :--- | :--- | :--- |
-| `2` | 文字列 | ブロック名（BLOCKSセクションで定義されたもの） |
-| `10, 20, 30` | 浮動小数点 | 挿入点（WCS）の座標 |
-| `41, 42, 43` | 浮動小数点 | X, Y, Z方向のスケール係数（デフォルト: 1.0） |
-| `50` | 浮動小数点 | 回転角度（度、反時計回り） |
+| `2` | String | Block name (defined in BLOCKS section) |
+| `10, 20, 30` | Floating point | Insertion point (WCS) coordinates |
+| `41, 42, 43` | Floating point | Scale factors in X, Y, Z directions (default: 1.0) |
+| `50` | Floating point | Rotation angle (degrees, counterclockwise) |
 
-### 例：ブロックの配置
+### Example: Block Placement
 
 ```text
   0
@@ -215,65 +215,65 @@ MyBlock
 ENDSEC
 ```
 
-この例では、`MyBlock` を2回配置しています：
-1. 1回目: 位置 `(0, 0, 0)`、スケール `1.0`、回転 `0°`
-2. 2回目: 位置 `(20, 10, 0)`、スケール `2.0`、回転 `45°`
+This example places `MyBlock` twice:
+1. First: Position `(0, 0, 0)`, scale `1.0`, rotation `0°`
+2. Second: Position `(20, 10, 0)`, scale `2.0`, rotation `45°`
 
-## 変換行列の計算
+## Transformation Matrix Calculation
 
-INSERTエンティティは、ブロック内のエンティティに対して**アフィン変換**を適用します。変換は以下の順序で行われます：
+INSERT entities apply **affine transformations** to entities within blocks. Transformations are performed in the following order:
 
-1. **スケール**: X, Y, Z方向にスケール係数を適用
-2. **回転**: Z軸周りに回転角度を適用
-3. **平行移動**: 挿入点へ移動
+1. **Scale**: Apply scale factors in X, Y, Z directions
+2. **Rotation**: Apply rotation angle around Z axis
+3. **Translation**: Move to insertion point
 
-### 変換式
+### Transformation Formula
 
-ブロック内の点 $P_{block} = (x_b, y_b, z_b)$ を、INSERTの設定に基づいてWCS上の点 $P_{wcs} = (x_w, y_w, z_w)$ に変換する式：
+Formula to transform point $P_{block} = (x_b, y_b, z_b)$ within a block to point $P_{wcs} = (x_w, y_w, z_w)$ on WCS based on INSERT settings:
 
 $$
 \begin{bmatrix} x_w \\ y_w \\ z_w \end{bmatrix} = \begin{bmatrix} s_x \cos\theta & -s_x \sin\theta & 0 \\ s_y \sin\theta & s_y \cos\theta & 0 \\ 0 & 0 & s_z \end{bmatrix} \begin{bmatrix} x_b \\ y_b \\ z_b \end{bmatrix} + \begin{bmatrix} t_x \\ t_y \\ t_z \end{bmatrix}
 $$
 
-ここで：
-- $s_x, s_y, s_z$: スケール係数（グループコード `41, 42, 43`）
-- $\theta$: 回転角度（ラジアン、グループコード `50`）
-- $t_x, t_y, t_z$: 挿入点（グループコード `10, 20, 30`）
+Where:
+- $s_x, s_y, s_z$: Scale factors (group codes `41, 42, 43`)
+- $\theta$: Rotation angle (radians, group code `50`)
+- $t_x, t_y, t_z$: Insertion point (group codes `10, 20, 30`)
 
-## ネストされたブロック
+## Nested Blocks
 
-ブロック定義内に、別のブロックを参照するINSERTエンティティを含めることができます。これにより、階層的な図形構造を構築できます。
+Block definitions can contain INSERT entities that reference other blocks. This allows building hierarchical shape structures.
 
-**実装上の注意**: 無限再帰を避けるため、パーサーはブロック参照の深さに制限を設ける必要があります。
+**Implementation Notes**: To avoid infinite recursion, parsers need to set limits on block reference depth.
 
-## 属性（ATTRIBUTE）
+## Attributes (ATTRIBUTE)
 
-ブロック定義には、**属性（ATTRIBUTE）** を含めることができます。属性は、INSERT時に値を設定できるテキストフィールドです。
+Block definitions can include **attributes (ATTRIBUTE)**. Attributes are text fields that can be set when inserting.
 
-### ATTRIB定義の構造（ブロック内）
+### ATTRIB Definition Structure (within block)
 
 ```text
   0
 ATTDEF
   8
-画層名
+LayerName
  10
-位置X
+PositionX
  20
-位置Y
+PositionY
  30
-位置Z
+PositionZ
   1
-デフォルト値
+DefaultValue
   2
-属性タグ名
+AttributeTagName
   3
-プロンプト文字列
+PromptString
  40
-文字高さ
+TextHeight
 ```
 
-### ATTRIBエンティティの構造（INSERT時）
+### ATTRIB Entity Structure (at INSERT time)
 
 ```text
   0
@@ -282,24 +282,24 @@ INSERT
   0
 ATTRIB
   8
-画層名
+LayerName
   1
-属性値
+AttributeValue
   2
-属性タグ名
+AttributeTagName
  10
-位置X
+PositionX
  20
-位置Y
+PositionY
  30
-位置Z
+PositionZ
 ```
 
-**実装上の注意**: INSERTエンティティの直後に、対応するATTRIBエンティティが続きます。すべてのATTRIBが読み込まれるまで、次のINSERTエンティティに進んではいけません。
+**Implementation Notes**: ATTRIB entities corresponding to an INSERT entity follow immediately after it. Do not proceed to the next INSERT entity until all ATTRIB entities are read.
 
-## 実装のベストプラクティス
+## Implementation Best Practices
 
-1. **ブロック辞書の構築**: BLOCKSセクションを読み込む際に、ブロック名をキーとする辞書を構築します。
-2. **参照解決**: INSERTエンティティを読み込む際に、ブロック名が存在するか確認します。
-3. **変換の効率化**: 同じブロックを複数回配置する場合、変換行列を事前計算してキャッシュします。
-4. **エラーハンドリング**: 存在しないブロックを参照している場合、警告を出してスキップするか、空の図形として扱います。
+1. **Build Block Dictionary**: When reading the BLOCKS section, build a dictionary keyed by block names.
+2. **Reference Resolution**: When reading INSERT entities, check if the block name exists.
+3. **Transformation Optimization**: When placing the same block multiple times, pre-calculate and cache transformation matrices.
+4. **Error Handling**: If a non-existent block is referenced, issue a warning and skip it, or treat it as an empty shape.

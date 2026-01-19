@@ -1,76 +1,75 @@
-# 線種（点線・破線）と補助線
+# Linetypes (Dashed/Dotted) and Construction Lines
 
-DXFにおいて、線の見た目を変える「線種（Linetype）」と、作図の目安として使われる「補助線（建設線）」の扱いについて解説します。
-
----
-
-## 1. 線種 (Linetypes)
-
-実線、破線、一点鎖線などのパターンのことです。
-
-### 仕組み
-1. **定義**: `TABLES` セクションの `LTYPE` テーブルで、パターンの名前（`DASHED` 等）と、ダッシュ・スペースの長さを定義します。
-2. **参照**: 各エンティティ（`LINE` や `LWPOLYLINE` 等）の **グループコード 6** で、定義された線種名を指定します。
-
-### グループコード 6 の指定
-- `ByLayer`: 画層（Layer）に設定されている線種をそのまま使用します（デフォルト）。
-- `CONTINUOUS`: 実線（常に存在）。
-- `DASHED`: 破線。
-- `CENTER`: 一点鎖線。
-- `DOT`: 点線。
-
-### 線種スケール (Linetype Scale)
-図面の大きさに合わせてパターンの密度を調整するための倍率です。
-- **グループコード 48**: 個別のエンティティに対する倍率。
-- **$LTSCALE**: 図面全体に対する共通の倍率（ヘッダー変数）。
+This explains how "linetypes" that change line appearance and "construction lines" used as drawing guides are handled in DXF.
 
 ---
 
-## 2. 補助線・建設線 (Construction Lines)
+## 1. Linetypes
 
-作図を補助するために使われる、無限または半無限の線です。
+Patterns like solid, dashed, center lines, etc.
 
-### XLINE (建設線)
-- **特徴**: 両方向に無限に伸びる直線です。
-- **グループコード**:
-    - `10, 20, 30`: 通過点。
-    - `11, 21, 31`: 方向ベクトル。
-- **用途**: 中心線やグリッドの基準線。
+### Mechanism
+1. **Definition**: In the `LTYPE` table of the `TABLES` section, define pattern names (`DASHED`, etc.) and dash/space lengths.
+2. **Reference**: Specify defined linetype names in **group code 6** of each entity (`LINE`, `LWPOLYLINE`, etc.).
 
-### RAY (放射線)
-- **特徴**: 始点から一方向にのみ無限に伸びる直線です。
-- **グループコード**:
-    - `10, 20, 30`: 始点。
-    - `11, 21, 31`: 方向ベクトル。
+### Group Code 6 Specification
+- `ByLayer`: Use the linetype set in the layer as-is (default).
+- `CONTINUOUS`: Solid line (always exists).
+- `DASHED`: Dashed line.
+- `CENTER`: Center line.
+- `DOT`: Dotted line.
 
----
-
-## 3. 実装上の注意とベストプラクティス
-
-### ① 線種定義の欠落
-DXFで `DASHED` などの線種を参照していても、`TABLES` セクションにその定義がない場合、多くのソフトでは実線として表示されます。
-- **対策**: 自作のDXFを出力する場合は、参照する線種定義を必ず `LTYPE` テーブルに含めるようにしてください。
-
-### ② 補助線の印刷
-`XLINE` や `RAY` は非常に長いため、印刷時に邪魔になることがあります。
-- **運用**: 補助線専用の画層（例: `DEFPOINTS` 画層や自作の `AUX` 画層）を作成し、その画層を「非印刷」設定にするのが一般的なCADの作法です。
-
-### ③ 加工機での扱い
-レーザーカッターやCNCなどの加工機は、無限に伸びる `XLINE` や `RAY` を正しく処理できないことが多いです。
-- **対策**: 加工データとして書き出す際は、補助線を削除するか、通常の短い `LINE` に変換することをお勧めします。
+### Linetype Scale
+A multiplier to adjust pattern density according to drawing size.
+- **Group Code 48**: Multiplier for individual entities.
+- **$LTSCALE**: Common multiplier for the entire drawing (header variable).
 
 ---
 
-## まとめ
+## 2. Construction Lines
 
-| 種類 | 役割 | DXFでの表現 |
+Lines that are infinite or semi-infinite, used to assist drawing.
+
+### XLINE (Construction Line)
+- **Features**: A straight line extending infinitely in both directions.
+- **Group Codes**:
+    - `10, 20, 30`: Passing point.
+    - `11, 21, 31`: Direction vector.
+- **Use**: Center lines, grid reference lines.
+
+### RAY (Ray)
+- **Features**: A straight line extending infinitely in only one direction from a start point.
+- **Group Codes**:
+    - `10, 20, 30`: Start point.
+    - `11, 21, 31`: Direction vector.
+
+---
+
+## 3. Implementation Notes and Best Practices
+
+### ① Missing Linetype Definitions
+Even if `DASHED` or other linetypes are referenced in DXF, if their definitions don't exist in the `TABLES` section, many software display them as solid lines.
+- **Solution**: When outputting your own DXF, be sure to include referenced linetype definitions in the `LTYPE` table.
+
+### ② Printing Construction Lines
+`XLINE` and `RAY` are very long and can be annoying when printing.
+- **Practice**: It's common CAD practice to create a dedicated layer for construction lines (e.g., `DEFPOINTS` layer or custom `AUX` layer) and set that layer to "non-printing."
+
+### ③ Handling in Machines
+Machines like laser cutters or CNC often cannot correctly process infinite `XLINE` or `RAY`.
+- **Solution**: When exporting as machine data, it's recommended to delete construction lines or convert them to regular short `LINE`.
+
+---
+
+## Summary
+
+| Type | Role | Expression in DXF |
 | :--- | :--- | :--- |
-| **点線・破線** | 見た目のパターン | `LTYPE` テーブル + グループコード `6` |
-| **無限線** | 作図の基準 | `XLINE` エンティティ |
-| **放射線** | 作図の基準 | `RAY` エンティティ |
-| **補助用画層** | 管理の共通化 | `LAYER` テーブルでの管理 |
+| **Dashed/Dotted Lines** | Visual pattern | `LTYPE` table + group code `6` |
+| **Infinite Lines** | Drawing reference | `XLINE` entity |
+| **Rays** | Drawing reference | `RAY` entity |
+| **Auxiliary Layers** | Common management | Management in `LAYER` table |
 
 ---
 
-関連：[テーブルとレイヤー](../structure/tables-and-layers.md) | [共通エンティティ](./common-entities.md) | [よくある罠](../implementation/common-pitfalls.md)
-
+Related: [Tables and Layers](../structure/tables-and-layers.md) | [Common Entities](./common-entities.md) | [Common Pitfalls](../implementation/common-pitfalls.md)

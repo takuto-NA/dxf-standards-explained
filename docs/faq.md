@@ -1,61 +1,60 @@
-# よくある質問 (FAQ)
+# Frequently Asked Questions (FAQ)
 
-DXFの実装や利用に関して、よくある質問とその回答をまとめました。
-
----
-
-### Q. DXFをプログラムで読むにはどうすればいいですか？
-**A.** 言語ごとに実績のあるライブラリを使用するのが近道です。
-- **Python**: `ezdxf` がデファクトスタンダードです。
-- **JavaScript**: ブラウザなら `dxf-parser`、書き出しなら `dxf-writer` がよく使われます。
-- **C++**: `dxflib` や、DWGも扱いたいなら `LibreDWG` があります。
-詳細は[主要ライブラリ](../implementation/libraries.md)を参照してください。
+Common questions and answers regarding DXF implementation and usage.
 
 ---
 
-### Q. スプラインやNURBSには対応していますか？
-**A.** はい、AutoCAD R13 (AC1012) 以降のバージョンで `SPLINE` エンティティとして対応しています。
-DXFのスプラインは数学的には **NURBS** です。制御点、ノットベクトル、重みなどのパラメータを保持できます。
-詳細は[高度な図形](../geometry/advanced-entities.md)を参照してください。
+### Q. How do I read DXF programmatically?
+**A.** Using proven libraries for each language is the fastest approach.
+- **Python**: `ezdxf` is the de facto standard.
+- **JavaScript**: `dxf-parser` for browsers, `dxf-writer` for exporting are commonly used.
+- **C++**: `dxflib` is available, or `LibreDWG` if you also want to handle DWG.
+For details, see [Major Libraries](../implementation/libraries.md).
 
 ---
 
-### Q. ベジェ曲線（Bezier）は扱えますか？
-**A.** DXFには「ベジェ曲線」という独立したエンティティはありません。
-通常、ベジェ曲線は **NURBS（スプライン）の特殊なケース** として保存されます。多くのCADソフトはベジェ曲線をスプラインとして書き出します。
+### Q. Are splines and NURBS supported?
+**A.** Yes, supported as `SPLINE` entities in AutoCAD R13 (AC1012) and later versions.
+DXF splines are mathematically **NURBS**. They can hold parameters such as control points, knot vectors, and weights.
+For details, see [Advanced Shapes](../geometry/advanced-entities.md).
 
 ---
 
-### Q. Brep (3Dソリッド形状) は扱えますか？
-**A.** `3DSOLID` エンティティとして格納されていますが、中身は **ACIS** という独自のバイナリ/テキスト形式（SAT形式）です。
-これを自前でパースするのは極めて困難です。3D形状を扱いたい場合は、ライブラリを使用するか、ポリゴンメッシュ（`3DFACE`）に変換して扱うのが一般的です。
+### Q. Can Bezier curves be handled?
+**A.** DXF does not have an independent "Bezier curve" entity.
+Typically, Bezier curves are saved as **special cases of NURBS (splines)**. Many CAD software export Bezier curves as splines.
 
 ---
 
-### Q. 3D CAD（Fusion 360, SolidWorks等）との相性は？
-**A.** 非常に重要ですが、用途が限られます。3Dモデルそのものの交換ではなく、**「2Dスケッチの取り込み」**や**「板金の展開図の書き出し」**に多用されます。
-- 3D CADへ送るなら: **AutoCAD 2000 (R15)** 形式が最も安定します。
-- 3Dモデルを送るなら: DXFではなく **STEP (.step)** 形式を使いましょう。
-詳細は[3D CADとの互換性](../implementation/3d-cad-interoperability.md)を参照してください。
+### Q. Can Brep (3D solid shapes) be handled?
+**A.** Stored as `3DSOLID` entities, but the content is **ACIS**, a proprietary binary/text format (SAT format).
+Parsing this yourself is extremely difficult. To handle 3D shapes, it's common to use a library or convert to polygon meshes (`3DFACE`).
 
 ---
 
-### Q. ANSYSなどのCAEソフトでメッシュ作成に使えますか？
-**A.** はい、2D解析の形状定義によく使われます。
-ただし、DXFには「面」の情報がないため、インポート後に線をつなぎ合わせて面を作る作業が必要です。また、線にわずかな隙間があるとメッシュ生成に失敗するため、CAD側でのクリーンアップが必須です。
-詳細は[CAE（ANSYS等）との互換性](../implementation/cae-interoperability.md)を参照してください。
+### Q. How compatible is it with 3D CAD (Fusion 360, SolidWorks, etc.)?
+**A.** Very important, but limited in use. Rather than exchanging 3D models themselves, it's often used for **"importing 2D sketches"** or **"exporting sheet metal development drawings"**.
+- To send to 3D CAD: **AutoCAD 2000 (R15)** format is most stable.
+- To send 3D models: Use **STEP (.step)** format instead of DXF.
+For details, see [3D CAD Interoperability](../implementation/3d-cad-interoperability.md).
 
 ---
 
-### Q. RhinoやGrasshopperとの相性は？
-**A.** 非常に良いです。RhinoはNURBSを扱うため、DXFの `SPLINE` エンティティを高い精度で読み書きできます。
-Grasshopperの **Boundary Surface**（閉じた境界線から面を作る機能）で作った形状をDXFで書き出すと、通常は「境界線のみ」または「ハッチング」として出力されます。
-詳細は[3D CADとの互換性](../implementation/3d-cad-interoperability.md)を参照してください。
+### Q. Can it be used for mesh creation in CAE software like ANSYS?
+**A.** Yes, commonly used for 2D analysis shape definition.
+However, DXF has no "surface" information, so after import, you need to connect lines to create surfaces. Also, if there are slight gaps in lines, mesh generation will fail, so cleanup on the CAD side is essential.
+For details, see [CAE (ANSYS, etc.) Interoperability](../implementation/cae-interoperability.md).
 
 ---
 
-### Q. イラストレーターやInkscapeでDXFは作れますか？
-**A.** はい、可能です。特に **Inkscape** は無料でDXFの書き出しに対応しており、レーザー加工用のデータ作成によく使われます。ただし、スケールが狂いやすいため注意が必要です。詳細は「[フリーソフトでの活用ガイドライン](../implementation/free-software-guide)」を参照してください。
-ただし、デザインソフトで作ったDXFは「見た目」を重視するため、CADで開くと線が重なっていたり、微小な隙間があったりすることがあります。
-詳細は[DXF vs SVG](../comparison/dxf-vs-svg.md)を参照してください。
+### Q. How compatible is it with Rhino or Grasshopper?
+**A.** Very good. Rhino handles NURBS, so it can read and write DXF `SPLINE` entities with high precision.
+When exporting shapes created with Grasshopper's **Boundary Surface** (function to create surfaces from closed boundary lines) as DXF, they are usually output as "boundary lines only" or "hatching."
+For details, see [3D CAD Interoperability](../implementation/3d-cad-interoperability.md).
 
+---
+
+### Q. Can DXF be created with Illustrator or Inkscape?
+**A.** Yes, it's possible. Especially **Inkscape** supports DXF export for free and is commonly used for creating laser cutting data. However, be careful as scale can easily become incorrect. For details, see "[Free Software Usage Guidelines](../implementation/free-software-guide)".
+However, DXF created with design software prioritizes "appearance," so when opened in CAD, lines may overlap or have tiny gaps.
+For details, see [DXF vs SVG](../comparison/dxf-vs-svg.md).

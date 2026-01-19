@@ -1,32 +1,32 @@
-# 主要ライブラリ
+# Major Libraries
 
-各プログラミング言語で利用可能なDXFライブラリを紹介します。実装の参考や、既存のソリューションの評価に役立ちます。
+This introduces DXF libraries available for each programming language. Useful for implementation reference or evaluation of existing solutions.
 
-## Python: ezdxf (最も推奨)
+## Python: ezdxf (Most Recommended)
 
-**特徴**:
-- 最も人気が高く、機能が豊富なPythonライブラリ
-- DXF R12から最新バージョンまで幅広く対応
-- 読み書き両方に対応
-- OCS/WCS変換などの数学的処理も強力にサポート
+**Features**:
+- Most popular and feature-rich Python library
+- Wide support from DXF R12 to latest versions
+- Supports both reading and writing
+- Strong support for mathematical processing like OCS/WCS conversion
 
-### クイックスタート
+### Quick Start
 ```python
 import ezdxf
 
-# DXFファイルの読み込み
+# Read DXF file
 try:
     doc = ezdxf.readfile("drawing.dxf")
     msp = doc.modelspace()
     
     for entity in msp:
         if entity.dxftype() == "LINE":
-            # 始点と終点の取得
+            # Get start and end points
             print(f"Line: {entity.dxf.start} -> {entity.dxf.end}")
 except IOError:
-    print("ファイルが見つかりません")
+    print("File not found")
 
-# DXFファイルの作成
+# Create DXF file
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 msp.add_line((0, 0), (10, 10))
@@ -37,12 +37,12 @@ doc.saveas("output.dxf")
 
 **GitHub**: https://github.com/mozman/dxfgrabber
 
-**特徴**:
-- 読み込み専用（書き込み非対応）
-- シンプルなAPI
-- 軽量
+**Features**:
+- Read-only (no write support)
+- Simple API
+- Lightweight
 
-**使用例**:
+**Usage Example**:
 ```python
 import dxfgrabber
 
@@ -51,7 +51,7 @@ for entity in dxf.entities:
     print(entity)
 ```
 
-**適用範囲**: 読み込み専用のシンプルな処理
+**Scope**: Simple read-only processing
 
 ## C#
 
@@ -59,60 +59,60 @@ for entity in dxf.entities:
 
 **GitHub**: https://github.com/haplokuon/netDxf
 
-**特徴**:
-- .NET向けの包括的なDXFライブラリ
-- 読み書き両方に対応
-- DXF R12から最新バージョンまで対応
-- オープンソース（MITライセンス）
+**Features**:
+- Comprehensive DXF library for .NET
+- Supports both reading and writing
+- Supports DXF R12 to latest versions
+- Open source (MIT license)
 
-**使用例**:
+**Usage Example**:
 ```csharp
 using netDxf;
 
-// DXFファイルの読み込み
+// Read DXF file
 DxfDocument doc = DxfDocument.Load("drawing.dxf");
 
-// エンティティの取得
+// Get entities
 foreach (EntityObject entity in doc.Entities)
 {
     Console.WriteLine($"{entity.Type}: {entity}");
 }
 
-// DXFファイルの作成
+// Create DXF file
 DxfDocument newDoc = new DxfDocument();
 Line line = new Line(new Vector3(0, 0, 0), new Vector3(10, 10, 0));
 newDoc.Entities.Add(line);
 newDoc.Save("output.dxf");
 ```
 
-**適用範囲**: .NETアプリケーションでのDXF処理
+**Scope**: DXF processing in .NET applications
 
 ### DxfLib
 
 **GitHub**: https://github.com/IxMilia/Dxf
 
-**特徴**:
-- モダンなC# API
-- 読み書き対応
-- 型安全な設計
+**Features**:
+- Modern C# API
+- Read/write support
+- Type-safe design
 
 ## C++
 
-### dxflib (推奨)
+### dxflib (Recommended)
 
-**公式サイト**: https://www.qcad.org/en/dxflib-downloads
+**Official Site**: https://www.qcad.org/en/dxflib-downloads
 
-**特徴**:
-- QCADで採用されている、実績のあるオープンソースライブラリ
-- 非常に高速で軽量
-- イベント駆動型（SAX）のパーサー
+**Features**:
+- Proven open source library used by QCAD
+- Very fast and lightweight
+- Event-driven (SAX) parser
 
-### クイックスタート
+### Quick Start
 ```cpp
 #include "dl_dxf.h"
 #include "dl_creationadapter.h"
 
-// コールバックを受け取るクラス
+// Class that receives callbacks
 class MyDxfReader : public DL_CreationAdapter {
 public:
     virtual void addLine(const DL_LineData& data) override {
@@ -124,7 +124,7 @@ int main() {
     MyDxfReader reader;
     DL_Dxf dxf;
     if (!dxf.in("drawing.dxf", &reader)) {
-        return 1; // 読み込み失敗
+        return 1; // Read failed
     }
     return 0;
 }
@@ -132,34 +132,34 @@ int main() {
 
 ### LibreDWG
 
-**公式サイト**: https://www.gnu.org/software/libredwg/
+**Official Site**: https://www.gnu.org/software/libredwg/
 
-**特徴**:
-- DWG形式の読み書きに特化（DXFもサポート）
-- C言語API
-- オープンソース（GPLライセンス）
+**Features**:
+- Specialized in DWG format read/write (also supports DXF)
+- C language API
+- Open source (GPL license)
 
-**適用範囲**: 低レベルなCADファイル処理、組み込みシステム
+**Scope**: Low-level CAD file processing, embedded systems
 
 ### Open Design Alliance (ODA) File Converter
 
-**公式サイト**: https://www.opendesign.com/
+**Official Site**: https://www.opendesign.com/
 
-**特徴**:
-- 商用ライブラリ（有料）
-- 業界標準のDWG/DXF処理
-- 高機能だが高価
+**Features**:
+- Commercial library (paid)
+- Industry standard DWG/DXF processing
+- High functionality but expensive
 
-**適用範囲**: 商用CADアプリケーション
+**Scope**: Commercial CAD applications
 
 ## JavaScript / TypeScript: dxf-parser
 
-**特徴**:
-- Node.jsおよびブラウザで動作するDXFパーサー
-- 読み込み専用
-- シンプルなJSON形式への変換
+**Features**:
+- DXF parser that works in Node.js and browsers
+- Read-only
+- Simple conversion to JSON format
 
-### クイックスタート
+### Quick Start
 ```javascript
 const DxfParser = require('dxf-parser');
 const fs = require('fs');
@@ -183,11 +183,11 @@ try {
 
 **GitHub**: https://github.com/bjnortier/dxf-writer
 
-**特徴**:
-- DXFファイルの書き込み専用
-- ブラウザでも動作
+**Features**:
+- Write-only for DXF files
+- Works in browsers
 
-**適用範囲**: WebアプリケーションでのDXF生成
+**Scope**: DXF generation in web applications
 
 ## Java
 
@@ -195,12 +195,12 @@ try {
 
 **GitHub**: https://github.com/nraynaud/jdxf
 
-**特徴**:
-- Java向けのDXFライブラリ
-- 読み書き対応
-- 軽量
+**Features**:
+- DXF library for Java
+- Read/write support
+- Lightweight
 
-**使用例**:
+**Usage Example**:
 ```java
 import com.nraynaud.jdxf.*;
 
@@ -216,12 +216,12 @@ for (DXFEntity entity : doc.getEntities()) {
 
 **GitHub**: https://github.com/ixmilia/dxf-rs
 
-**特徴**:
-- Rust向けのDXFライブラリ
-- 読み書き対応
-- 型安全な設計
+**Features**:
+- DXF library for Rust
+- Read/write support
+- Type-safe design
 
-**使用例**:
+**Usage Example**:
 ```rust
 use dxf::Drawing;
 
@@ -231,56 +231,56 @@ for entity in drawing.entities() {
 }
 ```
 
-## ライブラリ選択の指針
+## Library Selection Guidelines
 
-### 読み込み専用の場合
+### For Read-only
 
-- **Python**: `dxfgrabber`（シンプル）または `ezdxf`（高機能）
+- **Python**: `dxfgrabber` (simple) or `ezdxf` (feature-rich)
 - **JavaScript**: `dxf-parser`
-- **C#**: `netDxf` または `DxfLib`
+- **C#**: `netDxf` or `DxfLib`
 
-### 読み書き両方必要な場合
+### When Both Read and Write Needed
 
-- **Python**: `ezdxf`（推奨）
-- **C#**: `netDxf`（推奨）
-- **C++**: `LibreDWG`（オープンソース）または ODA（商用）
+- **Python**: `ezdxf` (recommended)
+- **C#**: `netDxf` (recommended)
+- **C++**: `LibreDWG` (open source) or ODA (commercial)
 
-### パフォーマンスが重要な場合
+### When Performance is Critical
 
-- **C++**: `LibreDWG` または ODA
-- **Rust**: `dxf-rs`（メモリ安全性とパフォーマンスのバランス）
+- **C++**: `LibreDWG` or ODA
+- **Rust**: `dxf-rs` (balance of memory safety and performance)
 
-### Webアプリケーションの場合
+### For Web Applications
 
-- **サーバーサイド**: Node.jsの `dxf-parser` + `dxf-writer`
-- **クライアントサイド**: ブラウザで動作するJavaScriptライブラリ
+- **Server-side**: Node.js `dxf-parser` + `dxf-writer`
+- **Client-side**: JavaScript libraries that work in browsers
 
-## ライブラリの比較表
+## Library Comparison Table
 
-| ライブラリ | 言語 | 読み込み | 書き込み | ライセンス | メンテナンス |
+| Library | Language | Read | Write | License | Maintenance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| ezdxf | Python | ✅ | ✅ | MIT | アクティブ |
-| netDxf | C# | ✅ | ✅ | MIT | アクティブ |
-| dxf-parser | JavaScript | ✅ | ❌ | MIT | アクティブ |
-| LibreDWG | C/C++ | ✅ | ✅ | GPL | アクティブ |
-| dxf-rs | Rust | ✅ | ✅ | MIT | アクティブ |
+| ezdxf | Python | ✅ | ✅ | MIT | Active |
+| netDxf | C# | ✅ | ✅ | MIT | Active |
+| dxf-parser | JavaScript | ✅ | ❌ | MIT | Active |
+| LibreDWG | C/C++ | ✅ | ✅ | GPL | Active |
+| dxf-rs | Rust | ✅ | ✅ | MIT | Active |
 
-## カスタム実装 vs ライブラリ使用
+## Custom Implementation vs Library Use
 
-### ライブラリを使用する場合
+### When Using Libraries
 
-- **迅速な開発**: 既存のライブラリを使用することで、開発時間を短縮
-- **テスト済み**: 多くのユーザーによってテストされている
-- **機能の豊富さ**: 高度な機能（スプライン、寸法など）が実装済み
+- **Rapid Development**: Shorten development time by using existing libraries
+- **Tested**: Tested by many users
+- **Rich Features**: Advanced features (splines, dimensions, etc.) already implemented
 
-### カスタム実装をする場合
+### When Custom Implementation
 
-- **特殊な要件**: 既存のライブラリでは対応できない特殊な処理が必要
-- **パフォーマンス**: 特定の用途に最適化されたパーサーが必要
-- **学習目的**: DXFの内部構造を深く理解したい
+- **Special Requirements**: Special processing that existing libraries cannot handle
+- **Performance**: Need parser optimized for specific use cases
+- **Learning Purpose**: Want to deeply understand DXF internal structure
 
-## まとめ
+## Summary
 
-ほとんどの場合、既存のライブラリを使用することを推奨します。特に `ezdxf`（Python）や `netDxf`（C#）は、機能が豊富でドキュメントも充実しており、実用的な選択肢です。
+In most cases, using existing libraries is recommended. Especially `ezdxf` (Python) and `netDxf` (C#) are practical choices with rich features and good documentation.
 
-ただし、DXFの内部構造を理解することは、ライブラリのバグを回避したり、特殊な要件に対応したりする際に役立ちます。このドキュメントは、そのような理解を深めるための参考資料として活用してください。
+However, understanding DXF's internal structure helps avoid library bugs and handle special requirements. Please use this documentation as a reference to deepen that understanding.

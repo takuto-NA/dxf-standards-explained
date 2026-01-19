@@ -11,6 +11,30 @@
 | `lwpolyline_example.dxf` | 2000 (AC1015) | バルジ（円弧）を含むLWPOLYLINE。 | 頂点データ(10, 20)とバルジ(42)の繰り返し構造のパース。 |
 | `block_example.dxf` | 2000 (AC1015) | ブロック定義(BLOCK)と参照(INSERT)。 | BLOCKSセクションとENTITIESセクション間のハンドル参照。 |
 
+## 🔍 インタラクティブ・プレビュー
+
+ドキュメント内で直接DXFファイルを確認できます。（マウスで操作可能）
+
+### Simple Shapes
+<ClientOnly>
+  <DxfViewer src="/samples/simple_shapes.dxf" />
+</ClientOnly>
+
+### LWPolyline with Bulge
+<ClientOnly>
+  <DxfViewer src="/samples/lwpolyline_example.dxf" />
+</ClientOnly>
+
+### Block and Insert
+<ClientOnly>
+  <DxfViewer src="/samples/block_example.dxf" />
+</ClientOnly>
+
+### Minimal R12
+<ClientOnly>
+  <DxfViewer src="/samples/minimal_r12.dxf" />
+</ClientOnly>
+
 ## 🖼 視覚的イメージ
 
 各ファイルがどのような図形を含んでいるかのイメージです。（CADビューワーでの表示結果）

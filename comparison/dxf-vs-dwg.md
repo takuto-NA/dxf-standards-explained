@@ -1,150 +1,150 @@
 # DXF vs DWG
 
-DXFとDWGは、AutoCADが使用する2つの主要なファイル形式です。それぞれの特徴と違いを理解することで、適切な形式を選択できます。
+DXF and DWG are two major file formats used by AutoCAD. Understanding their characteristics and differences helps you choose the appropriate format.
 
-## 形式の違い
+## Format Differences
 
 ### DXF (Drawing Exchange Format)
-**テキスト形式**
+**Text Format**
 
-- **形式**: ASCIIテキスト（またはバイナリ）
-- **可読性**: テキストエディタで読み書き可能
-- **サイズ**: 比較的大きい（テキスト形式のため）
-- **互換性**: 高い（多くのCADソフトがサポート）
-- **用途**: データ交換、デバッグ、カスタム処理
+- **Format**: ASCII text (or binary)
+- **Readability**: Can be read and written with text editors
+- **Size**: Relatively large (due to text format)
+- **Compatibility**: High (supported by many CAD software)
+- **Use**: Data exchange, debugging, custom processing
 
 ### DWG (Drawing)
-**バイナリ形式**
+**Binary Format**
 
-- **形式**: バイナリ（プロプライエタリ）
-- **可読性**: バイナリエディタでしか読めない
-- **サイズ**: 小さい（効率的な圧縮）
-- **互換性**: 限定的（AutoCADや互換ソフトが必要）
-- **用途**: AutoCADのネイティブ形式、効率的な保存
+- **Format**: Binary (proprietary)
+- **Readability**: Can only be read with binary editors
+- **Size**: Small (efficient compression)
+- **Compatibility**: Limited (requires AutoCAD or compatible software)
+- **Use**: AutoCAD's native format, efficient storage
 
-## 比較表
+## Comparison Table
 
-| 項目 | DXF | DWG |
+| Item | DXF | DWG |
 | :--- | :--- | :--- |
-| **形式** | テキスト/バイナリ | バイナリのみ |
-| **ファイルサイズ** | 大きい（2-10倍） | 小さい |
-| **読み込み速度** | 遅い | 速い |
-| **編集の容易さ** | テキストエディタで可能 | 専用ソフトが必要 |
-| **互換性** | 非常に高い | 限定的 |
-| **デバッグ** | 容易 | 困難 |
-| **バージョン管理** | テキスト差分が可能 | バイナリ差分のみ |
-| **カスタム処理** | スクリプトで容易 | ライブラリが必要 |
+| **Format** | Text/Binary | Binary only |
+| **File Size** | Large (2-10x) | Small |
+| **Read Speed** | Slow | Fast |
+| **Ease of Editing** | Possible with text editor | Requires dedicated software |
+| **Compatibility** | Very high | Limited |
+| **Debugging** | Easy | Difficult |
+| **Version Control** | Text diff possible | Binary diff only |
+| **Custom Processing** | Easy with scripts | Requires libraries |
 
-## 詳細な比較
+## Detailed Comparison
 
-### 1. ファイルサイズ
+### 1. File Size
 
-**DXF**: テキスト形式のため、同じ図面でもDWGの2-10倍のサイズになることがあります。
+**DXF**: Due to text format, can be 2-10 times larger than DWG for the same drawing.
 
-例：
-- 同じ図面で、DWGが `500 KB` の場合、DXFは `1-5 MB` になる可能性があります。
+Example:
+- For the same drawing, if DWG is `500 KB`, DXF may be `1-5 MB`.
 
-**DWG**: バイナリ形式で効率的に圧縮されているため、ファイルサイズが小さいです。
+**DWG**: Small file size due to efficient binary compression.
 
-### 2. 読み込み・書き込み速度
+### 2. Read/Write Speed
 
-**DXF**: テキストのパースが必要なため、読み込みが遅い傾向があります。
+**DXF**: Tends to be slow to read due to text parsing requirements.
 
-**DWG**: バイナリ形式のため、読み込みが高速です。
+**DWG**: Fast to read due to binary format.
 
-### 3. 互換性
-
-**DXF**: 
-- オープンな仕様（部分的に）
-- 多くのCADソフトがサポート
-- バージョン間の互換性が高い
-
-**DWG**: 
-- プロプライエタリな形式
-- AutoCADや互換ソフト（LibreCAD, FreeCADなど）が必要
-- バージョンによって互換性の問題が発生する可能性がある
-
-### 4. 編集とデバッグ
+### 3. Compatibility
 
 **DXF**: 
-- テキストエディタで直接編集可能
-- 問題の特定が容易
-- バージョン管理システム（Git）で差分を確認できる
+- Open specification (partially)
+- Supported by many CAD software
+- High compatibility between versions
 
 **DWG**: 
-- 専用ソフトが必要
-- デバッグが困難
-- バイナリ差分は意味をなさない
+- Proprietary format
+- Requires AutoCAD or compatible software (LibreCAD, FreeCAD, etc.)
+- Compatibility issues may occur depending on version
 
-### 5. カスタム処理
+### 4. Editing and Debugging
 
 **DXF**: 
-- スクリプト（Python, Perlなど）で簡単に処理可能
-- 正規表現でパターンマッチングが可能
-- バッチ処理が容易
+- Can be directly edited with text editors
+- Easy to identify problems
+- Can check diffs with version control systems (Git)
 
 **DWG**: 
-- 専用ライブラリ（LibreDWG, ODAなど）が必要
-- 処理が複雑
+- Requires dedicated software
+- Difficult to debug
+- Binary diffs are meaningless
 
-## 変換の注意点
+### 5. Custom Processing
 
-### DXF → DWG 変換
+**DXF**: 
+- Easy to process with scripts (Python, Perl, etc.)
+- Pattern matching possible with regular expressions
+- Easy batch processing
 
-- **データ損失**: 通常は発生しない（DXFの方が情報が豊富）
-- **互換性**: AutoCADで開いて保存することで変換可能
-- **ツール**: `dwg2dxf`（LibreDWG）、AutoCAD、互換ソフト
+**DWG**: 
+- Requires dedicated libraries (LibreDWG, ODA, etc.)
+- Processing is complex
 
-### DWG → DXF 変換
+## Conversion Notes
 
-- **データ損失**: まれに発生する可能性がある（DXFで表現できない機能）
-- **互換性**: 高い（DXFはDWGのサブセット）
-- **ツール**: `dwg2dxf`（LibreDWG）、AutoCAD、互換ソフト
+### DXF → DWG Conversion
 
-## 使用シーン別の推奨
+- **Data Loss**: Usually doesn't occur (DXF has richer information)
+- **Compatibility**: Possible by opening and saving in AutoCAD
+- **Tools**: `dwg2dxf` (LibreDWG), AutoCAD, compatible software
 
-### DXFを使用すべき場合
+### DWG → DXF Conversion
 
-1. **データ交換**: 異なるCADソフト間でデータを交換する場合
-2. **カスタム処理**: スクリプトで自動処理を行う場合
-3. **デバッグ**: ファイルの内容を確認・修正する場合
-4. **バージョン管理**: Gitなどでファイルの変更を追跡する場合
-5. **長期保存**: 将来の互換性を重視する場合
+- **Data Loss**: May rarely occur (features that cannot be expressed in DXF)
+- **Compatibility**: High (DXF is a subset of DWG)
+- **Tools**: `dwg2dxf` (LibreDWG), AutoCAD, compatible software
 
-### DWGを使用すべき場合
+## Recommendations by Use Case
 
-1. **AutoCADでの作業**: AutoCADを主に使用する場合
-2. **ファイルサイズ**: ストレージや転送の効率を重視する場合
-3. **パフォーマンス**: 読み込み速度を重視する場合
-4. **機能の完全性**: AutoCADの最新機能を使用する場合
+### When to Use DXF
 
-## 実装上の考慮事項
+1. **Data Exchange**: When exchanging data between different CAD software
+2. **Custom Processing**: When performing automated processing with scripts
+3. **Debugging**: When checking or fixing file contents
+4. **Version Control**: When tracking file changes with Git, etc.
+5. **Long-term Storage**: When prioritizing future compatibility
 
-### DXFパーサーの実装
+### When to Use DWG
 
-- **テキストパース**: グループコードと値のペアを解析
-- **エンコーディング**: バージョンに応じた文字エンコーディングの処理
-- **エラーハンドリング**: 不完全なファイルへの対応
+1. **AutoCAD Work**: When primarily using AutoCAD
+2. **File Size**: When prioritizing storage or transfer efficiency
+3. **Performance**: When prioritizing read speed
+4. **Feature Completeness**: When using AutoCAD's latest features
 
-### DWGパーサーの実装
+## Implementation Considerations
 
-- **バイナリ解析**: 複雑なバイナリ構造の解析
-- **ライブラリの使用**: 既存のライブラリ（LibreDWGなど）の活用を推奨
-- **ライセンス**: 商用ライブラリ（ODA）の検討
+### DXF Parser Implementation
 
-## まとめ
+- **Text Parsing**: Parse pairs of group codes and values
+- **Encoding**: Handle character encoding according to version
+- **Error Handling**: Handle incomplete files
 
-| 形式 | 推奨用途 |
+### DWG Parser Implementation
+
+- **Binary Parsing**: Parse complex binary structures
+- **Library Use**: Recommend using existing libraries (LibreDWG, etc.)
+- **License**: Consider commercial libraries (ODA)
+
+## Summary
+
+| Format | Recommended Use |
 | :--- | :--- |
-| **DXF** | データ交換、カスタム処理、デバッグ、長期保存 |
-| **DWG** | AutoCADでの作業、パフォーマンス重視、ファイルサイズ重視 |
+| **DXF** | Data exchange, custom processing, debugging, long-term storage |
+| **DWG** | AutoCAD work, performance priority, file size priority |
 
-**一般的な推奨**: 
-- **交換用**: DXFを使用
-- **作業用**: DWGを使用（AutoCADユーザーの場合）
-- **アーカイブ**: DXFを使用（将来の互換性のため）
+**General Recommendation**: 
+- **For Exchange**: Use DXF
+- **For Work**: Use DWG (for AutoCAD users)
+- **For Archive**: Use DXF (for future compatibility)
 
-どちらの形式も、用途に応じて適切に選択することで、効率的なCADデータ管理が可能になります。
+Both formats enable efficient CAD data management when appropriately selected according to use case.
 
 ---
-関連：[DXF vs SVG](./dxf-vs-svg.md) | [産業用フォーマット（ガーバー、Gコード）との比較](./dxf-vs-industrial-formats.md)
+Related: [DXF vs SVG](./dxf-vs-svg.md) | [Comparison with Industrial Formats (Gerber, G-code)](./dxf-vs-industrial-formats.md)

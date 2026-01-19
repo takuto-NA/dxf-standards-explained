@@ -1,76 +1,75 @@
-# 線の太さ・厚み・幅
+# Line Thickness, Depth, and Width
 
-DXFにおいて「線の太さ」を表現する方法には、大きく分けて3つの異なる概念があります。これらは用語が似ていますが、意味が全く異なるため、混同しないように注意が必要です。
-
----
-
-## 1. 線幅 (Lineweight)
-
-画面表示や印刷時に適用される「見た目の太さ」です。
-
-- **グループコード**: **370**
-- **単位**: 0.01mm 単位（例: `25` は 0.25mm）。
-- **特徴**:
-    - ズームしても画面上の太さは変わりません（常に一定のピクセル/ミリで表示）。
-    - AutoCAD 2000 (R15) から導入されました。
-- **よく使われる値**:
-    - `-1`: ByLayer（画層の設定に従う）
-    - `-2`: ByBlock（ブロックの設定に従う）
-    - `-3`: デフォルト値
+In DXF, there are roughly three different concepts for expressing "line thickness." These terms are similar but have completely different meanings, so care must be taken not to confuse them.
 
 ---
 
-## 2. 厚み (Thickness)
+## 1. Lineweight
 
-2D図形をZ軸方向に押し出した「高さ」を意味します。
+The "visual thickness" applied during screen display or printing.
 
-- **グループコード**: **39**
-- **単位**: 図面単位（WCS）。
-- **特徴**:
-    - 2Dの `LINE` や `CIRCLE` を「壁」のように3D化するために使われます。
-    - 真上（平面図）から見ると単なる線ですが、斜め（鳥瞰図）から見ると厚みが見えます。
-- **注意**: 加工機用のデータ（レーザーカット等）では、この値が指定されていても無視されるのが一般的です。
-
----
-
-## 3. ポリライン幅 (Constant/Starting/Ending Width)
-
-`LWPOLYLINE` 等で指定される、実体としての「幅」です。
-
-- **グループコード**:
-    - **43**: 一定の幅 (Constant width)
-    - **40**: 開始幅 (Starting width)
-    - **41**: 終了幅 (Ending width)
-- **単位**: 図面単位（WCS）。
-- **特徴**:
-    - ズームすると線も一緒に拡大・縮小されます。
-    - 開始幅と終了幅を変えることで、矢印のような「先細りの線」を表現できます。
-    - 内部的には、境界線を持った「塗りつぶされた面」として扱われます。
+- **Group Code**: **370**
+- **Unit**: 0.01mm units (e.g., `25` is 0.25mm).
+- **Features**:
+    - Thickness on screen doesn't change even when zooming (always displayed at constant pixels/mm).
+    - Introduced in AutoCAD 2000 (R15).
+- **Commonly Used Values**:
+    - `-1`: ByLayer (follows layer setting)
+    - `-2`: ByBlock (follows block setting)
+    - `-3`: Default value
 
 ---
 
-## 比較まとめ
+## 2. Thickness
 
-| 概念 | コード | 単位 | ズーム時の挙動 | 主な用途 |
+The "height" when a 2D shape is extruded in the Z-axis direction.
+
+- **Group Code**: **39**
+- **Unit**: Drawing units (WCS).
+- **Features**:
+    - Used to make 2D `LINE` or `CIRCLE` 3D like "walls."
+    - From directly above (plan view), it's just a line, but from an angle (bird's-eye view), the thickness is visible.
+- **Note**: In machine data (laser cutting, etc.), this value is generally ignored even if specified.
+
+---
+
+## 3. Polyline Width (Constant/Starting/Ending Width)
+
+The actual "width" specified in `LWPOLYLINE`, etc.
+
+- **Group Codes**:
+    - **43**: Constant width
+    - **40**: Starting width
+    - **41**: Ending width
+- **Unit**: Drawing units (WCS).
+- **Features**:
+    - Lines also scale when zooming.
+    - By changing starting and ending widths, you can express "tapered lines" like arrows.
+    - Internally treated as a "filled surface" with boundary lines.
+
+---
+
+## Comparison Summary
+
+| Concept | Code | Unit | Behavior When Zooming | Main Use |
 | :--- | :--- | :--- | :--- | :--- |
-| **線幅 (Lineweight)** | `370` | 0.01mm | 変化しない | 製図の規格（太線・細線）の表現 |
-| **厚み (Thickness)** | `39` | 図面単位 | 変化する | 簡易的な3D表現（壁など） |
-| **ポリライン幅 (Width)** | `40/41/43` | 図面単位 | 変化する | 矢印、配線パターン、実際の太さを持つ線 |
+| **Lineweight** | `370` | 0.01mm | Doesn't change | Expression of drafting standards (thick/thin lines) |
+| **Thickness** | `39` | Drawing units | Changes | Simple 3D representation (walls, etc.) |
+| **Polyline Width** | `40/41/43` | Drawing units | Changes | Arrows, wiring patterns, lines with actual thickness |
 
 ---
 
-## 実装上のアドバイス
+## Implementation Advice
 
-1. **加工機への出力**:
-   レーザーカッターやCNCに送る際、多くの場合は「線の太さはゼロ（パスの芯線のみ）」として扱われます。もし太さを持たせたい場合は、`WIDTH` を持つポリラインを「中抜きの外形線」に変換（オフセット処理）する必要があります。
+1. **Output to Machines**:
+   When sending to laser cutters or CNC, many cases treat "line thickness as zero (only path centerline)." If you want thickness, you need to convert polylines with `WIDTH` to "hollow outer contours" (offset processing).
 
-2. **古いDXFバージョン**:
-   R14以前のDXFでは `Lineweight (370)` が存在しません。古い環境との互換性を保つには、色番号（Group 62）とペン番号を紐付けて太さを管理する「色従属印刷スタイル（CTB）」という古い手法が今でも使われています。
+2. **Old DXF Versions**:
+   `Lineweight (370)` doesn't exist in DXF before R14. To maintain compatibility with old environments, the old method of "color-dependent print styles (CTB)" that manages thickness by associating color numbers (Group 62) with pen numbers is still used.
 
-3. **表示の優先順位**:
-   同じエンティティに `Lineweight` と `Width` の両方が設定されている場合、通常は `Width`（実体としての幅）が優先して描画されます。
+3. **Display Priority**:
+   When both `Lineweight` and `Width` are set for the same entity, usually `Width` (actual width) is prioritized for drawing.
 
 ---
 
-関連：[共通エンティティ](./common-entities.md) | [ポリゴン・塗りつぶし](./polygons-and-fills.md) | [よくある罠](../implementation/common-pitfalls.md)
-
+Related: [Common Entities](./common-entities.md) | [Polygons and Fills](./polygons-and-fills.md) | [Common Pitfalls](../implementation/common-pitfalls.md)
