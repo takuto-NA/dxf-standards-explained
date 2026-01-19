@@ -67,6 +67,11 @@ When using DXF files with CNC machine tools and laser cutters, **SPLINE entities
 - However, many machines have **direct DXF file reading** capabilities and may not go through CAM software
 - In this case, the controller needs to process SPLINE directly, but since it cannot, SPLINE is ignored or causes errors
 
+**G-code Comparison Example**:
+- **SPLINE (conceptual)**: `G06.2 P3 X... Y... K...` (single line, but few machines support it)
+- **Linear Approximation**: `G01 X... Y...` repeated hundreds of times (high compatibility, but large data volume)
+  - Example: A complex SPLINE curve might generate 200-500 G01 commands, significantly increasing G-code file size compared to a single SPLINE entity
+
 ### 1.5 Standardization Issues
 
 **DXF Specification Complexity**:
@@ -92,6 +97,14 @@ When using DXF files with CNC machine tools and laser cutters, **SPLINE entities
   - Algorithm used
   - Tolerance settings
 - When controllers perform this approximation, **quality can be unstable**
+
+**Chord Error (Tolerance) Explanation**:
+- **Chord Error** (also called **tolerance** or **chord deviation**) is the **maximum perpendicular distance** between the theoretical curve and the approximating line segment (chord)
+- When converting a curve to line segments, each segment is a straight line connecting two points on the curve
+- The chord error is the maximum distance from any point on the curve segment to the approximating line
+- **Visual concept**: Imagine a curved path. When you approximate it with straight lines, the chord error is the maximum gap between the curve and the straight line
+- Smaller tolerance = smaller chord error = more accurate approximation but more line segments
+- Larger tolerance = larger chord error = fewer line segments but less accurate approximation
 
 **CAM Software Preprocessing**:
 - For high-quality machining, it's more reliable to **preprocess SPLINE in CAM software**, converting to point sequences and generating optimized G-code
@@ -285,6 +298,15 @@ new_doc.saveas("output.dxf")
 - Smaller tolerance increases point count and G-code length
 - Larger tolerance decreases point count but reduces curve accuracy
 
+**Look-ahead Control (Modern Controllers)**:
+- When converting curves to many small line segments (G01), **data starvation** can occur on older controllers
+  - Old controllers may not process fast enough, causing **vibration (banging)** during machining
+- However, modern CNC controllers feature **look-ahead control**:
+  - **Fanuc**: G05.1 (AI contour control) / G08 (preview control)
+  - **Siemens**: COMPCAD (compressor CAD) function
+  - These features allow smooth passage through many small line segments
+- With modern controllers, converting SPLINE to G01 segments is practically viable, though SPLINE direct support is still preferred for efficiency
+
 ### 4.3 Memory Usage Comparison
 
 **Memory Usage per Entity** (approximate):
@@ -322,8 +344,10 @@ new_doc.saveas("output.dxf")
 
 **Tolerance Settings**:
 - When converting SPLINE to LWPOLYLINE, **set tolerance appropriately**
-- Generally, tolerance about 10 times machining accuracy is recommended
-  - Example: For 0.01mm machining accuracy, tolerance around 0.1mm
+- Generally, tolerance should be **1/2 to 1/10 of the target machining accuracy**
+  - Example: For 0.01mm target machining accuracy, set tolerance to 0.001mm (1/10)
+  - This ensures that approximation errors, calculation errors, and machine vibration stay within the target accuracy
+  - **Important**: Setting tolerance larger than machining accuracy (e.g., 0.1mm tolerance for 0.01mm accuracy) will result in jagged linear segments that deviate up to the tolerance value from the theoretical curve, making it impossible to achieve the target accuracy
 
 **Point Count Optimization**:
 - Too many points increases G-code length and machining time
@@ -373,7 +397,14 @@ def prepare_for_cnc(input_path, output_path, tolerance=0.1):
             
             # Generate points based on tolerance
             points = []
-            # Simplified implementation (actual should use adaptive division)
+            # Note: This simplified calculation (arc_length / tolerance) uses uniform spacing
+            # This works reasonably well, but has limitations:
+            # - High curvature areas (sharp curves) may be too coarse
+            # - Low curvature areas (near-straight sections) may be unnecessarily fine
+            # For production use, consider adaptive subdivision methods:
+            # - ezdxf provides path.flattening(distance) method for adaptive division
+            # - Adaptive subdivision adjusts point density based on local curvature
+            #   to maintain tolerance while minimizing point count
             segments = max(10, int(bspline.arc_length() / tolerance))
             for i in range(segments + 1):
                 t = i / segments

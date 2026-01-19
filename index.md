@@ -62,6 +62,8 @@ For those who want to select libraries or design their own parser.
 - [Common Pitfalls and Solutions](/implementation/common-pitfalls)
 - [Major Libraries Introduction](/implementation/libraries)
 - **[ezdxf Practical Guide](/implementation/ezdxf-guide)** - Detailed manual for handling DXF in Python
+  - **[Working with Shapely Geometries](/implementation/ezdxf-shapely-integration)** - Complete guide for Shapely users
+  - **[Advanced Spline Guide](/implementation/ezdxf-splines-advanced)** - NURBS, knot vectors, and advanced spline operations
 - [CNC Machine Compatibility](/implementation/cnc-machine-compatibility) - Why machines don't support SPLINE
 - [3D CAD Interoperability](/implementation/3d-cad-interoperability)
 - [Free Software Usage Guidelines](/implementation/free-software-guide)

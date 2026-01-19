@@ -4,11 +4,16 @@ A practical guide for importing (reading) and exporting (writing) DXF files usin
 
 This guide comprehensively explains information useful for implementation, from basic operations when using ezdxf to common mistakes and risk mitigation.
 
+::: tip For Shapely Users
+If you're working with **Shapely** geometries (Polygon, MultiPolygon, LineString, etc.) and need to export them to DXF, see the dedicated guide: **[Working with Shapely Geometries](./ezdxf-shapely-integration.md)** - Complete guide for converting Shapely objects to DXF format.
+:::
+
 ::: tip Related Documentation
 - [Major Libraries](./libraries.md) - Comprehensive introduction including libraries in other languages
 - [Common Pitfalls and Solutions](./common-pitfalls.md) - General DXF implementation considerations
 - [Parser Design](./parsing-strategy.md) - Parser implementation architecture
 - [Coordinate Systems (WCS/OCS/AAA)](../geometry/coordinate-systems.md) - Details on coordinate transformations
+- **[Working with Shapely Geometries](./ezdxf-shapely-integration.md)** - Shapely integration guide
 :::
 
 ---
@@ -30,6 +35,14 @@ This guide comprehensively explains information useful for implementation, from 
 **Official Site**: https://ezdxf.mozman.at/
 
 **GitHub**: https://github.com/mozman/ezdxf
+
+### Target Audience
+
+This guide is designed for:
+- **General Python developers** working with DXF files
+- **CAD data processing implementers** needing comprehensive reference
+- **Users migrating from other libraries** (Shapely, GeoPandas, etc.) - See [Working with Shapely Geometries](./ezdxf-shapely-integration.md) for Shapely-specific guidance
+- **Anyone implementing DXF import/export** functionality
 
 ### Installation
 
@@ -207,15 +220,22 @@ if "Layout1" in layouts:
 
 When processing large DXF files, memory efficiency should be considered.
 
+**Important Note**: `ezdxf.readfile()` loads the entire DOM (Document Object Model) into memory. For very large files (several GB), this may cause memory errors. If you encounter memory issues, see Section 5.1 for the `iterdxf` addon, which provides memory-efficient streaming processing.
+
 ```python
 import ezdxf
 
 def process_large_dxf(file_path):
-    """Efficiently process large DXF files"""
-    doc = ezdxf.readfile(file_path)
+    """Efficiently process large DXF files
+    
+    Note: This method loads the entire file into memory.
+    For truly huge files, use iterdxf addon (see Section 5.1).
+    """
+    doc = ezdxf.readfile(file_path)  # Entire DOM loaded into memory here
     msp = doc.modelspace()
     
     # Process memory-efficiently using iterator
+    # Note: Even though we use an iterator here, the file is already loaded into memory
     line_count = 0
     circle_count = 0
     
@@ -228,6 +248,8 @@ def process_large_dxf(file_path):
     
     print(f"LINE: {line_count}, CIRCLE: {circle_count}")
 ```
+
+**For truly huge files**: See Section 5.1 "Memory Insufficiency" for the `iterdxf` addon, which provides streaming processing without loading the entire file into memory.
 
 ---
 
@@ -786,6 +808,12 @@ def create_dxf_with_japanese_text():
     mtext = msp.add_mtext("Multi-line\nJapanese text", dxfattribs={'height': 2.5})
     mtext.set_location((0, 5))
     
+    # When saving, encoding can be explicitly specified (useful for older versions)
+    # For R2010+, UTF-8 is standard, but explicit specification is also possible:
+    # doc.saveas("output.dxf", encoding='utf-8')
+    # Note: R2007+ enforces UTF-8, so encoding parameter is ignored for newer versions
+    # For R12/R2000, default encoding is cp1252, so explicit UTF-8 specification may be needed
+    
     return doc
 ```
 
@@ -797,25 +825,36 @@ def create_dxf_with_japanese_text():
 
 **Details**: See [Coordinate Systems (WCS/OCS/AAA)](../geometry/coordinate-systems.md)
 
+::: tip For 2D Data (Shapely, etc.)
+If you're working with **2D coordinates** (e.g., from Shapely `Polygon.exterior.coords`), you don't need to worry about WCS/OCS transformations. Simply pass coordinates as tuples `(x, y)` directly to ezdxf:
+
+```python
+# ✅ Simple for 2D data - just use tuples
+points = [(0, 0), (10, 0), (10, 10), (0, 10)]
+msp.add_lwpolyline(points)  # No coordinate system conversion needed!
+```
+
+The complex transformations below are only needed for **3D operations** or when working with entities that have extrusion vectors (like CIRCLE in 3D space).
+:::
+
 **Solution**:
 ```python
 import ezdxf
-from ezdxf.math import Vec3
+from ezdxf.math import Vec3, OCS, Z_AXIS
 
 def get_entity_wcs_coordinates(entity):
     """Get entity WCS coordinates (including OCS transformation)"""
     if entity.dxftype() == "CIRCLE":
         # CIRCLE is defined in OCS
         center_ocs = entity.dxf.center
-        extrusion = entity.dxf.extrusion  # Normal vector
+        extrusion = Vec3(entity.dxf.extrusion)  # Normal vector
         
         # OCS to WCS transformation if needed
         # (See coordinate-systems.md for details)
-        # Simplified example here
-        if extrusion != (0, 0, 1):
+        # Use Vec3.isclose() for safe floating-point comparison
+        if not extrusion.isclose(Z_AXIS):
             # Need transformation using Arbitrary Axis Algorithm
             # Use ezdxf transformation functionality
-            from ezdxf.math import OCS
             ocs = OCS(extrusion)
             center_wcs = ocs.to_wcs(center_ocs)
             return center_wcs
@@ -1297,6 +1336,12 @@ doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 msp.add_text("Japanese text", dxfattribs={'height': 2.5})
 
+# When saving, encoding can be explicitly specified (useful for older versions)
+# For R2010+, UTF-8 is standard, but explicit specification is also possible:
+# doc.saveas("output.dxf", encoding='utf-8')
+# Note: R2007+ enforces UTF-8, so encoding parameter is ignored for newer versions
+# For R12/R2000, default encoding is cp1252, so explicit UTF-8 specification may be needed
+
 # R12 and R2000 require attention
 # Recommend using newer versions when possible
 ```
@@ -1305,7 +1350,19 @@ msp.add_text("Japanese text", dxfattribs={'height': 2.5})
 
 See [Coordinate Systems (WCS/OCS/AAA)](../geometry/coordinate-systems.md) for details.
 
-**OCS Transformation in ezdxf**:
+::: tip Quick Start for 2D Users
+If you're working with **2D data** (Shapely geometries, simple polygons, etc.), coordinate system handling is straightforward:
+
+```python
+# 2D coordinates - use tuples directly
+points = [(x, y) for x, y in polygon.exterior.coords[:-1]]
+msp.add_lwpolyline(points)  # No transformation needed!
+```
+
+The complex OCS/WCS transformations described below are **only needed for 3D operations** or when working with entities that have non-default extrusion vectors.
+:::
+
+**OCS Transformation in ezdxf** (for 3D operations):
 ```python
 import ezdxf
 from ezdxf.math import OCS, Vec3
@@ -1413,7 +1470,62 @@ with opendxf("huge_file.dxf") as doc:
 
 ---
 
-## 7. Practical Examples
+## 7. Working with Shapely Geometries
+
+::: tip Dedicated Guide Available
+For users working with **Shapely** geometries (Polygon, MultiPolygon, LineString, etc.), a complete dedicated guide is available:
+
+**[Working with Shapely Geometries](./ezdxf-shapely-integration.md)** - Comprehensive guide covering:
+- Converting Shapely Polygon to DXF LWPOLYLINE
+- Handling polygons with holes using HATCH entities
+- MultiPolygon, LineString, and LinearRing export
+- 2D coordinate system handling (simplified for Shapely users)
+- Complete code examples and best practices
+
+This section provides a quick reference. For detailed examples and Shapely-specific patterns, see the dedicated guide.
+:::
+
+### Quick Reference: Shapely to DXF
+
+**Basic Polygon Export**:
+```python
+import ezdxf
+from shapely.geometry import Polygon
+
+poly = Polygon([(0, 0), (10, 0), (5, 10), (0, 0)])
+doc = ezdxf.new('R2010')
+msp = doc.modelspace()
+
+# Simple polygon (no holes)
+points = list(poly.exterior.coords[:-1])  # Remove duplicate closing point
+msp.add_lwpolyline(points, dxfattribs={'layer': '0', 'closed': True})
+```
+
+**Polygon with Holes (HATCH)**:
+```python
+# Polygon with hole
+hole_poly = Polygon(
+    [(0, 0), (10, 0), (10, 10), (0, 10)],  # Exterior
+    [[(2, 2), (8, 2), (8, 8), (2, 8)]]    # Interior (hole)
+)
+
+hatch = msp.add_hatch(color=1)
+hatch.paths.add_polyline_path(list(hole_poly.exterior.coords[:-1]), is_closed=True)
+for interior in hole_poly.interiors:
+    hatch.paths.add_polyline_path(list(interior.coords[:-1]), is_closed=True)
+```
+
+**Key Points for Shapely Users**:
+- **2D coordinates**: Use tuples `(x, y)` directly - no coordinate system transformations needed
+- **Remove duplicate closing point**: Use `coords[:-1]` before passing to ezdxf
+- **Holes**: Use `HATCH` entities for polygons with `interiors`
+- **MultiPolygon**: Export each polygon separately
+
+For complete examples and advanced patterns, see [Working with Shapely Geometries](./ezdxf-shapely-integration.md).
+
+---
+
+## 8. Practical Examples
 
 ### Creating Simple Drawings
 
@@ -1631,7 +1743,7 @@ safe_file_operation("input.dxf", "output.dxf", my_operation, create_backup=True)
 
 ---
 
-## 8. Advanced Features
+## 9. Advanced Features
 
 ### Adding Custom Data (XDATA)
 
@@ -1683,6 +1795,119 @@ import ezdxf
 # https://ezdxf.readthedocs.io/en/stable/addons/xref.html
 ```
 
+### Exploding Entities (Explode)
+
+**Explode** is the operation of breaking down complex entities into simpler ones (e.g., breaking blocks into their constituent entities, converting polylines to line segments).
+
+**Common Use Cases**:
+- Breaking down block references (INSERT) into individual entities
+- Converting LWPOLYLINE/POLYLINE to LINE segments
+- Converting SPLINE to LINE segments (approximation)
+- Breaking down complex entities for CNC processing
+
+**Important Notes**:
+- Explode operations can be computationally expensive, especially for complex entities
+- Exploding large blocks or polylines with many vertices can significantly increase the number of entities
+- Use explode only when necessary (e.g., when target systems don't support complex entities)
+
+#### Exploding Blocks (INSERT)
+
+```python
+import ezdxf
+from ezdxf import explode
+
+doc = ezdxf.readfile("drawing.dxf")
+msp = doc.modelspace()
+
+# Find all INSERT entities (block references)
+inserts_to_explode = [e for e in msp if e.dxftype() == "INSERT"]
+
+# Explode each INSERT entity
+for insert in inserts_to_explode:
+    # explode.block() returns a list of new entities
+    new_entities = explode.block(insert, target_layout=msp)
+    # Original INSERT entity is automatically deleted
+    print(f"Exploded block '{insert.dxf.name}': {len(new_entities)} entities created")
+```
+
+#### Exploding Polylines
+
+```python
+import ezdxf
+from ezdxf import explode
+
+doc = ezdxf.readfile("drawing.dxf")
+msp = doc.modelspace()
+
+# Find all LWPOLYLINE entities
+polylines = [e for e in msp if e.dxftype() == "LWPOLYLINE"]
+
+# Explode each polyline into LINE segments
+for polyline in polylines:
+    # explode.entity() explodes a single entity
+    new_entities = explode.entity(polyline, target_layout=msp)
+    print(f"Exploded polyline: {len(new_entities)} LINE segments created")
+```
+
+#### Exploding Splines (Approximation)
+
+```python
+import ezdxf
+from ezdxf import explode
+
+doc = ezdxf.readfile("drawing.dxf")
+msp = doc.modelspace()
+
+# Find all SPLINE entities
+splines = [e for e in msp if e.dxftype() == "SPLINE"]
+
+# Explode splines into LINE segments (approximation)
+for spline in splines:
+    # explode.entity() converts SPLINE to LINE segments
+    new_entities = explode.entity(spline, target_layout=msp)
+    print(f"Exploded spline: {len(new_entities)} LINE segments created")
+```
+
+#### Performance Considerations
+
+**Warning**: Explode operations can be expensive:
+
+```python
+import ezdxf
+from ezdxf import explode
+
+def explode_safely(msp, entity_type="INSERT", max_entities=10000):
+    """Safely explode entities with entity count limit"""
+    entities = [e for e in msp if e.dxftype() == entity_type]
+    
+    total_new_entities = 0
+    for entity in entities:
+        # Check current entity count
+        current_count = len(list(msp))
+        
+        if current_count > max_entities:
+            print(f"Warning: Entity count ({current_count}) exceeds limit ({max_entities})")
+            print(f"Skipping remaining {len(entities) - entities.index(entity)} entities")
+            break
+        
+        # Explode entity
+        new_entities = explode.entity(entity, target_layout=msp)
+        total_new_entities += len(new_entities)
+    
+    print(f"Total new entities created: {total_new_entities}")
+
+# Usage example
+doc = ezdxf.readfile("drawing.dxf")
+msp = doc.modelspace()
+explode_safely(msp, entity_type="INSERT", max_entities=10000)
+```
+
+**Best Practices**:
+1. **Avoid unnecessary explosions**: Only explode when target systems require it
+2. **Monitor entity count**: Exploding can dramatically increase the number of entities
+3. **Consider alternatives**: For CNC machines, consider keeping polylines as-is (many machines support them)
+4. **Test performance**: Measure processing time before and after explosion
+
 ### Creating Dimensions (DIMENSION)
 
 ```python
@@ -1716,23 +1941,22 @@ msp.add_radius_dim(
 
 ezdxf fully supports DXF **SPLINE** entities and supports both B-spline and NURBS (Non-Uniform Rational B-Spline).
 
-#### Support Status Overview
+::: tip Advanced Spline Guide Available
+For detailed information on knot vectors, NURBS mathematics, advanced interpolation methods, and complex spline operations, see:
 
-| Feature | Support Status | Notes |
-| :--- | :--- | :--- |
-| **SPLINE Entity** | ✅ Full support | Available from DXF R13+ |
-| **B-spline (non-rational)** | ✅ Full support | Defined by control points and knot vector |
-| **NURBS (rational B-spline)** | ✅ Full support | Defined by weighted control points |
-| **Fit Points (through points)** | ✅ Full support | Auto-generated from points curve passes through |
-| **Control Points** | ✅ Full support | Explicit control points and knot vector |
-| **Rational Splines** | ✅ Full support | Control via weights |
+**[Advanced Spline, NURBS, and B-spline Guide](./ezdxf-splines-advanced.md)** - Comprehensive guide covering:
+- Knot vector generation and mathematics
+- NURBS (rational B-splines) with weights
+- Advanced interpolation methods (global, local cubic)
+- Bezier decomposition and approximation
+- Spline conversion techniques
 
-#### SPLINE Entity Creation Methods
+This section provides basic usage. For mathematical details and advanced operations, see the dedicated guide.
+:::
 
-ezdxf can create splines in multiple ways.
+#### Quick Reference: Basic Spline Creation
 
-##### 1. Creation via Fit Points (Easiest)
-
+**Simple Spline from Fit Points**:
 ```python
 import ezdxf
 
@@ -1742,304 +1966,44 @@ msp = doc.modelspace()
 # Create spline by specifying through points
 fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
 spline = msp.add_spline(fit_points)
-
-# Can also specify start/end tangent directions
-spline_with_tangents = msp.add_spline(
-    fit_points,
-    start_tangent=(1, 0),  # Start tangent direction
-    end_tangent=(0, 1)     # End tangent direction
-)
 ```
 
-**Note**: Since Fit points to control points conversion uses different algorithms per CAD software, **curves may not be exactly the same between different CAD software**.
+**Note**: Fit points conversion may differ between CAD software. For compatibility, use control points (see below).
 
-##### 2. Creation via Control Points (Recommended)
-
+**Spline from Control Points (Recommended for Compatibility)**:
 ```python
-import ezdxf
-
-doc = ezdxf.new('R2010')
-msp = doc.modelspace()
-
 # Explicitly specify control points
 control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
 degree = 3  # 3rd degree spline (cubic)
 
-# Open spline (start and end points don't match)
+# Open spline
 spline_open = msp.add_open_spline(control_points, degree=degree)
 
-# Closed spline (start and end points match)
+# Closed spline
 spline_closed = msp.add_closed_spline(control_points, degree=degree)
 ```
 
-##### 3. NURBS (Rational B-spline) Creation
-
+**Reading Splines**:
 ```python
-import ezdxf
-
-doc = ezdxf.new('R2010')
-msp = doc.modelspace()
-
-# Specify control points and weights
-control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-weights = [1.0, 2.0, 1.0, 1.0]  # Weight for each control point
-
-# Create rational spline (NURBS)
-spline_rational = msp.add_rational_spline(
-    control_points,
-    weights=weights,
-    degree=3
-)
-
-# Closed rational spline
-spline_closed_rational = msp.add_closed_rational_spline(
-    control_points,
-    weights=weights,
-    degree=3
-)
-```
-
-#### Explicit Knot Vector Specification
-
-For more advanced control, knot vectors can be explicitly specified.
-
-```python
-import ezdxf
-from ezdxf.math import BSpline
-
-doc = ezdxf.new('R2010')
-msp = doc.modelspace()
-
-# Specify control points and knot vector
-control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-knots = [0, 0, 0, 0, 1, 1, 1, 1]  # Knot vector (open uniform knots)
-degree = 3
-
-# Create BSpline object
-bspline = BSpline(control_points, order=degree + 1, knots=knots)
-
-# Add as SPLINE entity
-spline = msp.add_spline_control_frame(
-    control_points=control_points,
-    degree=degree,
-    knots=knots
-)
-```
-
-#### Advanced Features of ezdxf.math Module
-
-ezdxf's `math` module provides rich functionality for spline operations.
-
-```python
-import ezdxf
-from ezdxf.math import (
-    BSpline,
-    global_bspline_interpolation,
-    local_cubic_bspline_interpolation,
-    bezier_decomposition,
-    cubic_bezier_approximation
-)
-
-# 1. Global B-spline interpolation (generate control points from through points)
-fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-bspline = global_bspline_interpolation(
-    fit_points,
-    degree=3,
-    method='chord'  # Choose from 'chord', 'uniform', 'centripetal'
-)
-
-# 2. Local cubic B-spline interpolation (suitable for short curves)
-bspline_local = local_cubic_bspline_interpolation(fit_points)
-
-# 3. Decompose B-spline into Bezier segments (for rendering)
-bezier_segments = bezier_decomposition(bspline)
-
-# 4. Approximate arbitrary B-spline with cubic Bezier curves
-bezier_approx = cubic_bezier_approximation(bspline, segments=10)
-```
-
-#### Reading and Operating Splines
-
-```python
-import ezdxf
-
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 
-# Search for SPLINE entities
 for entity in msp:
     if entity.dxftype() == "SPLINE":
-        # Get spline properties
         print(f"Degree: {entity.dxf.degree}")
-        print(f"Control point count: {len(entity.control_points)}")
-        print(f"Fit point count: {len(entity.fit_points) if entity.fit_points else 0}")
-        print(f"Knot count: {len(entity.knots)}")
-        
-        # Whether rational spline (NURBS)
+        print(f"Control points: {len(entity.control_points)}")
         if entity.dxf.flags & 4:  # RATIONAL_SPLINE flag
             print("NURBS (rational spline)")
-            print(f"Weights: {entity.weights}")
-        
-        # Whether closed spline
-        if entity.dxf.flags & 1:  # CLOSED_SPLINE flag
-            print("Closed spline")
-        
-        # Get control points
-        for i, point in enumerate(entity.control_points):
-            print(f"Control point {i}: ({point.x}, {point.y}, {point.z})")
 ```
 
-#### Compatibility and Uniqueness Issues with Other CAD
+#### Key Points for Most Users
 
-**Important Note**: DXF SPLINE entities may have **different control point conversions per CAD software when only Fit Points (through points) are specified**.
+- **For point sequences**: Usually better to keep as `LWPOLYLINE` (see "Converting Point Sequences" below)
+- **For CAD editing**: Use `SPLINE` entities for smaller file size and easier editing
+- **For compatibility**: Explicitly specify control points and knot vector (see advanced guide)
+- **For CNC machines**: Many machines don't support SPLINE - convert to polyline instead
 
-##### Problem Causes
-
-1. **Fit Points to control points conversion algorithms differ per CAD**
-   - AutoCAD, BricsCAD, LibreCAD, etc. each use different algorithms
-   - Even with same Fit Points, curve shapes may differ when opened in different CAD software
-
-2. **Knot vector generation methods differ**
-   - Various methods: Uniform, Chord Length, Centripetal, etc.
-
-##### Solution: Explicitly Specify Control Points and Knot Vector
-
-**To ensure compatibility, strongly recommend explicitly specifying control points and knot vector instead of Fit Points.**
-
-```python
-import ezdxf
-
-def create_compatible_spline(msp, control_points, degree=3):
-    """Create spline ensuring compatibility with other CAD software"""
-    # Generate open uniform knot vector (standard method)
-    n = len(control_points)
-    order = degree + 1
-    
-    # Open uniform knot vector
-    knots = []
-    # Start knots (degree+1)
-    knots.extend([0] * order)
-    # Middle knots (uniform distribution)
-    for i in range(1, n - degree):
-        knots.append(i)
-    # End knots (degree+1)
-    knots.extend([n - degree] * order)
-    
-    # Create by explicitly specifying control points and knot vector
-    spline = msp.add_spline_control_frame(
-        control_points=control_points,
-        degree=degree,
-        knots=knots
-    )
-    
-    return spline
-
-# Usage example
-doc = ezdxf.new('R2010')
-msp = doc.modelspace()
-
-control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-spline = create_compatible_spline(msp, control_points)
-doc.saveas("compatible_spline.dxf")
-```
-
-##### Compatibility by DXF Version
-
-| DXF Version | SPLINE Support | Recommended Use |
-| :--- | :--- | :--- |
-| **Pre-R12** | ❌ Unsupported | SPLINE unavailable. Need polyline approximation |
-| **R13+** | ✅ Supported | SPLINE entities available |
-| **R2000+** | ✅ Full support | Handle references possible. Recommended |
-
-**Recommendation**: Recommend saving drawings containing splines in **R2000+ versions**.
-
-##### Compatibility Testing with Other CAD Software
-
-```python
-import ezdxf
-
-def test_spline_compatibility():
-    """Test spline compatibility"""
-    # Test control points
-    control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-    
-    # Method 1: Fit Points only (may have compatibility issues)
-    doc1 = ezdxf.new('R2010')
-    msp1 = doc1.modelspace()
-    fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-    spline1 = msp1.add_spline(fit_points)
-    doc1.saveas("test_fit_points.dxf")
-    
-    # Method 2: Explicit control points and knot vector (recommended)
-    doc2 = ezdxf.new('R2010')
-    msp2 = doc2.modelspace()
-    spline2 = create_compatible_spline(msp2, control_points)
-    doc2.saveas("test_control_points.dxf")
-    
-    print("Test files created.")
-    print("Open in different CAD software and verify curve shapes match.")
-
-test_spline_compatibility()
-```
-
-#### Spline Conversion and Approximation
-
-When conversion to other formats is needed:
-
-```python
-import ezdxf
-from ezdxf.math import BSpline, bezier_decomposition, cubic_bezier_approximation
-
-def convert_spline_to_polyline(spline_entity, segments=100):
-    """Convert spline to polyline (approximation)"""
-    # Create BSpline object
-    bspline = BSpline(
-        spline_entity.control_points,
-        order=spline_entity.dxf.degree + 1,
-        knots=spline_entity.knots
-    )
-    
-    # Sample points on spline
-    points = []
-    for i in range(segments + 1):
-        t = i / segments
-        point = bspline.point(t)
-        points.append((point.x, point.y))
-    
-    return points
-
-# Usage example
-doc = ezdxf.readfile("drawing.dxf")
-msp = doc.modelspace()
-new_doc = ezdxf.new('R2010')
-new_msp = new_doc.modelspace()
-
-for entity in msp:
-    if entity.dxftype() == "SPLINE":
-        # Convert spline to polyline
-        points = convert_spline_to_polyline(entity)
-        new_msp.add_lwpolyline(points)
-
-new_doc.saveas("converted.dxf")
-```
-
-#### Summary: Best Practices When Using Splines
-
-1. **Explicitly specify control points and knot vector**
-   - Don't rely only on Fit Points
-   - Improves compatibility with other CAD software
-
-2. **Use DXF version R2000 or later**
-   - SPLINE unavailable in R12 and earlier
-
-3. **Use weights only when rational splines (NURBS) are needed**
-   - Don't use weights if regular B-spline is sufficient
-
-4. **Perform testing**
-   - Open in different CAD software and verify curve shapes match
-
-5. **Use approximation as needed**
-   - Convert to polylines or Bezier curves when rendering or machines don't support SPLINE
+For detailed spline mathematics and advanced operations, see [Advanced Spline Guide](./ezdxf-splines-advanced.md).
 
 ### Converting Point Sequences to Curves: Decision Criteria and Implementation
 
@@ -2080,10 +2044,8 @@ def export_points_as_polyline(points, output_path, closed=False):
     msp = doc.modelspace()
     
     # Add as LWPOLYLINE
-    msp.add_lwpolyline(
-        points,
-        dxfattribs={'flags': 1 if closed else 0}  # 1=closed line
-    )
+    # Use close=True parameter for better readability (instead of dxfattribs flags)
+    msp.add_lwpolyline(points, close=closed)
     
     doc.saveas(output_path)
     print(f"Exported point sequence as LWPOLYLINE: {len(points)} points")
@@ -2421,7 +2383,7 @@ Export curve represented as point sequence
 
 ---
 
-## 9. Checklists and Best Practices
+## 10. Checklists and Best Practices
 
 ### Reading Checklist
 
@@ -2475,13 +2437,18 @@ This guide comprehensively explained information useful for implementation, from
 - Understanding and proper handling of coordinate systems and unit systems
 - Memory-efficient implementation
 - Implementation verification using checklists
-- **Spline/NURBS Compatibility**: Ensure compatibility with other CAD software by explicitly specifying control points and knot vector
+
+**For Shapely Users**:
+- See **[Working with Shapely Geometries](./ezdxf-shapely-integration.md)** for complete Shapely integration guide
+- 2D coordinates can be used directly as tuples - no coordinate system transformations needed
+- Polygon with holes should use HATCH entities
 
 **About Splines/NURBS/B-spline**:
 - ezdxf fully supports SPLINE, B-spline, and NURBS (rational B-spline)
 - Creating with Fit Points only may cause curve shapes to differ between CAD software
 - For compatibility, strongly recommend explicitly specifying control points and knot vector
 - SPLINE unavailable in R12 and earlier (recommend R2000+)
+- For detailed spline mathematics and advanced operations, see **[Advanced Spline Guide](./ezdxf-splines-advanced.md)**
 
 **About Converting Point Sequences to Curves**:
 - **For CNC Machines / Laser Processing Machines**: Recommend keeping as point sequence (LWPOLYLINE) (many machines don't support SPLINE)
@@ -2493,4 +2460,4 @@ ezdxf is a powerful library, but understanding DXF concepts enables more effecti
 
 ---
 
-Related: [Major Libraries](./libraries.md) | [Common Pitfalls and Solutions](./common-pitfalls.md) | [Parser Design](./parsing-strategy.md) | [CNC Machine Compatibility](./cnc-machine-compatibility.md)
+Related: [Major Libraries](./libraries.md) | [Common Pitfalls and Solutions](./common-pitfalls.md) | [Parser Design](./parsing-strategy.md) | [CNC Machine Compatibility](./cnc-machine-compatibility.md) | **[Working with Shapely Geometries](./ezdxf-shapely-integration.md)** | **[Advanced Spline Guide](./ezdxf-splines-advanced.md)**
