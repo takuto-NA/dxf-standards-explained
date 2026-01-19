@@ -35,7 +35,7 @@ features:
 - [国際標準規格とDXFの立ち位置](/comparison/standardization-and-iso)
 - [タグ構造とグループコードの基本](/structure/tag-and-group-code)
 - [DXFの歴史とバージョン](/docs/history-versions)
-- **フォーマット比較**: [vs DWG](/comparison/dxf-vs-dwg) / [vs SVG](/comparison/dxf-vs-svg) / [vs ガーバー・Gコード](/comparison/dxf-vs-industrial-formats)
+- **フォーマット比較**: [vs DWG](/comparison/dxf-vs-dwg) / [vs SVG](/comparison/dxf-vs-svg) / [vs ガーバー・Gコード](/comparison/dxf-vs-industrial-formats) / [Gコードの基礎とバージョニング](/comparison/g-code-overview)
 :::
 
 ::: info 2. データ構造を深く知る（中級者・詳細リファレンス）
@@ -61,6 +61,8 @@ features:
 - [パーサーの設計](/implementation/parsing-strategy)
 - [よくある罠と対処法](/implementation/common-pitfalls)
 - [主要ライブラリ紹介](/implementation/libraries)
+- **[ezdxf 実践ガイド](/implementation/ezdxf-guide)** - PythonでDXFを扱う際の詳細マニュアル
+- [加工機とDXFの互換性](/implementation/cnc-machine-compatibility) - なぜ加工機はSPLINEをサポートしないのか
 - [3D CADとの互換性](/implementation/3d-cad-interoperability)
 - [フリーソフトでの活用ガイドライン](/implementation/free-software-guide)
 - [CAE（ANSYS等）との互換性](/implementation/cae-interoperability)

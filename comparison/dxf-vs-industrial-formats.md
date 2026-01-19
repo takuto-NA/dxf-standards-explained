@@ -77,5 +77,5 @@ Gコードは、CNC工作機械や3Dプリンターを制御するための数�
 
 ---
 
-関連：[DXF vs SVG](./dxf-vs-svg.md) | [DXF vs DWG](./dxf-vs-dwg.md)
+関連：[DXF vs SVG](./dxf-vs-svg.md) | [DXF vs DWG](./dxf-vs-dwg.md) | [Gコードの基礎とバージョニング](./g-code-overview.md)
 
