@@ -59,6 +59,15 @@ export default withMermaid(
             { text: 'Parser Design', link: '/implementation/parsing-strategy' },
             { text: 'Common Pitfalls', link: '/implementation/common-pitfalls' },
             { text: 'Major Libraries', link: '/implementation/libraries' },
+            {
+              text: 'ezdxf Practical Guide',
+              link: '/implementation/ezdxf-guide',
+              items: [
+                { text: 'Working with Shapely Geometries', link: '/implementation/ezdxf-shapely-integration' },
+                { text: 'Advanced Spline Guide', link: '/implementation/ezdxf-splines-advanced' }
+              ]
+            },
+            { text: 'CNC Machine Compatibility', link: '/implementation/cnc-machine-compatibility' },
             { text: 'Free Software Usage Guide', link: '/implementation/free-software-guide' },
             { text: '3D CAD Interoperability', link: '/implementation/3d-cad-interoperability' },
             { text: 'CAE (ANSYS, etc.) Interoperability', link: '/implementation/cae-interoperability' }
