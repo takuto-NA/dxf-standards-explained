@@ -1,53 +1,53 @@
-# ezdxf 実践ガイド
+# ezdxf Practical Guide
 
-PythonでDXFファイルを扱う際の最も推奨されるライブラリである **ezdxf** を使用した、インポート（読み込み）とエクスポート（書き込み）の実践的なガイドです。
+A practical guide for importing (reading) and exporting (writing) DXF files using **ezdxf**, the most recommended library for handling DXF files in Python.
 
-このガイドでは、ezdxfを使う際の基本的な操作方法から、よくある間違いやリスク排除まで、実装時に役立つ情報を網羅的に解説します。
+This guide comprehensively explains information useful for implementation, from basic operations when using ezdxf to common mistakes and risk mitigation.
 
-::: tip 関連ドキュメント
-- [主要ライブラリ](./libraries.md) - 他の言語のライブラリも含めた包括的な紹介
-- [よくある罠と対処法](./common-pitfalls.md) - DXF実装全般の注意点
-- [パーサーの設計](./parsing-strategy.md) - パーサー実装のアーキテクチャ
-- [座標系 (WCS/OCS/AAA)](../geometry/coordinate-systems.md) - 座標変換の詳細
+::: tip Related Documentation
+- [Major Libraries](./libraries.md) - Comprehensive introduction including libraries in other languages
+- [Common Pitfalls and Solutions](./common-pitfalls.md) - General DXF implementation considerations
+- [Parser Design](./parsing-strategy.md) - Parser implementation architecture
+- [Coordinate Systems (WCS/OCS/AAA)](../geometry/coordinate-systems.md) - Details on coordinate transformations
 :::
 
 ---
 
-## 1. イントロダクション
+## 1. Introduction
 
-### ezdxfとは
+### What is ezdxf
 
-**ezdxf** は、PythonでDXFファイルを読み書きするための最も人気が高く、機能が豊富なライブラリです。
+**ezdxf** is the most popular and feature-rich library for reading and writing DXF files in Python.
 
-**主な特徴**:
-- DXF R12から最新バージョン（R2018）まで幅広く対応
-- 読み書き両方に対応
-- OCS/WCS変換などの数学的処理も強力にサポート
-- MITライセンス（商用利用可能）
-- アクティブにメンテナンスされている
-- 豊富なドキュメントとサンプルコード
+**Main Features**:
+- Wide support from DXF R12 to the latest version (R2018)
+- Supports both reading and writing
+- Strong support for mathematical processing such as OCS/WCS transformations
+- MIT License (commercial use allowed)
+- Actively maintained
+- Rich documentation and sample code
 
-**公式サイト**: https://ezdxf.mozman.at/
+**Official Site**: https://ezdxf.mozman.at/
 
 **GitHub**: https://github.com/mozman/ezdxf
 
-### インストール
+### Installation
 
 ```bash
-# 基本的なインストール
+# Basic installation
 pip install ezdxf
 
-# 追加機能（画像エクスポートなど）を含む場合
+# With additional features (image export, etc.)
 pip install ezdxf[draw]
 ```
 
-**要件**:
-- Python 3.10以上
-- 依存パッケージ: `typing_extensions`, `pyparsing`, `numpy`, `fontTools`
+**Requirements**:
+- Python 3.10 or higher
+- Dependencies: `typing_extensions`, `pyparsing`, `numpy`, `fontTools`
 
-### サポートするDXFバージョン
+### Supported DXF Versions
 
-| DXFバージョン | AutoCADバージョン | 読み込み | 書き込み |
+| DXF Version | AutoCAD Version | Read | Write |
 | :--- | :--- | :--- | :--- |
 | R12 (AC1009) | AutoCAD R12 | ✅ | ✅ |
 | R2000 (AC1015) | AutoCAD 2000 | ✅ | ✅ |
@@ -56,224 +56,224 @@ pip install ezdxf[draw]
 | R2010 (AC1024) | AutoCAD 2010 | ✅ | ✅ |
 | R2013 (AC1027) | AutoCAD 2013 | ✅ | ✅ |
 | R2018 (AC1032) | AutoCAD 2018 | ✅ | ✅ |
-| R13/R14 | AutoCAD R13/R14 | ✅ (読み込みのみ、R2000にアップグレード) | ❌ |
-| R12以前 | 古いバージョン | ✅ (読み込みのみ、R12にアップグレード) | ❌ |
+| R13/R14 | AutoCAD R13/R14 | ✅ (read only, upgraded to R2000) | ❌ |
+| Pre-R12 | Older versions | ✅ (read only, upgraded to R12) | ❌ |
 
-### バイナリDXF vs ASCII DXF
+### Binary DXF vs ASCII DXF
 
-ezdxfは、ASCII形式とバイナリ形式の両方のDXFファイルをサポートしています。
+ezdxf supports both ASCII and binary DXF files.
 
-- **ASCII DXF**: テキストエディタで読める形式。デバッグが容易。
-- **バイナリDXF**: ファイルサイズが小さく、読み書きが高速。
+- **ASCII DXF**: Human-readable format. Easy to debug.
+- **Binary DXF**: Smaller file size, faster read/write.
 
-デフォルトではASCII形式で保存されます。バイナリ形式で保存する場合は、`doc.saveas()` の代わりに `doc.saveas_binary()` を使用します。
+By default, files are saved in ASCII format. To save in binary format, use `doc.saveas_binary()` instead of `doc.saveas()`.
 
 ---
 
-## 2. 基本的なインポート（読み込み）
+## 2. Basic Import (Reading)
 
-### ファイルの読み込み
+### Reading Files
 
-最も基本的な読み込み方法は `ezdxf.readfile()` を使用することです。
+The most basic way to read files is using `ezdxf.readfile()`.
 
 ```python
 import ezdxf
 
-# 基本的な読み込み
+# Basic reading
 try:
     doc = ezdxf.readfile("drawing.dxf")
-    print(f"DXFバージョン: {doc.dxfversion}")
+    print(f"DXF Version: {doc.dxfversion}")
 except IOError as e:
-    print(f"ファイルが見つかりません: {e}")
+    print(f"File not found: {e}")
 except ezdxf.DXFStructureError as e:
-    print(f"DXFファイルの構造エラー: {e}")
+    print(f"DXF file structure error: {e}")
 ```
 
-### エラーハンドリング
+### Error Handling
 
-ezdxfでは、様々なエラーが発生する可能性があります。適切なエラーハンドリングを実装することが重要です。
+ezdxf can raise various errors. Implementing proper error handling is important.
 
 ```python
 import ezdxf
 from pathlib import Path
 
 def safe_read_dxf(file_path):
-    """安全にDXFファイルを読み込む"""
+    """Safely read a DXF file"""
     file_path = Path(file_path)
     
-    # ファイルパスの存在確認
+    # Check if file path exists
     if not file_path.exists():
-        raise FileNotFoundError(f"ファイルが見つかりません: {file_path}")
+        raise FileNotFoundError(f"File not found: {file_path}")
     
-    # ファイルが読み取り可能か確認
+    # Check if it's a readable file
     if not file_path.is_file():
-        raise ValueError(f"ファイルではありません: {file_path}")
+        raise ValueError(f"Not a file: {file_path}")
     
     try:
-        # DXFファイルの読み込み
+        # Read DXF file
         doc = ezdxf.readfile(str(file_path))
         return doc
     except IOError as e:
-        raise IOError(f"ファイルの読み込みに失敗しました: {e}")
+        raise IOError(f"Failed to read file: {e}")
     except ezdxf.DXFStructureError as e:
-        raise ValueError(f"DXFファイルの構造が不正です: {e}")
+        raise ValueError(f"Invalid DXF file structure: {e}")
     except ezdxf.DXFValueError as e:
-        raise ValueError(f"DXFファイルの値が不正です: {e}")
+        raise ValueError(f"Invalid DXF file value: {e}")
     except Exception as e:
-        raise RuntimeError(f"予期しないエラーが発生しました: {e}")
+        raise RuntimeError(f"Unexpected error occurred: {e}")
 
-# 使用例
+# Usage example
 try:
     doc = safe_read_dxf("drawing.dxf")
-    print("読み込み成功")
+    print("Read successfully")
 except Exception as e:
-    print(f"エラー: {e}")
+    print(f"Error: {e}")
 ```
 
-### エンティティの取得
+### Getting Entities
 
-モデルスペースからエンティティを取得する方法です。
+How to get entities from model space.
 
 ```python
 import ezdxf
 
 doc = ezdxf.readfile("drawing.dxf")
-msp = doc.modelspace()  # モデルスペースを取得
+msp = doc.modelspace()  # Get model space
 
-# すべてのエンティティを反復処理
+# Iterate through all entities
 for entity in msp:
-    print(f"エンティティタイプ: {entity.dxftype()}")
+    print(f"Entity type: {entity.dxftype()}")
     
-    # LINEエンティティの場合
+    # For LINE entities
     if entity.dxftype() == "LINE":
         start = entity.dxf.start
         end = entity.dxf.end
-        print(f"  始点: ({start.x}, {start.y}, {start.z})")
-        print(f"  終点: ({end.x}, {end.y}, {end.z})")
+        print(f"  Start: ({start.x}, {start.y}, {start.z})")
+        print(f"  End: ({end.x}, {end.y}, {end.z})")
     
-    # CIRCLEエンティティの場合
+    # For CIRCLE entities
     elif entity.dxftype() == "CIRCLE":
         center = entity.dxf.center
         radius = entity.dxf.radius
-        print(f"  中心: ({center.x}, {center.y}, {center.z})")
-        print(f"  半径: {radius}")
+        print(f"  Center: ({center.x}, {center.y}, {center.z})")
+        print(f"  Radius: {radius}")
 ```
 
-### モデルスペースとペーパースペース
+### Model Space and Paper Space
 
-DXFファイルには、モデルスペース（実際の図面）とペーパースペース（レイアウト）があります。
+DXF files have model space (actual drawing) and paper space (layouts).
 
 ```python
 import ezdxf
 
 doc = ezdxf.readfile("drawing.dxf")
 
-# モデルスペースの取得
+# Get model space
 msp = doc.modelspace()
 
-# ペーパースペース（レイアウト）の取得
+# Get paper space (layouts)
 layouts = doc.layouts
 for layout_name in layouts.names():
     layout = layouts.get(layout_name)
-    print(f"レイアウト名: {layout_name}")
+    print(f"Layout name: {layout_name}")
     
-    # レイアウト内のエンティティを取得
+    # Get entities in layout
     for entity in layout:
         print(f"  {entity.dxftype()}")
 ```
 
-### レイアウトの取得
+### Getting Layouts
 
 ```python
 import ezdxf
 
 doc = ezdxf.readfile("drawing.dxf")
 
-# すべてのレイアウトを取得
+# Get all layouts
 layouts = doc.layouts
 
-# レイアウト名の一覧
-print("利用可能なレイアウト:")
+# List of layout names
+print("Available layouts:")
 for layout_name in layouts.names():
     print(f"  - {layout_name}")
 
-# 特定のレイアウトを取得
+# Get a specific layout
 if "Layout1" in layouts:
     layout = layouts.get("Layout1")
-    print(f"レイアウト '{layout_name}' のエンティティ数: {len(list(layout))}")
+    print(f"Layout '{layout_name}' entity count: {len(list(layout))}")
 ```
 
-### 大きなファイルの処理
+### Processing Large Files
 
-大きなDXFファイルを処理する際は、メモリ効率を考慮する必要があります。
+When processing large DXF files, memory efficiency should be considered.
 
 ```python
 import ezdxf
 
 def process_large_dxf(file_path):
-    """大きなDXFファイルを効率的に処理"""
+    """Efficiently process large DXF files"""
     doc = ezdxf.readfile(file_path)
     msp = doc.modelspace()
     
-    # イテレータを使用してメモリ効率的に処理
+    # Process memory-efficiently using iterator
     line_count = 0
     circle_count = 0
     
     for entity in msp:
         if entity.dxftype() == "LINE":
             line_count += 1
-            # 必要な処理をここで実行
+            # Execute necessary processing here
         elif entity.dxftype() == "CIRCLE":
             circle_count += 1
     
-    print(f"LINE: {line_count}個, CIRCLE: {circle_count}個")
+    print(f"LINE: {line_count}, CIRCLE: {circle_count}")
 ```
 
 ---
 
-## 3. 基本的なエクスポート（書き込み）
+## 3. Basic Export (Writing)
 
-### 新規DXFファイルの作成
+### Creating New DXF Files
 
-`ezdxf.new()` を使用して新しいDXFファイルを作成します。
+Use `ezdxf.new()` to create a new DXF file.
 
 ```python
 import ezdxf
 
-# DXFバージョンを指定して新規作成
-doc = ezdxf.new('R2010')  # または 'R12', 'R2000', 'R2004', 'R2007', 'R2013', 'R2018'
+# Create new with specified DXF version
+doc = ezdxf.new('R2010')  # Or 'R12', 'R2000', 'R2004', 'R2007', 'R2013', 'R2018'
 
-# モデルスペースを取得
+# Get model space
 msp = doc.modelspace()
 
-# エンティティを追加
+# Add entities
 msp.add_line((0, 0), (10, 10))
 msp.add_circle((5, 5), radius=2.5)
 
-# ファイルに保存
+# Save to file
 doc.saveas("output.dxf")
 ```
 
-### DXFバージョンの選択
+### DXF Version Selection
 
-DXFバージョンの選択は、互換性に大きな影響を与えます。
+DXF version selection significantly affects compatibility.
 
 ```python
 import ezdxf
 
-# 互換性を重視する場合（古いCADソフトでも開ける）
-doc_r12 = ezdxf.new('R12')  # 最も互換性が高い
+# When prioritizing compatibility (can open in older CAD software)
+doc_r12 = ezdxf.new('R12')  # Highest compatibility
 
-# 最新機能を使いたい場合
-doc_r2018 = ezdxf.new('R2018')  # 最新の機能が使える
+# When wanting to use latest features
+doc_r2018 = ezdxf.new('R2018')  # Latest features available
 
-# バランスの取れた選択（推奨）
-doc_r2010 = ezdxf.new('R2010')  # 多くのCADソフトでサポートされている
+# Balanced choice (recommended)
+doc_r2010 = ezdxf.new('R2010')  # Supported by many CAD software
 ```
 
-**推奨**: 特に理由がなければ `R2010` を選択することを推奨します。多くのCADソフトでサポートされており、十分な機能を持っています。
+**Recommendation**: Unless there's a specific reason, we recommend selecting `R2010`. It's supported by many CAD software and has sufficient features.
 
-### ファイルの保存
+### Saving Files
 
 ```python
 import ezdxf
@@ -283,21 +283,21 @@ doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 msp.add_line((0, 0), (10, 10))
 
-# ASCII形式で保存（デフォルト）
+# Save in ASCII format (default)
 doc.saveas("output.dxf")
 
-# バイナリ形式で保存（ファイルサイズが小さい）
+# Save in binary format (smaller file size)
 doc.saveas_binary("output_binary.dxf")
 
-# パスオブジェクトを使用
+# Using path objects
 output_path = Path("output") / "drawing.dxf"
 output_path.parent.mkdir(parents=True, exist_ok=True)
 doc.saveas(str(output_path))
 ```
 
-### 既存ファイルの変更と保存
+### Modifying and Saving Existing Files
 
-既存のDXFファイルを読み込んで変更し、保存する方法です。
+How to read an existing DXF file, modify it, and save it.
 
 ```python
 import ezdxf
@@ -305,21 +305,21 @@ from pathlib import Path
 import shutil
 
 def modify_and_save(input_path, output_path, backup=True):
-    """既存ファイルを変更して保存（バックアップ付き）"""
+    """Modify and save existing file (with backup)"""
     input_path = Path(input_path)
     output_path = Path(output_path)
     
-    # バックアップの作成（推奨）
+    # Create backup (recommended)
     if backup and output_path.exists():
         backup_path = output_path.with_suffix('.dxf.bak')
         shutil.copy2(output_path, backup_path)
-        print(f"バックアップを作成: {backup_path}")
+        print(f"Backup created: {backup_path}")
     
-    # ファイルの読み込み
+    # Read file
     doc = ezdxf.readfile(str(input_path))
     msp = doc.modelspace()
     
-    # 変更を加える（例: すべてのLINEを削除）
+    # Make changes (example: delete all LINE entities)
     entities_to_delete = []
     for entity in msp:
         if entity.dxftype() == "LINE":
@@ -328,24 +328,24 @@ def modify_and_save(input_path, output_path, backup=True):
     for entity in entities_to_delete:
         msp.delete_entity(entity)
     
-    # 新しいエンティティを追加
+    # Add new entities
     msp.add_circle((5, 5), radius=3.0)
     
-    # 保存
+    # Save
     doc.saveas(str(output_path))
-    print(f"保存完了: {output_path}")
+    print(f"Save complete: {output_path}")
 
-# 使用例
+# Usage example
 modify_and_save("input.dxf", "output.dxf", backup=True)
 ```
 
 ---
 
-## 4. エンティティの操作
+## 4. Entity Operations
 
-### 主要エンティティの作成
+### Creating Major Entities
 
-ezdxfでは、様々なエンティティタイプを作成できます。
+ezdxf can create various entity types.
 
 ```python
 import ezdxf
@@ -353,31 +353,31 @@ import ezdxf
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# LINE（線分）
+# LINE (line segment)
 msp.add_line((0, 0), (10, 10))
 
-# CIRCLE（円）
+# CIRCLE (circle)
 msp.add_circle((5, 5), radius=2.5)
 
-# ARC（円弧）
+# ARC (arc)
 msp.add_arc((5, 5), radius=3.0, start_angle=0, end_angle=90)
 
-# LWPOLYLINE（軽量ポリライン）
+# LWPOLYLINE (lightweight polyline)
 points = [(0, 0), (10, 0), (10, 10), (0, 10)]
 msp.add_lwpolyline(points)
 
-# TEXT（テキスト）
+# TEXT (text)
 msp.add_text("Hello, DXF!", dxfattribs={'height': 2.5}).set_placement((0, 0))
 
-# MTEXT（複数行テキスト）
+# MTEXT (multiline text)
 msp.add_mtext("Multi-line\nText", dxfattribs={'height': 2.5}).set_location((0, 5))
 
 doc.saveas("entities.dxf")
 ```
 
-### エンティティの属性設定
+### Setting Entity Attributes
 
-エンティティの属性（レイヤー、色、線種など）を設定する方法です。
+How to set entity attributes (layer, color, linetype, etc.).
 
 ```python
 import ezdxf
@@ -385,34 +385,34 @@ import ezdxf
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# レイヤーの作成
-doc.layers.new("MyLayer", dxfattribs={'color': 1})  # 1=赤
+# Create layer
+doc.layers.new("MyLayer", dxfattribs={'color': 1})  # 1=red
 
-# 線種の作成
+# Create linetype
 doc.linetypes.new("DASHED", dxfattribs={
     'description': 'Dashed line',
     'length': 1.0,
-    'pattern': [0.5, -0.5]  # 0.5単位の線、0.5単位の空白
+    'pattern': [0.5, -0.5]  # 0.5 units line, 0.5 units space
 })
 
-# エンティティに属性を設定
+# Set attributes on entity
 line = msp.add_line((0, 0), (10, 10), dxfattribs={
-    'layer': 'MyLayer',      # レイヤー名
-    'color': 2,              # 色（2=黄）
-    'linetype': 'DASHED',    # 線種
-    'lineweight': 25         # 線の太さ（0.25mm）
+    'layer': 'MyLayer',      # Layer name
+    'color': 2,              # Color (2=yellow)
+    'linetype': 'DASHED',    # Linetype
+    'lineweight': 25         # Line thickness (0.25mm)
 })
 
-# 後から属性を変更することも可能
-line.dxf.layer = "0"  # デフォルトレイヤーに変更
-line.dxf.color = 7    # 白/黒に変更
+# Attributes can be changed later
+line.dxf.layer = "0"  # Change to default layer
+line.dxf.color = 7    # Change to white/black
 
 doc.saveas("attributed.dxf")
 ```
 
-### エンティティの検索とフィルタリング
+### Searching and Filtering Entities
 
-特定の条件に合致するエンティティを検索する方法です。
+How to search for entities matching specific conditions.
 
 ```python
 import ezdxf
@@ -420,32 +420,32 @@ import ezdxf
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 
-# 特定のタイプのエンティティを検索
+# Search for specific entity types
 lines = [e for e in msp if e.dxftype() == "LINE"]
-print(f"LINEエンティティ数: {len(lines)}")
+print(f"LINE entity count: {len(lines)}")
 
-# 特定のレイヤーのエンティティを検索
+# Search for entities on specific layer
 layer_entities = [e for e in msp if e.dxf.layer == "MyLayer"]
-print(f"レイヤー 'MyLayer' のエンティティ数: {len(layer_entities)}")
+print(f"Layer 'MyLayer' entity count: {len(layer_entities)}")
 
-# 複数の条件でフィルタリング
+# Filter with multiple conditions
 filtered = [
     e for e in msp 
     if e.dxftype() == "LINE" and e.dxf.layer == "0" and e.dxf.color == 1
 ]
-print(f"条件に合致するエンティティ数: {len(filtered)}")
+print(f"Matching entity count: {len(filtered)}")
 
-# ezdxfのクエリ機能を使用（より効率的）
+# Using ezdxf query functionality (more efficient)
 from ezdxf import query
 
-# LINEエンティティのみを取得
+# Get only LINE entities
 lines = query(msp).filter(lambda e: e.dxftype() == "LINE")
 
-# 特定のレイヤーのエンティティを取得
+# Get entities on specific layer
 layer_entities = query(msp).filter(lambda e: e.dxf.layer == "MyLayer")
 ```
 
-### エンティティの削除と変更
+### Deleting and Modifying Entities
 
 ```python
 import ezdxf
@@ -453,22 +453,22 @@ import ezdxf
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 
-# 削除するエンティティを収集
+# Collect entities to delete
 entities_to_delete = []
 for entity in msp:
     if entity.dxftype() == "LINE":
         entities_to_delete.append(entity)
 
-# エンティティを削除
+# Delete entities
 for entity in entities_to_delete:
     msp.delete_entity(entity)
 
-# エンティティの属性を変更
+# Modify entity attributes
 for entity in msp:
     if entity.dxftype() == "CIRCLE":
-        # 半径を変更
+        # Change radius
         entity.dxf.radius = entity.dxf.radius * 1.5
-        # レイヤーを変更
+        # Change layer
         entity.dxf.layer = "ModifiedLayer"
 
 doc.saveas("modified.dxf")
@@ -476,54 +476,54 @@ doc.saveas("modified.dxf")
 
 ---
 
-## 5. よくある間違いとリスク排除（重要）
+## 5. Common Mistakes and Risk Mitigation (Important)
 
-このセクションでは、ezdxfを使用する際によくある間違いと、それらを回避する方法を詳しく解説します。
+This section explains common mistakes when using ezdxf and how to avoid them in detail.
 
-### 5.1 読み込み時の間違い
+### 5.1 Mistakes When Reading
 
-#### ファイルパスの問題
+#### File Path Issues
 
-**間違いの例**:
+**Bad Example**:
 ```python
-# ❌ 悪い例: パスの存在確認なし
-doc = ezdxf.readfile("drawing.dxf")  # ファイルが存在しない場合にエラー
+# ❌ Bad example: No path existence check
+doc = ezdxf.readfile("drawing.dxf")  # Error if file doesn't exist
 ```
 
-**正しい実装**:
+**Correct Implementation**:
 ```python
-# ✅ 良い例: パスの存在確認
+# ✅ Good example: Path existence check
 from pathlib import Path
 
 def safe_read_dxf(file_path):
     file_path = Path(file_path)
     
-    # 絶対パスに変換（相対パスの問題を回避）
+    # Convert to absolute path (avoid relative path issues)
     if not file_path.is_absolute():
         file_path = file_path.resolve()
     
-    # 存在確認
+    # Existence check
     if not file_path.exists():
-        raise FileNotFoundError(f"ファイルが見つかりません: {file_path}")
+        raise FileNotFoundError(f"File not found: {file_path}")
     
     if not file_path.is_file():
-        raise ValueError(f"ファイルではありません: {file_path}")
+        raise ValueError(f"Not a file: {file_path}")
     
     return ezdxf.readfile(str(file_path))
 ```
 
-#### エラーハンドリングの不備
+#### Insufficient Error Handling
 
-**間違いの例**:
+**Bad Example**:
 ```python
-# ❌ 悪い例: エラーハンドリングなし
+# ❌ Bad example: No error handling
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 ```
 
-**正しい実装**:
+**Correct Implementation**:
 ```python
-# ✅ 良い例: 適切なエラーハンドリング
+# ✅ Good example: Proper error handling
 import ezdxf
 import logging
 
@@ -531,435 +531,435 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def robust_read_dxf(file_path):
-    """堅牢なDXF読み込み"""
+    """Robust DXF reading"""
     try:
         doc = ezdxf.readfile(file_path)
-        logger.info(f"ファイルを正常に読み込みました: {file_path}")
+        logger.info(f"File read successfully: {file_path}")
         return doc
     except IOError as e:
-        logger.error(f"ファイルの読み込みに失敗しました: {e}")
+        logger.error(f"Failed to read file: {e}")
         raise
     except ezdxf.DXFStructureError as e:
-        logger.error(f"DXFファイルの構造エラー: {e}")
-        # 構造エラーの場合、リカバリを試みることも可能
+        logger.error(f"DXF file structure error: {e}")
+        # Can attempt recovery for structure errors
         try:
             doc = ezdxf.recover.readfile(file_path)
-            logger.warning("リカバリモードで読み込みました")
+            logger.warning("Read in recovery mode")
             return doc
         except Exception:
             raise
     except Exception as e:
-        logger.error(f"予期しないエラー: {e}")
+        logger.error(f"Unexpected error: {e}")
         raise
 ```
 
-#### ファイルロック
+#### File Locking
 
-**問題**: 他のプロセス（CADソフトなど）がファイルを開いている場合、読み込みに失敗することがあります。
+**Problem**: Reading may fail when other processes (CAD software, etc.) have the file open.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 import time
 from pathlib import Path
 
 def read_with_retry(file_path, max_retries=3, retry_delay=1.0):
-    """リトライ機能付き読み込み"""
+    """Read with retry functionality"""
     file_path = Path(file_path)
     
     for attempt in range(max_retries):
         try:
-            # ファイルがロックされていないか確認
+            # Check if file is locked
             if not file_path.exists():
-                raise FileNotFoundError(f"ファイルが見つかりません: {file_path}")
+                raise FileNotFoundError(f"File not found: {file_path}")
             
-            # 読み込みを試みる
+            # Attempt to read
             doc = ezdxf.readfile(str(file_path))
             return doc
         except (IOError, PermissionError) as e:
             if attempt < max_retries - 1:
-                print(f"読み込み失敗（試行 {attempt + 1}/{max_retries}）: {e}")
-                print(f"{retry_delay}秒後に再試行します...")
+                print(f"Read failed (attempt {attempt + 1}/{max_retries}): {e}")
+                print(f"Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
             else:
-                raise IOError(f"ファイルの読み込みに失敗しました（{max_retries}回試行）: {e}")
+                raise IOError(f"Failed to read file ({max_retries} attempts): {e}")
 ```
 
-#### 破損ファイルの処理
+#### Handling Corrupted Files
 
-**問題**: 不完全なDXFファイルや破損したファイルを読み込む必要がある場合があります。
+**Problem**: You may need to read incomplete or corrupted DXF files.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def read_dxf_with_recovery(file_path):
-    """リカバリモードで読み込み"""
+    """Read in recovery mode"""
     try:
-        # 通常の読み込みを試みる
+        # Attempt normal read
         doc = ezdxf.readfile(file_path)
         return doc
     except ezdxf.DXFStructureError:
-        # 構造エラーの場合、リカバリモードで読み込み
+        # If structure error, read in recovery mode
         try:
             doc = ezdxf.recover.readfile(file_path)
-            print("警告: リカバリモードで読み込みました。一部のデータが欠損している可能性があります。")
+            print("Warning: Read in recovery mode. Some data may be missing.")
             return doc
         except Exception as e:
-            raise ValueError(f"ファイルの読み込みに失敗しました（リカバリも失敗）: {e}")
+            raise ValueError(f"Failed to read file (recovery also failed): {e}")
 ```
 
-#### メモリ不足
+#### Memory Insufficiency
 
-**問題**: 非常に大きなDXFファイル（数GB）を読み込む場合、メモリ不足が発生する可能性があります。
+**Problem**: Memory errors may occur when reading very large DXF files (several GB).
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 from ezdxf.addons.iterdxf import opendxf
 
 def process_huge_dxf(file_path):
-    """巨大なDXFファイルをストリーミング処理"""
-    # iterdxfアドオンを使用（メモリ効率的）
+    """Stream process huge DXF files"""
+    # Use iterdxf addon (memory efficient)
     with opendxf(file_path) as doc:
         for entity in doc.modelspace():
-            # エンティティを1つずつ処理
+            # Process entities one by one
             if entity.dxftype() == "LINE":
-                # 必要な処理を実行
+                # Execute necessary processing
                 pass
 ```
 
-### 5.2 書き込み時の間違い
+### 5.2 Mistakes When Writing
 
-#### 上書きのリスク
+#### Overwrite Risk
 
-**間違いの例**:
+**Bad Example**:
 ```python
-# ❌ 悪い例: バックアップなしで上書き
-doc.saveas("important.dxf")  # 既存ファイルが上書きされる
+# ❌ Bad example: Overwrite without backup
+doc.saveas("important.dxf")  # Existing file is overwritten
 ```
 
-**正しい実装**:
+**Correct Implementation**:
 ```python
-# ✅ 良い例: バックアップ付き保存
+# ✅ Good example: Save with backup
 import ezdxf
 from pathlib import Path
 import shutil
 from datetime import datetime
 
 def safe_save(doc, file_path, create_backup=True):
-    """安全にファイルを保存（バックアップ付き）"""
+    """Safely save file (with backup)"""
     file_path = Path(file_path)
     
-    # 既存ファイルのバックアップ
+    # Backup existing file
     if create_backup and file_path.exists():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = file_path.with_suffix(f'.{timestamp}.bak')
         shutil.copy2(file_path, backup_path)
-        print(f"バックアップを作成: {backup_path}")
+        print(f"Backup created: {backup_path}")
     
-    # 一時ファイルに保存してからリネーム（アトミック操作）
+    # Save to temp file then rename (atomic operation)
     temp_path = file_path.with_suffix('.tmp')
     try:
         doc.saveas(str(temp_path))
-        # 成功したらリネーム
+        # Rename on success
         temp_path.replace(file_path)
-        print(f"保存完了: {file_path}")
+        print(f"Save complete: {file_path}")
     except Exception as e:
-        # エラー時は一時ファイルを削除
+        # Delete temp file on error
         if temp_path.exists():
             temp_path.unlink()
         raise
 ```
 
-#### DXFバージョンの選択ミス
+#### DXF Version Selection Mistakes
 
-**問題**: 古いCADソフトで開けないバージョンを選択してしまう。
+**Problem**: Selecting a version that can't be opened in older CAD software.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def create_compatible_dxf(version='R2010'):
-    """互換性を考慮したDXFファイル作成"""
-    # バージョンの妥当性チェック
+    """Create DXF file considering compatibility"""
+    # Version validity check
     valid_versions = ['R12', 'R2000', 'R2004', 'R2007', 'R2010', 'R2013', 'R2018']
     if version not in valid_versions:
-        raise ValueError(f"無効なバージョン: {version}. 有効な値: {valid_versions}")
+        raise ValueError(f"Invalid version: {version}. Valid values: {valid_versions}")
     
     doc = ezdxf.new(version)
     
-    # R12の場合は、使用できない機能を避ける
+    # For R12, avoid unavailable features
     if version == 'R12':
-        # R12ではMTEXTが使えないので、TEXTを使用
+        # R12 can't use MTEXT, so use TEXT
         msp = doc.modelspace()
         msp.add_text("Text", dxfattribs={'height': 2.5})
     else:
-        # 新しいバージョンではMTEXTが使える
+        # Newer versions can use MTEXT
         msp = doc.modelspace()
         msp.add_mtext("Multi-line text", dxfattribs={'height': 2.5})
     
     return doc
 ```
 
-#### エンティティの不整合
+#### Entity Inconsistencies
 
-**間違いの例**:
+**Bad Example**:
 ```python
-# ❌ 悪い例: 存在しないレイヤーを参照
+# ❌ Bad example: Reference non-existent layer
 msp.add_line((0, 0), (10, 10), dxfattribs={'layer': 'NonExistentLayer'})
 ```
 
-**正しい実装**:
+**Correct Implementation**:
 ```python
-# ✅ 良い例: レイヤーの存在確認と作成
+# ✅ Good example: Check and create layer
 def ensure_layer_exists(doc, layer_name):
-    """レイヤーが存在することを確認し、なければ作成"""
+    """Ensure layer exists, create if it doesn't"""
     if layer_name not in doc.layers:
-        doc.layers.new(layer_name, dxfattribs={'color': 7})  # デフォルト色
+        doc.layers.new(layer_name, dxfattribs={'color': 7})  # Default color
     return doc.layers.get(layer_name)
 
-# 使用例
+# Usage example
 doc = ezdxf.new('R2010')
 ensure_layer_exists(doc, "MyLayer")
 msp = doc.modelspace()
 msp.add_line((0, 0), (10, 10), dxfattribs={'layer': 'MyLayer'})
 ```
 
-#### 座標値の範囲外
+#### Coordinate Value Out of Range
 
-**問題**: 極端に大きな座標値や、NaN、Infinityなどの不正な値が含まれる場合があります。
+**Problem**: Extremely large coordinate values or invalid values like NaN, Infinity may be included.
 
-**対処法**:
+**Solution**:
 ```python
 import math
 
 def validate_coordinate(value):
-    """座標値の妥当性をチェック"""
+    """Check coordinate value validity"""
     if not isinstance(value, (int, float)):
-        raise TypeError(f"座標値は数値である必要があります: {value}")
+        raise TypeError(f"Coordinate value must be numeric: {value}")
     
     if math.isnan(value):
-        raise ValueError("座標値がNaNです")
+        raise ValueError("Coordinate value is NaN")
     
     if math.isinf(value):
-        raise ValueError("座標値が無限大です")
+        raise ValueError("Coordinate value is infinity")
     
-    # 極端に大きな値のチェック（オプション）
+    # Check for extremely large values (optional)
     if abs(value) > 1e10:
         import warnings
-        warnings.warn(f"座標値が非常に大きいです: {value}")
+        warnings.warn(f"Coordinate value is very large: {value}")
     
     return value
 
 def safe_add_line(msp, start, end):
-    """安全にLINEエンティティを追加"""
-    # 座標値の検証
+    """Safely add LINE entity"""
+    # Validate coordinate values
     start = tuple(validate_coordinate(x) for x in start)
     end = tuple(validate_coordinate(x) for x in end)
     
     return msp.add_line(start, end)
 ```
 
-#### 文字エンコーディングの不一致
+#### Character Encoding Mismatch
 
-**問題**: 日本語などの非ASCII文字が文字化けする。
+**Problem**: Non-ASCII characters like Japanese may become garbled.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def create_dxf_with_japanese_text():
-    """日本語テキストを含むDXFファイルを作成"""
-    doc = ezdxf.new('R2010')  # R2007以降はUTF-8が標準
+    """Create DXF file containing Japanese text"""
+    doc = ezdxf.new('R2010')  # R2007+ uses UTF-8 as standard
     
-    # R12やR2000の場合は、エンコーディングに注意が必要
-    # R2010以降はUTF-8が標準なので問題なし
+    # R12 and R2000 require attention to encoding
+    # R2010+ uses UTF-8 as standard, so no problem
     
     msp = doc.modelspace()
     
-    # 日本語テキストを追加
-    text = msp.add_text("日本語テキスト", dxfattribs={'height': 2.5})
+    # Add Japanese text
+    text = msp.add_text("Japanese text", dxfattribs={'height': 2.5})
     text.set_placement((0, 0))
     
-    # MTEXTでも日本語が使える
-    mtext = msp.add_mtext("複数行の\n日本語テキスト", dxfattribs={'height': 2.5})
+    # MTEXT also supports Japanese
+    mtext = msp.add_mtext("Multi-line\nJapanese text", dxfattribs={'height': 2.5})
     mtext.set_location((0, 5))
     
     return doc
 ```
 
-### 5.3 エンティティ操作時の間違い
+### 5.3 Mistakes When Operating Entities
 
-#### 座標系の混同
+#### Coordinate System Confusion
 
-**問題**: WCS（世界座標系）とOCS（オブジェクト座標系）を混同する。
+**Problem**: Confusing WCS (World Coordinate System) and OCS (Object Coordinate System).
 
-**詳細**: [座標系 (WCS/OCS/AAA)](../geometry/coordinate-systems.md) を参照
+**Details**: See [Coordinate Systems (WCS/OCS/AAA)](../geometry/coordinate-systems.md)
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 from ezdxf.math import Vec3
 
 def get_entity_wcs_coordinates(entity):
-    """エンティティのWCS座標を取得（OCS変換を含む）"""
+    """Get entity WCS coordinates (including OCS transformation)"""
     if entity.dxftype() == "CIRCLE":
-        # CIRCLEはOCSで定義されている
+        # CIRCLE is defined in OCS
         center_ocs = entity.dxf.center
-        extrusion = entity.dxf.extrusion  # 法線ベクトル
+        extrusion = entity.dxf.extrusion  # Normal vector
         
-        # OCSからWCSへの変換が必要な場合
-        # （詳細は coordinate-systems.md を参照）
-        # ここでは簡略化した例を示す
+        # OCS to WCS transformation if needed
+        # (See coordinate-systems.md for details)
+        # Simplified example here
         if extrusion != (0, 0, 1):
-            # 任意軸アルゴリズムを使用した変換が必要
-            # ezdxfの変換機能を使用
+            # Need transformation using Arbitrary Axis Algorithm
+            # Use ezdxf transformation functionality
             from ezdxf.math import OCS
             ocs = OCS(extrusion)
             center_wcs = ocs.to_wcs(center_ocs)
             return center_wcs
         else:
-            # デフォルトの法線ベクトルの場合は変換不要
+            # No transformation needed for default normal vector
             return center_ocs
     else:
-        # LINEなどは直接WCS座標
+        # LINE etc. are directly WCS coordinates
         return entity.dxf.start
 ```
 
-#### レイヤー存在確認の不備
+#### Insufficient Layer Existence Check
 
-**間違いの例**:
+**Bad Example**:
 ```python
-# ❌ 悪い例: レイヤーの存在確認なし
-entity.dxf.layer = "SomeLayer"  # 存在しないレイヤーを参照
+# ❌ Bad example: No layer existence check
+entity.dxf.layer = "SomeLayer"  # Reference non-existent layer
 ```
 
-**正しい実装**:
+**Correct Implementation**:
 ```python
-# ✅ 良い例: レイヤーの存在確認
+# ✅ Good example: Layer existence check
 def set_entity_layer(doc, entity, layer_name):
-    """エンティティのレイヤーを安全に設定"""
-    # レイヤーの存在確認
+    """Safely set entity layer"""
+    # Check layer existence
     if layer_name not in doc.layers:
-        # レイヤーが存在しない場合は作成
+        # Create if layer doesn't exist
         doc.layers.new(layer_name, dxfattribs={'color': 7})
-        print(f"レイヤー '{layer_name}' を作成しました")
+        print(f"Created layer '{layer_name}'")
     
-    # レイヤーを設定
+    # Set layer
     entity.dxf.layer = layer_name
 ```
 
-#### ブロック参照の循環参照
+#### Block Reference Circular References
 
-**問題**: ブロックが自分自身を参照するなど、循環参照が発生すると無限ループになる。
+**Problem**: Circular references (e.g., block referencing itself) cause infinite loops.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def check_block_circular_reference(doc, block_name, visited=None):
-    """ブロックの循環参照をチェック"""
+    """Check block circular references"""
     if visited is None:
         visited = set()
     
     if block_name in visited:
-        raise ValueError(f"循環参照が検出されました: {block_name}")
+        raise ValueError(f"Circular reference detected: {block_name}")
     
     visited.add(block_name)
     
-    # ブロック定義を取得
+    # Get block definition
     if block_name not in doc.blocks:
         return False
     
     block = doc.blocks[block_name]
     
-    # ブロック内のINSERTエンティティをチェック
+    # Check INSERT entities in block
     for entity in block:
         if entity.dxftype() == "INSERT":
             referenced_block = entity.dxf.name
             if referenced_block == block_name:
-                raise ValueError(f"ブロック '{block_name}' が自分自身を参照しています")
+                raise ValueError(f"Block '{block_name}' references itself")
             check_block_circular_reference(doc, referenced_block, visited.copy())
     
-    return False  # 循環参照なし
+    return False  # No circular reference
 ```
 
-#### ハンドルの手動操作
+#### Manual Handle Manipulation
 
-**問題**: ハンドルを手動で設定すると、重複や不正な値が発生する可能性があります。
+**Problem**: Manually setting handles can cause duplicates or invalid values.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
-# ✅ 良い例: ハンドルは自動生成に任せる
+# ✅ Good example: Let handles be auto-generated
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 line = msp.add_line((0, 0), (10, 10))
 
-# ハンドルは自動的に割り当てられる
-print(f"ハンドル: {line.dxf.handle}")
+# Handles are automatically assigned
+print(f"Handle: {line.dxf.handle}")
 
-# ❌ 悪い例: ハンドルを手動で設定しない
-# line.dxf.handle = "123"  # これは避けるべき
+# ❌ Bad example: Don't manually set handles
+# line.dxf.handle = "123"  # Should avoid this
 ```
 
-#### エンティティ削除後の参照
+#### References After Entity Deletion
 
-**問題**: 削除したエンティティへの参照が残っているとエラーが発生します。
+**Problem**: Errors occur if references to deleted entities remain.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def safe_delete_entities(msp, condition):
-    """条件に合致するエンティティを安全に削除"""
-    # まず削除対象を収集
+    """Safely delete entities matching condition"""
+    # First collect deletion targets
     entities_to_delete = [e for e in msp if condition(e)]
     
-    # 削除を実行
+    # Execute deletion
     for entity in entities_to_delete:
         msp.delete_entity(entity)
     
     return len(entities_to_delete)
 
-# 使用例
+# Usage example
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 
-# LINEエンティティを削除
+# Delete LINE entities
 deleted_count = safe_delete_entities(msp, lambda e: e.dxftype() == "LINE")
-print(f"{deleted_count}個のエンティティを削除しました")
+print(f"Deleted {deleted_count} entities")
 ```
 
-#### スプラインの互換性問題
+#### Spline Compatibility Issues
 
-**問題**: Fit Points（通過点）のみでスプラインを作成すると、異なるCADソフト間で曲線の形状が変わる可能性があります。
+**Problem**: Creating splines with only Fit Points (through points) may cause curve shapes to differ between CAD software.
 
-**間違いの例**:
+**Bad Example**:
 ```python
-# ❌ 悪い例: Fit Pointsのみで作成（互換性に問題がある可能性）
+# ❌ Bad example: Create with Fit Points only (may have compatibility issues)
 fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-spline = msp.add_spline(fit_points)  # 制御点が自動生成される
+spline = msp.add_spline(fit_points)  # Control points auto-generated
 ```
 
-**正しい実装**:
+**Correct Implementation**:
 ```python
-# ✅ 良い例: 制御点とノットベクトルを明示的に指定
+# ✅ Good example: Explicitly specify control points and knot vector
 import ezdxf
 
 def create_compatible_spline(msp, control_points, degree=3):
-    """互換性を確保したスプライン作成"""
+    """Create spline ensuring compatibility"""
     n = len(control_points)
     order = degree + 1
     
-    # 開いた一様ノットベクトルを生成
+    # Generate open uniform knot vector
     knots = [0] * order
     knots.extend(range(1, n - degree + 1))
     knots.extend([n - degree] * order)
     
-    # 制御点とノットベクトルを明示的に指定
+    # Explicitly specify control points and knot vector
     spline = msp.add_spline_control_frame(
         control_points=control_points,
         degree=degree,
@@ -967,28 +967,28 @@ def create_compatible_spline(msp, control_points, degree=3):
     )
     return spline
 
-# 使用例
+# Usage example
 control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
 spline = create_compatible_spline(msp, control_points)
 ```
 
-**注意点**:
-- Fit Pointsから制御点への変換アルゴリズムはCADソフトごとに異なる
-- 互換性を重視する場合は、必ず制御点とノットベクトルを明示的に指定する
-- R12以前のバージョンではSPLINEが使用不可（ポリラインで近似が必要）
+**Notes**:
+- Fit Points to control points conversion algorithms differ between CAD software
+- For compatibility, always explicitly specify control points and knot vector
+- SPLINE unavailable in R12 and earlier (need polyline approximation)
 
-### 5.4 データ整合性のリスク
+### 5.4 Data Integrity Risks
 
-#### 単位系の不一致
+#### Unit System Mismatch
 
-**問題**: `$INSUNITS`ヘッダー変数と実際の座標値の単位が一致しない。
+**Problem**: `$INSUNITS` header variable doesn't match actual coordinate value units.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def get_drawing_units(doc):
-    """図面の単位系を取得"""
+    """Get drawing unit system"""
     insunits = doc.header.get('$INSUNITS', 0)
     unit_map = {
         0: 'unitless',
@@ -1016,7 +1016,7 @@ def get_drawing_units(doc):
     return unit_map.get(insunits, 'unknown')
 
 def set_drawing_units(doc, unit_name):
-    """図面の単位系を設定"""
+    """Set drawing unit system"""
     unit_map = {
         'inches': 1,
         'feet': 2,
@@ -1025,37 +1025,37 @@ def set_drawing_units(doc, unit_name):
         'meters': 6,
     }
     if unit_name not in unit_map:
-        raise ValueError(f"無効な単位: {unit_name}")
+        raise ValueError(f"Invalid unit: {unit_name}")
     doc.header['$INSUNITS'] = unit_map[unit_name]
 
-# 使用例
+# Usage example
 doc = ezdxf.new('R2010')
 set_drawing_units(doc, 'millimeters')
-print(f"単位系: {get_drawing_units(doc)}")
+print(f"Unit system: {get_drawing_units(doc)}")
 ```
 
-#### スケールの問題
+#### Scale Issues
 
-**問題**: ブロックインサート時のスケール設定ミス。
+**Problem**: Scale setting mistakes when inserting blocks.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def insert_block_safely(msp, block_name, insert_point, scale=(1, 1, 1)):
-    """ブロックを安全にインサート"""
+    """Safely insert block"""
     doc = msp.doc
     
-    # ブロックの存在確認
+    # Check block existence
     if block_name not in doc.blocks:
-        raise ValueError(f"ブロック '{block_name}' が見つかりません")
+        raise ValueError(f"Block '{block_name}' not found")
     
-    # スケール値の検証
+    # Validate scale values
     scale = tuple(float(s) for s in scale)
     if any(s <= 0 for s in scale):
-        raise ValueError(f"スケールは正の値である必要があります: {scale}")
+        raise ValueError(f"Scale must be positive: {scale}")
     
-    # ブロックをインサート
+    # Insert block
     insert = msp.add_blockref(block_name, insert_point, dxfattribs={
         'xscale': scale[0],
         'yscale': scale[1],
@@ -1065,165 +1065,165 @@ def insert_block_safely(msp, block_name, insert_point, scale=(1, 1, 1)):
     return insert
 ```
 
-#### 回転角度の単位
+#### Rotation Angle Units
 
-**問題**: 度とラジアンの混同。
+**Problem**: Confusing degrees and radians.
 
-**対処法**:
+**Solution**:
 ```python
 import math
 
 def degrees_to_radians(degrees):
-    """度をラジアンに変換"""
+    """Convert degrees to radians"""
     return math.radians(degrees)
 
 def radians_to_degrees(radians):
-    """ラジアンを度に変換"""
+    """Convert radians to degrees"""
     return math.degrees(radians)
 
-# ezdxfでは、角度は通常度で指定される
+# In ezdxf, angles are usually specified in degrees
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# ARCの作成（角度は度で指定）
-msp.add_arc((0, 0), radius=5, start_angle=0, end_angle=90)  # 0度から90度
+# Create ARC (angles specified in degrees)
+msp.add_arc((0, 0), radius=5, start_angle=0, end_angle=90)  # 0 to 90 degrees
 
-# ラジアンから度への変換が必要な場合
-angle_rad = math.pi / 4  # 45度（ラジアン）
+# When conversion from radians to degrees is needed
+angle_rad = math.pi / 4  # 45 degrees (radians)
 angle_deg = radians_to_degrees(angle_rad)
 msp.add_arc((10, 0), radius=5, start_angle=0, end_angle=angle_deg)
 ```
 
-#### 色の扱い
+#### Color Handling
 
-**問題**: ACI（AutoCAD Color Index）、True Color、ByLayerの混乱。
+**Problem**: Confusion between ACI (AutoCAD Color Index), True Color, and ByLayer.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def set_entity_color_safely(entity, color):
-    """エンティティの色を安全に設定"""
-    # colorが整数の場合（ACI）
+    """Safely set entity color"""
+    # If color is integer (ACI)
     if isinstance(color, int):
         if 0 <= color <= 256:
             entity.dxf.color = color
         else:
-            raise ValueError(f"無効なACI色: {color}")
-    # colorがタプルの場合（True Color RGB）
+            raise ValueError(f"Invalid ACI color: {color}")
+    # If color is tuple (True Color RGB)
     elif isinstance(color, (tuple, list)) and len(color) == 3:
         r, g, b = color
         if all(0 <= c <= 255 for c in (r, g, b)):
-            # True Colorを設定（DXF R2004以降）
+            # Set True Color (DXF R2004+)
             entity.dxf.true_color = ezdxf.rgb(r, g, b)
         else:
-            raise ValueError(f"無効なRGB値: {color}")
-    # ByLayerの場合
+            raise ValueError(f"Invalid RGB value: {color}")
+    # ByLayer case
     elif color == "ByLayer" or color == 256:
         entity.dxf.color = 256
     else:
-        raise ValueError(f"無効な色指定: {color}")
+        raise ValueError(f"Invalid color specification: {color}")
 
-# 使用例
+# Usage example
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 line = msp.add_line((0, 0), (10, 10))
 
-# ACI色（1=赤）
+# ACI color (1=red)
 set_entity_color_safely(line, 1)
 
-# True Color（RGB）
+# True Color (RGB)
 line2 = msp.add_line((0, 5), (10, 15))
-set_entity_color_safely(line2, (255, 0, 0))  # 赤
+set_entity_color_safely(line2, (255, 0, 0))  # Red
 
 # ByLayer
 line3 = msp.add_line((0, 10), (10, 20))
 set_entity_color_safely(line3, "ByLayer")
 ```
 
-### 5.5 パフォーマンスとリソース管理
+### 5.5 Performance and Resource Management
 
-#### メモリリーク
+#### Memory Leaks
 
-**問題**: 大きなファイルを繰り返し処理する際にメモリリークが発生する可能性があります。
+**Problem**: Memory leaks may occur when repeatedly processing large files.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 import gc
 
 def process_multiple_files(file_paths):
-    """複数のファイルを処理（メモリ効率的）"""
+    """Process multiple files (memory efficient)"""
     results = []
     
     for file_path in file_paths:
-        # ファイルを処理
+        # Process file
         doc = ezdxf.readfile(file_path)
         msp = doc.modelspace()
         
-        # 必要な処理を実行
+        # Execute necessary processing
         count = sum(1 for e in msp if e.dxftype() == "LINE")
         results.append(count)
         
-        # 明示的に参照を削除
+        # Explicitly delete references
         del doc, msp
         
-        # ガベージコレクションを実行（必要に応じて）
+        # Run garbage collection (as needed)
         if len(results) % 10 == 0:
             gc.collect()
     
     return results
 ```
 
-#### ファイルハンドルのクローズ
+#### File Handle Closing
 
-**問題**: ファイルハンドルが適切にクローズされないと、リソースリークが発生します。
+**Problem**: Resource leaks occur if file handles aren't properly closed.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 from contextlib import contextmanager
 
 @contextmanager
 def open_dxf(file_path):
-    """コンテキストマネージャーを使用した安全なファイル操作"""
+    """Safe file operations using context manager"""
     doc = None
     try:
         doc = ezdxf.readfile(file_path)
         yield doc
     finally:
-        # 明示的なクリーンアップは通常不要（ezdxfが自動処理）
-        # ただし、カスタムリソースがある場合はここで処理
+        # Explicit cleanup usually not needed (ezdxf handles automatically)
+        # However, handle custom resources here if any
         pass
 
-# 使用例
+# Usage example
 with open_dxf("drawing.dxf") as doc:
     msp = doc.modelspace()
     for entity in msp:
         print(entity.dxftype())
-# ここで自動的にクリーンアップされる
+# Automatic cleanup here
 ```
 
-#### イテレータの使い方
+#### Iterator Usage
 
-**問題**: 大きなファイルでリストに変換するとメモリを大量に消費します。
+**Problem**: Converting to list consumes large amounts of memory for large files.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 
 def process_entities_efficiently(doc):
-    """メモリ効率的にエンティティを処理"""
+    """Process entities memory-efficiently"""
     msp = doc.modelspace()
     
-    # ❌ 悪い例: リストに変換（メモリを大量に消費）
-    # entities = list(msp)  # 避けるべき
+    # ❌ Bad example: Convert to list (consumes large memory)
+    # entities = list(msp)  # Should avoid
     
-    # ✅ 良い例: イテレータを直接使用
+    # ✅ Good example: Use iterator directly
     line_count = 0
     circle_count = 0
     
-    for entity in msp:  # イテレータを直接使用
+    for entity in msp:  # Use iterator directly
         if entity.dxftype() == "LINE":
             line_count += 1
         elif entity.dxftype() == "CIRCLE":
@@ -1232,11 +1232,11 @@ def process_entities_efficiently(doc):
     return line_count, circle_count
 ```
 
-#### バッチ処理の最適化
+#### Batch Processing Optimization
 
-**問題**: 複数ファイルの処理が遅い。
+**Problem**: Processing multiple files is slow.
 
-**対処法**:
+**Solution**:
 ```python
 import ezdxf
 from pathlib import Path
@@ -1244,7 +1244,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import multiprocessing
 
 def process_single_file(file_path):
-    """単一ファイルを処理"""
+    """Process single file"""
     try:
         doc = ezdxf.readfile(str(file_path))
         msp = doc.modelspace()
@@ -1254,7 +1254,7 @@ def process_single_file(file_path):
         return file_path, 0, str(e)
 
 def process_files_parallel(file_paths, max_workers=None):
-    """複数ファイルを並列処理"""
+    """Process multiple files in parallel"""
     if max_workers is None:
         max_workers = min(multiprocessing.cpu_count(), len(file_paths))
     
@@ -1264,54 +1264,54 @@ def process_files_parallel(file_paths, max_workers=None):
         for future in futures:
             file_path, count, error = future.result()
             if error:
-                print(f"エラー ({file_path}): {error}")
+                print(f"Error ({file_path}): {error}")
             else:
                 results.append((file_path, count))
     
     return results
 
-# 使用例
+# Usage example
 file_paths = list(Path(".").glob("*.dxf"))
 results = process_files_parallel(file_paths)
 for file_path, count in results:
-    print(f"{file_path}: {count}個のエンティティ")
+    print(f"{file_path}: {count} entities")
 ```
 
 ---
 
-## 6. 重要な注意点とトラブルシューティング
+## 6. Important Notes and Troubleshooting
 
-### 文字エンコーディングの問題
+### Character Encoding Issues
 
-詳細は [よくある罠と対処法](./common-pitfalls.md#1-文字エンコーディングの問題) を参照してください。
+See [Common Pitfalls and Solutions](./common-pitfalls.md#1-文字エンコーディングの問題) for details.
 
-**ezdxfでの対処法**:
+**ezdxf Solution**:
 ```python
 import ezdxf
 
-# ezdxfは自動的にエンコーディングを処理しますが、
-# 古いバージョンのファイルでは問題が発生する可能性があります
+# ezdxf automatically handles encoding, but
+# problems may occur with older version files
 
-# R2010以降はUTF-8が標準なので問題なし
+# R2010+ uses UTF-8 as standard, so no problem
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
-msp.add_text("日本語テキスト", dxfattribs={'height': 2.5})
+msp.add_text("Japanese text", dxfattribs={'height': 2.5})
 
-# R12やR2000の場合は注意が必要
-# 可能な限り新しいバージョンを使用することを推奨
+# R12 and R2000 require attention
+# Recommend using newer versions when possible
 ```
 
-### 座標系の扱い
+### Coordinate System Handling
 
-詳細は [座標系 (WCS/OCS/AAA)](../geometry/coordinate-systems.md) を参照してください。
+See [Coordinate Systems (WCS/OCS/AAA)](../geometry/coordinate-systems.md) for details.
 
-**ezdxfでのOCS変換**:
+**OCS Transformation in ezdxf**:
 ```python
 import ezdxf
 from ezdxf.math import OCS, Vec3
 
 def convert_ocs_to_wcs(entity):
-    """OCS座標をWCS座標に変換"""
+    """Convert OCS coordinates to WCS coordinates"""
     if hasattr(entity.dxf, 'extrusion'):
         extrusion = Vec3(entity.dxf.extrusion)
         ocs = OCS(extrusion)
@@ -1323,62 +1323,62 @@ def convert_ocs_to_wcs(entity):
     return None
 ```
 
-### 単位系の設定
+### Unit System Settings
 
 ```python
 import ezdxf
 
 doc = ezdxf.new('R2010')
 
-# 単位系の設定
+# Set unit system
 doc.header['$INSUNITS'] = 4  # 4 = millimeters
 
-# 単位系の確認
+# Check unit system
 insunits = doc.header.get('$INSUNITS', 0)
-print(f"単位系コード: {insunits}")
+print(f"Unit system code: {insunits}")
 ```
 
-### レイヤーと線種の管理
+### Layer and Linetype Management
 
 ```python
 import ezdxf
 
 doc = ezdxf.new('R2010')
 
-# レイヤーの作成と管理
+# Create and manage layers
 def get_or_create_layer(doc, layer_name, color=7):
-    """レイヤーを取得、存在しない場合は作成"""
+    """Get layer, create if it doesn't exist"""
     if layer_name not in doc.layers:
         doc.layers.new(layer_name, dxfattribs={'color': color})
     return doc.layers.get(layer_name)
 
-# 使用例
+# Usage example
 layer = get_or_create_layer(doc, "MyLayer", color=1)
 msp = doc.modelspace()
 msp.add_line((0, 0), (10, 10), dxfattribs={'layer': 'MyLayer'})
 ```
 
-### ブロックとインサートの扱い
+### Block and Insert Handling
 
-詳細は [ブロックとインサート](../geometry/blocks-and-inserts.md) を参照してください。
+See [Blocks and Inserts](../geometry/blocks-and-inserts.md) for details.
 
 ```python
 import ezdxf
 
 doc = ezdxf.new('R2010')
 
-# ブロック定義の作成
+# Create block definition
 block = doc.blocks.new("MyBlock")
 block.add_line((0, 0), (10, 10))
 block.add_circle((5, 5), radius=2.5)
 
-# ブロックのインサート
+# Insert block
 msp = doc.modelspace()
 msp.add_blockref("MyBlock", (0, 0))
 msp.add_blockref("MyBlock", (20, 0), dxfattribs={'rotation': 45})
 ```
 
-### ハンドルの扱い
+### Handle Handling
 
 ```python
 import ezdxf
@@ -1387,68 +1387,68 @@ doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 line = msp.add_line((0, 0), (10, 10))
 
-# ハンドルは自動的に割り当てられる
+# Handles are automatically assigned
 handle = line.dxf.handle
-print(f"ハンドル: {handle}")
+print(f"Handle: {handle}")
 
-# ハンドルでエンティティを検索（通常は不要）
-# ezdxfが自動的に管理するため、手動での操作は推奨されない
+# Searching entities by handle (usually unnecessary)
+# ezdxf manages automatically, manual operations not recommended
 ```
 
-### パフォーマンスの考慮
+### Performance Considerations
 
-大きなファイルの処理については、[パーサーの設計](./parsing-strategy.md) を参照してください。
+See [Parser Design](./parsing-strategy.md) for processing large files.
 
-**ezdxfでの最適化**:
+**ezdxf Optimization**:
 ```python
 import ezdxf
 from ezdxf.addons.iterdxf import opendxf
 
-# 巨大なファイルの場合はiterdxfアドオンを使用
+# Use iterdxf addon for huge files
 with opendxf("huge_file.dxf") as doc:
     for entity in doc.modelspace():
-        # エンティティを1つずつ処理
+        # Process entities one by one
         pass
 ```
 
 ---
 
-## 7. 実践的な例
+## 7. Practical Examples
 
-### シンプルな図面の作成
+### Creating Simple Drawings
 
 ```python
 import ezdxf
 
 def create_simple_drawing():
-    """シンプルな図面を作成"""
+    """Create simple drawing"""
     doc = ezdxf.new('R2010')
     msp = doc.modelspace()
     
-    # レイヤーの作成
-    doc.layers.new("Lines", dxfattribs={'color': 1})  # 赤
-    doc.layers.new("Circles", dxfattribs={'color': 2})  # 黄
+    # Create layers
+    doc.layers.new("Lines", dxfattribs={'color': 1})  # Red
+    doc.layers.new("Circles", dxfattribs={'color': 2})  # Yellow
     
-    # 線を追加
+    # Add lines
     msp.add_line((0, 0), (10, 0), dxfattribs={'layer': 'Lines'})
     msp.add_line((10, 0), (10, 10), dxfattribs={'layer': 'Lines'})
     msp.add_line((10, 10), (0, 10), dxfattribs={'layer': 'Lines'})
     msp.add_line((0, 10), (0, 0), dxfattribs={'layer': 'Lines'})
     
-    # 円を追加
+    # Add circle
     msp.add_circle((5, 5), radius=3, dxfattribs={'layer': 'Circles'})
     
-    # テキストを追加
+    # Add text
     msp.add_text("Simple Drawing", dxfattribs={'height': 1.0}).set_placement((2, 12))
     
     return doc
 
-# 使用例
+# Usage example
 doc = create_simple_drawing()
 doc.saveas("simple_drawing.dxf")
 ```
 
-### 既存ファイルの読み込みと変更
+### Reading and Modifying Existing Files
 
 ```python
 import ezdxf
@@ -1456,56 +1456,56 @@ from pathlib import Path
 import shutil
 
 def modify_existing_dxf(input_path, output_path):
-    """既存ファイルを読み込んで変更"""
-    # バックアップの作成
+    """Read and modify existing file"""
+    # Create backup
     if Path(output_path).exists():
         backup_path = Path(output_path).with_suffix('.bak')
         shutil.copy2(output_path, backup_path)
-        print(f"バックアップを作成: {backup_path}")
+        print(f"Backup created: {backup_path}")
     
-    # ファイルの読み込み
+    # Read file
     doc = ezdxf.readfile(input_path)
     msp = doc.modelspace()
     
-    # すべてのLINEエンティティの色を変更
+    # Change color of all LINE entities
     for entity in msp:
         if entity.dxftype() == "LINE":
-            entity.dxf.color = 1  # 赤に変更
+            entity.dxf.color = 1  # Change to red
     
-    # 新しいエンティティを追加
+    # Add new entity
     msp.add_circle((0, 0), radius=5, dxfattribs={'color': 2})
     
-    # 保存
+    # Save
     doc.saveas(output_path)
-    print(f"保存完了: {output_path}")
+    print(f"Save complete: {output_path}")
 
-# 使用例
+# Usage example
 modify_existing_dxf("input.dxf", "output.dxf")
 ```
 
-### エンティティの変換とフィルタリング
+### Entity Conversion and Filtering
 
 ```python
 import ezdxf
 from ezdxf import query
 
 def filter_and_convert_entities(input_path, output_path):
-    """エンティティをフィルタリングして変換"""
+    """Filter and convert entities"""
     doc = ezdxf.readfile(input_path)
     msp = doc.modelspace()
     
-    # 特定の条件のエンティティを検索
-    # 例: レイヤー "0" のLINEエンティティ
+    # Search entities matching specific conditions
+    # Example: LINE entities on layer "0"
     lines = query(msp).filter(
         lambda e: e.dxftype() == "LINE" and e.dxf.layer == "0"
     )
     
-    # 新しいファイルを作成
+    # Create new file
     new_doc = ezdxf.new('R2010')
     new_msp = new_doc.modelspace()
     
-    # エンティティをコピー（新しいレイヤーに移動）
-    new_doc.layers.new("FilteredLines", dxfattribs={'color': 3})  # 緑
+    # Copy entities (move to new layer)
+    new_doc.layers.new("FilteredLines", dxfattribs={'color': 3})  # Green
     
     for line in lines:
         new_msp.add_line(
@@ -1515,20 +1515,20 @@ def filter_and_convert_entities(input_path, output_path):
         )
     
     new_doc.saveas(output_path)
-    print(f"フィルタリング完了: {output_path}")
+    print(f"Filtering complete: {output_path}")
 
-# 使用例
+# Usage example
 filter_and_convert_entities("input.dxf", "filtered.dxf")
 ```
 
-### バッチ処理の例
+### Batch Processing Example
 
 ```python
 import ezdxf
 from pathlib import Path
 
 def batch_process_dxf_files(input_dir, output_dir, processor_func):
-    """複数のDXFファイルをバッチ処理"""
+    """Batch process multiple DXF files"""
     input_dir = Path(input_dir)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1537,34 +1537,34 @@ def batch_process_dxf_files(input_dir, output_dir, processor_func):
     
     for dxf_file in dxf_files:
         try:
-            # ファイルを処理
+            # Process file
             result = processor_func(dxf_file)
             
-            # 結果を保存
+            # Save result
             output_file = output_dir / dxf_file.name
             result.saveas(str(output_file))
-            print(f"処理完了: {dxf_file.name}")
+            print(f"Processing complete: {dxf_file.name}")
         except Exception as e:
-            print(f"エラー ({dxf_file.name}): {e}")
+            print(f"Error ({dxf_file.name}): {e}")
 
 def process_file(file_path):
-    """単一ファイルを処理する関数"""
+    """Function to process single file"""
     doc = ezdxf.readfile(str(file_path))
     msp = doc.modelspace()
     
-    # すべてのエンティティをレイヤー "Processed" に移動
-    doc.layers.new("Processed", dxfattribs={'color': 5})  # 青
+    # Move all entities to layer "Processed"
+    doc.layers.new("Processed", dxfattribs={'color': 5})  # Blue
     
     for entity in msp:
         entity.dxf.layer = "Processed"
     
     return doc
 
-# 使用例
+# Usage example
 batch_process_dxf_files("input/", "output/", process_file)
 ```
 
-### 安全なファイル操作のパターン
+### Safe File Operation Pattern
 
 ```python
 import ezdxf
@@ -1573,53 +1573,53 @@ import shutil
 from datetime import datetime
 
 def safe_file_operation(input_path, output_path, operation_func, create_backup=True):
-    """安全なファイル操作（バックアップ、エラーハンドリング付き）"""
+    """Safe file operation (with backup, error handling)"""
     input_path = Path(input_path)
     output_path = Path(output_path)
     
-    # 入力ファイルの存在確認
+    # Check input file existence
     if not input_path.exists():
-        raise FileNotFoundError(f"入力ファイルが見つかりません: {input_path}")
+        raise FileNotFoundError(f"Input file not found: {input_path}")
     
-    # バックアップの作成
+    # Create backup
     if create_backup and output_path.exists():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = output_path.with_suffix(f'.{timestamp}.bak')
         shutil.copy2(output_path, backup_path)
-        print(f"バックアップを作成: {backup_path}")
+        print(f"Backup created: {backup_path}")
     
-    # 一時ファイルに保存
+    # Save to temp file
     temp_path = output_path.with_suffix('.tmp')
     
     try:
-        # 操作を実行
+        # Execute operation
         result = operation_func(input_path)
         
-        # 一時ファイルに保存
+        # Save to temp file
         result.saveas(str(temp_path))
         
-        # 成功したらリネーム（アトミック操作）
+        # Rename on success (atomic operation)
         temp_path.replace(output_path)
-        print(f"操作完了: {output_path}")
+        print(f"Operation complete: {output_path}")
         
         return True
     except Exception as e:
-        # エラー時は一時ファイルを削除
+        # Delete temp file on error
         if temp_path.exists():
             temp_path.unlink()
-        print(f"エラー: {e}")
+        print(f"Error: {e}")
         raise
     finally:
-        # クリーンアップ
+        # Cleanup
         pass
 
-# 使用例
+# Usage example
 def my_operation(input_path):
-    """カスタム操作"""
+    """Custom operation"""
     doc = ezdxf.readfile(str(input_path))
     msp = doc.modelspace()
     
-    # 何らかの処理
+    # Some processing
     for entity in msp:
         if entity.dxftype() == "LINE":
             entity.dxf.color = 1
@@ -1631,9 +1631,9 @@ safe_file_operation("input.dxf", "output.dxf", my_operation, create_backup=True)
 
 ---
 
-## 8. 高度な機能
+## 8. Advanced Features
 
-### カスタムデータ（XDATA）の追加
+### Adding Custom Data (XDATA)
 
 ```python
 import ezdxf
@@ -1642,21 +1642,21 @@ doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 line = msp.add_line((0, 0), (10, 10))
 
-# XDATA（拡張データ）の追加
+# Add XDATA (extended data)
 line.set_xdata("MYAPP", [
     (1000, "CustomString"),
     (1040, 3.14159),
     (1070, 42)
 ])
 
-# XDATAの取得
+# Get XDATA
 xdata = line.get_xdata("MYAPP")
 if xdata:
     for code, value in xdata:
         print(f"Code {code}: {value}")
 ```
 
-### 拡張辞書の使用
+### Using Extension Dictionaries
 
 ```python
 import ezdxf
@@ -1665,25 +1665,25 @@ doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 line = msp.add_line((0, 0), (10, 10))
 
-# 拡張辞書の作成
+# Create extension dictionary
 xdict = doc.objects.new_dict("MYDICT")
 xdict["CustomKey"] = "CustomValue"
 
-# エンティティに拡張辞書を関連付け
+# Associate extension dictionary with entity
 line.dxf.owner = xdict.dxf.handle
 ```
 
-### 外部参照（XREF）の扱い
+### External Reference (XREF) Handling
 
 ```python
 import ezdxf
 
-# 外部参照のアタッチ（ezdxfのアドオン機能を使用）
-# 詳細は公式ドキュメントを参照してください
+# Attach external reference (using ezdxf addon functionality)
+# See official documentation for details
 # https://ezdxf.readthedocs.io/en/stable/addons/xref.html
 ```
 
-### 寸法（DIMENSION）の作成
+### Creating Dimensions (DIMENSION)
 
 ```python
 import ezdxf
@@ -1691,12 +1691,12 @@ import ezdxf
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# 寸法スタイルの作成
+# Create dimension style
 dimstyle = doc.dimstyles.new("MyDimStyle")
-dimstyle.dxf.dimtxt = 2.5  # テキスト高さ
-dimstyle.dxf.dimasz = 2.5  # 矢印サイズ
+dimstyle.dxf.dimtxt = 2.5  # Text height
+dimstyle.dxf.dimasz = 2.5  # Arrow size
 
-# 線形寸法の作成
+# Create linear dimension
 msp.add_linear_dim(
     base=(0, 0),
     p1=(0, 0),
@@ -1704,7 +1704,7 @@ msp.add_linear_dim(
     dimstyle="MyDimStyle"
 )
 
-# 半径寸法の作成
+# Create radius dimension
 msp.add_radius_dim(
     center=(5, 5),
     radius=3.0,
@@ -1712,26 +1712,26 @@ msp.add_radius_dim(
 )
 ```
 
-### スプライン、NURBS、B-splineの対応
+### Spline, NURBS, B-spline Support
 
-ezdxfは、DXFの **SPLINE** エンティティを完全にサポートしており、B-splineとNURBS（Non-Uniform Rational B-Spline）の両方に対応しています。
+ezdxf fully supports DXF **SPLINE** entities and supports both B-spline and NURBS (Non-Uniform Rational B-Spline).
 
-#### 対応状況の概要
+#### Support Status Overview
 
-| 機能 | 対応状況 | 備考 |
+| Feature | Support Status | Notes |
 | :--- | :--- | :--- |
-| **SPLINEエンティティ** | ✅ 完全対応 | DXF R13以降で利用可能 |
-| **B-spline（非有理）** | ✅ 完全対応 | 制御点とノットベクトルで定義 |
-| **NURBS（有理B-spline）** | ✅ 完全対応 | 重み付き制御点で定義 |
-| **Fit Points（通過点）** | ✅ 完全対応 | 曲線が通過する点から自動生成 |
-| **Control Points（制御点）** | ✅ 完全対応 | 明示的な制御点とノットベクトル |
-| **Rational Splines（有理スプライン）** | ✅ 完全対応 | 重み（weights）による制御 |
+| **SPLINE Entity** | ✅ Full support | Available from DXF R13+ |
+| **B-spline (non-rational)** | ✅ Full support | Defined by control points and knot vector |
+| **NURBS (rational B-spline)** | ✅ Full support | Defined by weighted control points |
+| **Fit Points (through points)** | ✅ Full support | Auto-generated from points curve passes through |
+| **Control Points** | ✅ Full support | Explicit control points and knot vector |
+| **Rational Splines** | ✅ Full support | Control via weights |
 
-#### SPLINEエンティティの作成方法
+#### SPLINE Entity Creation Methods
 
-ezdxfでは、複数の方法でスプラインを作成できます。
+ezdxf can create splines in multiple ways.
 
-##### 1. Fit Points（通過点）による作成（最も簡単）
+##### 1. Creation via Fit Points (Easiest)
 
 ```python
 import ezdxf
@@ -1739,21 +1739,21 @@ import ezdxf
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# 通過点を指定してスプラインを作成
+# Create spline by specifying through points
 fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
 spline = msp.add_spline(fit_points)
 
-# 開始・終了時の接線方向を指定することも可能
+# Can also specify start/end tangent directions
 spline_with_tangents = msp.add_spline(
     fit_points,
-    start_tangent=(1, 0),  # 開始時の接線方向
-    end_tangent=(0, 1)     # 終了時の接線方向
+    start_tangent=(1, 0),  # Start tangent direction
+    end_tangent=(0, 1)     # End tangent direction
 )
 ```
 
-**注意**: Fit pointsから制御点への変換は、CADソフトごとに異なるアルゴリズムを使用するため、**異なるCADソフト間で完全に同じ曲線になるとは限りません**。
+**Note**: Since Fit points to control points conversion uses different algorithms per CAD software, **curves may not be exactly the same between different CAD software**.
 
-##### 2. Control Points（制御点）による作成（推奨）
+##### 2. Creation via Control Points (Recommended)
 
 ```python
 import ezdxf
@@ -1761,18 +1761,18 @@ import ezdxf
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# 制御点を明示的に指定
+# Explicitly specify control points
 control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-degree = 3  # 3次スプライン（cubic）
+degree = 3  # 3rd degree spline (cubic)
 
-# 開いたスプライン（開始点と終了点が一致しない）
+# Open spline (start and end points don't match)
 spline_open = msp.add_open_spline(control_points, degree=degree)
 
-# 閉じたスプライン（開始点と終了点が一致）
+# Closed spline (start and end points match)
 spline_closed = msp.add_closed_spline(control_points, degree=degree)
 ```
 
-##### 3. NURBS（有理B-spline）の作成
+##### 3. NURBS (Rational B-spline) Creation
 
 ```python
 import ezdxf
@@ -1780,18 +1780,18 @@ import ezdxf
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# 制御点と重みを指定
+# Specify control points and weights
 control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-weights = [1.0, 2.0, 1.0, 1.0]  # 各制御点の重み
+weights = [1.0, 2.0, 1.0, 1.0]  # Weight for each control point
 
-# 有理スプライン（NURBS）を作成
+# Create rational spline (NURBS)
 spline_rational = msp.add_rational_spline(
     control_points,
     weights=weights,
     degree=3
 )
 
-# 閉じた有理スプライン
+# Closed rational spline
 spline_closed_rational = msp.add_closed_rational_spline(
     control_points,
     weights=weights,
@@ -1799,9 +1799,9 @@ spline_closed_rational = msp.add_closed_rational_spline(
 )
 ```
 
-#### ノットベクトルの明示的な指定
+#### Explicit Knot Vector Specification
 
-より高度な制御が必要な場合は、ノットベクトルを明示的に指定できます。
+For more advanced control, knot vectors can be explicitly specified.
 
 ```python
 import ezdxf
@@ -1810,15 +1810,15 @@ from ezdxf.math import BSpline
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
-# 制御点とノットベクトルを指定
+# Specify control points and knot vector
 control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
-knots = [0, 0, 0, 0, 1, 1, 1, 1]  # ノットベクトル（開いた一様ノット）
+knots = [0, 0, 0, 0, 1, 1, 1, 1]  # Knot vector (open uniform knots)
 degree = 3
 
-# BSplineオブジェクトを作成
+# Create BSpline object
 bspline = BSpline(control_points, order=degree + 1, knots=knots)
 
-# SPLINEエンティティとして追加
+# Add as SPLINE entity
 spline = msp.add_spline_control_frame(
     control_points=control_points,
     degree=degree,
@@ -1826,9 +1826,9 @@ spline = msp.add_spline_control_frame(
 )
 ```
 
-#### ezdxf.mathモジュールの高度な機能
+#### Advanced Features of ezdxf.math Module
 
-ezdxfの `math` モジュールには、スプライン操作のための豊富な機能が用意されています。
+ezdxf's `math` module provides rich functionality for spline operations.
 
 ```python
 import ezdxf
@@ -1840,25 +1840,25 @@ from ezdxf.math import (
     cubic_bezier_approximation
 )
 
-# 1. グローバルB-spline補間（通過点から制御点を生成）
+# 1. Global B-spline interpolation (generate control points from through points)
 fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
 bspline = global_bspline_interpolation(
     fit_points,
     degree=3,
-    method='chord'  # 'chord', 'uniform', 'centripetal' から選択
+    method='chord'  # Choose from 'chord', 'uniform', 'centripetal'
 )
 
-# 2. ローカル3次B-spline補間（短い曲線に適している）
+# 2. Local cubic B-spline interpolation (suitable for short curves)
 bspline_local = local_cubic_bspline_interpolation(fit_points)
 
-# 3. B-splineをベジェセグメントに分解（レンダリング用）
+# 3. Decompose B-spline into Bezier segments (for rendering)
 bezier_segments = bezier_decomposition(bspline)
 
-# 4. 任意のB-splineを3次ベジェ曲線で近似
+# 4. Approximate arbitrary B-spline with cubic Bezier curves
 bezier_approx = cubic_bezier_approximation(bspline, segments=10)
 ```
 
-#### スプラインの読み込みと操作
+#### Reading and Operating Splines
 
 ```python
 import ezdxf
@@ -1866,66 +1866,66 @@ import ezdxf
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 
-# SPLINEエンティティを検索
+# Search for SPLINE entities
 for entity in msp:
     if entity.dxftype() == "SPLINE":
-        # スプラインのプロパティを取得
-        print(f"次数: {entity.dxf.degree}")
-        print(f"制御点数: {len(entity.control_points)}")
-        print(f"通過点数: {len(entity.fit_points) if entity.fit_points else 0}")
-        print(f"ノット数: {len(entity.knots)}")
+        # Get spline properties
+        print(f"Degree: {entity.dxf.degree}")
+        print(f"Control point count: {len(entity.control_points)}")
+        print(f"Fit point count: {len(entity.fit_points) if entity.fit_points else 0}")
+        print(f"Knot count: {len(entity.knots)}")
         
-        # 有理スプライン（NURBS）かどうか
-        if entity.dxf.flags & 4:  # RATIONAL_SPLINE フラグ
-            print("NURBS（有理スプライン）")
-            print(f"重み: {entity.weights}")
+        # Whether rational spline (NURBS)
+        if entity.dxf.flags & 4:  # RATIONAL_SPLINE flag
+            print("NURBS (rational spline)")
+            print(f"Weights: {entity.weights}")
         
-        # 閉じたスプラインかどうか
-        if entity.dxf.flags & 1:  # CLOSED_SPLINE フラグ
-            print("閉じたスプライン")
+        # Whether closed spline
+        if entity.dxf.flags & 1:  # CLOSED_SPLINE flag
+            print("Closed spline")
         
-        # 制御点の取得
+        # Get control points
         for i, point in enumerate(entity.control_points):
-            print(f"制御点 {i}: ({point.x}, {point.y}, {point.z})")
+            print(f"Control point {i}: ({point.x}, {point.y}, {point.z})")
 ```
 
-#### 他のCADとの互換性と一意性の問題
+#### Compatibility and Uniqueness Issues with Other CAD
 
-**重要な注意点**: DXFのSPLINEエンティティは、**Fit Points（通過点）のみが指定されている場合、制御点への変換がCADソフトごとに異なる可能性があります**。
+**Important Note**: DXF SPLINE entities may have **different control point conversions per CAD software when only Fit Points (through points) are specified**.
 
-##### 問題の原因
+##### Problem Causes
 
-1. **Fit Pointsから制御点への変換アルゴリズムがCADごとに異なる**
-   - AutoCAD、BricsCAD、LibreCADなど、それぞれ異なるアルゴリズムを使用
-   - 同じFit Pointsでも、異なるCADソフトで開くと曲線の形状が変わる可能性がある
+1. **Fit Points to control points conversion algorithms differ per CAD**
+   - AutoCAD, BricsCAD, LibreCAD, etc. each use different algorithms
+   - Even with same Fit Points, curve shapes may differ when opened in different CAD software
 
-2. **ノットベクトルの生成方法が異なる**
-   - Uniform（一様）、Chord Length（弦長）、Centripetal（中心距離）など、様々な方法がある
+2. **Knot vector generation methods differ**
+   - Various methods: Uniform, Chord Length, Centripetal, etc.
 
-##### 解決策：制御点とノットベクトルを明示的に指定
+##### Solution: Explicitly Specify Control Points and Knot Vector
 
-**互換性を確保するには、Fit Pointsではなく、制御点とノットベクトルを明示的に指定することを強く推奨します。**
+**To ensure compatibility, strongly recommend explicitly specifying control points and knot vector instead of Fit Points.**
 
 ```python
 import ezdxf
 
 def create_compatible_spline(msp, control_points, degree=3):
-    """他のCADソフトとの互換性を確保したスプライン作成"""
-    # 開いた一様ノットベクトルを生成（標準的な方法）
+    """Create spline ensuring compatibility with other CAD software"""
+    # Generate open uniform knot vector (standard method)
     n = len(control_points)
     order = degree + 1
     
-    # 開いた一様ノットベクトル
+    # Open uniform knot vector
     knots = []
-    # 開始ノット（degree+1個）
+    # Start knots (degree+1)
     knots.extend([0] * order)
-    # 中間ノット（一様分布）
+    # Middle knots (uniform distribution)
     for i in range(1, n - degree):
         knots.append(i)
-    # 終了ノット（degree+1個）
+    # End knots (degree+1)
     knots.extend([n - degree] * order)
     
-    # 制御点とノットベクトルを明示的に指定して作成
+    # Create by explicitly specifying control points and knot vector
     spline = msp.add_spline_control_frame(
         control_points=control_points,
         degree=degree,
@@ -1934,7 +1934,7 @@ def create_compatible_spline(msp, control_points, degree=3):
     
     return spline
 
-# 使用例
+# Usage example
 doc = ezdxf.new('R2010')
 msp = doc.modelspace()
 
@@ -1943,63 +1943,63 @@ spline = create_compatible_spline(msp, control_points)
 doc.saveas("compatible_spline.dxf")
 ```
 
-##### DXFバージョンによる互換性
+##### Compatibility by DXF Version
 
-| DXFバージョン | SPLINE対応 | 推奨用途 |
+| DXF Version | SPLINE Support | Recommended Use |
 | :--- | :--- | :--- |
-| **R12以前** | ❌ 非対応 | SPLINEは使用不可。ポリラインで近似する必要がある |
-| **R13以降** | ✅ 対応 | SPLINEエンティティが使用可能 |
-| **R2000以降** | ✅ 完全対応 | ハンドルによる参照が可能。推奨 |
+| **Pre-R12** | ❌ Unsupported | SPLINE unavailable. Need polyline approximation |
+| **R13+** | ✅ Supported | SPLINE entities available |
+| **R2000+** | ✅ Full support | Handle references possible. Recommended |
 
-**推奨**: スプラインを含む図面は、**R2000以降のバージョン**で保存することを推奨します。
+**Recommendation**: Recommend saving drawings containing splines in **R2000+ versions**.
 
-##### 他のCADソフトとの互換性テスト
+##### Compatibility Testing with Other CAD Software
 
 ```python
 import ezdxf
 
 def test_spline_compatibility():
-    """スプラインの互換性をテスト"""
-    # テスト用の制御点
+    """Test spline compatibility"""
+    # Test control points
     control_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
     
-    # 方法1: Fit Pointsのみ（互換性に問題がある可能性）
+    # Method 1: Fit Points only (may have compatibility issues)
     doc1 = ezdxf.new('R2010')
     msp1 = doc1.modelspace()
     fit_points = [(0, 0), (5, 10), (10, 5), (15, 15)]
     spline1 = msp1.add_spline(fit_points)
     doc1.saveas("test_fit_points.dxf")
     
-    # 方法2: 制御点とノットベクトルを明示（推奨）
+    # Method 2: Explicit control points and knot vector (recommended)
     doc2 = ezdxf.new('R2010')
     msp2 = doc2.modelspace()
     spline2 = create_compatible_spline(msp2, control_points)
     doc2.saveas("test_control_points.dxf")
     
-    print("テストファイルを作成しました。")
-    print("異なるCADソフトで開いて、曲線の形状が一致するか確認してください。")
+    print("Test files created.")
+    print("Open in different CAD software and verify curve shapes match.")
 
 test_spline_compatibility()
 ```
 
-#### スプラインの変換と近似
+#### Spline Conversion and Approximation
 
-他の形式に変換する必要がある場合：
+When conversion to other formats is needed:
 
 ```python
 import ezdxf
 from ezdxf.math import BSpline, bezier_decomposition, cubic_bezier_approximation
 
 def convert_spline_to_polyline(spline_entity, segments=100):
-    """スプラインをポリラインに変換（近似）"""
-    # BSplineオブジェクトを作成
+    """Convert spline to polyline (approximation)"""
+    # Create BSpline object
     bspline = BSpline(
         spline_entity.control_points,
         order=spline_entity.dxf.degree + 1,
         knots=spline_entity.knots
     )
     
-    # スプライン上に点をサンプリング
+    # Sample points on spline
     points = []
     for i in range(segments + 1):
         t = i / segments
@@ -2008,7 +2008,7 @@ def convert_spline_to_polyline(spline_entity, segments=100):
     
     return points
 
-# 使用例
+# Usage example
 doc = ezdxf.readfile("drawing.dxf")
 msp = doc.modelspace()
 new_doc = ezdxf.new('R2010')
@@ -2016,97 +2016,97 @@ new_msp = new_doc.modelspace()
 
 for entity in msp:
     if entity.dxftype() == "SPLINE":
-        # スプラインをポリラインに変換
+        # Convert spline to polyline
         points = convert_spline_to_polyline(entity)
         new_msp.add_lwpolyline(points)
 
 new_doc.saveas("converted.dxf")
 ```
 
-#### まとめ：スプライン使用時のベストプラクティス
+#### Summary: Best Practices When Using Splines
 
-1. **制御点とノットベクトルを明示的に指定する**
-   - Fit Pointsのみに依存しない
-   - 他のCADソフトとの互換性が向上
+1. **Explicitly specify control points and knot vector**
+   - Don't rely only on Fit Points
+   - Improves compatibility with other CAD software
 
-2. **DXFバージョンはR2000以降を使用する**
-   - R12以前ではSPLINEが使用不可
+2. **Use DXF version R2000 or later**
+   - SPLINE unavailable in R12 and earlier
 
-3. **有理スプライン（NURBS）が必要な場合のみ重みを使用**
-   - 通常のB-splineで十分な場合は、重みを使わない
+3. **Use weights only when rational splines (NURBS) are needed**
+   - Don't use weights if regular B-spline is sufficient
 
-4. **テストを実施する**
-   - 異なるCADソフトで開いて、曲線の形状が一致するか確認
+4. **Perform testing**
+   - Open in different CAD software and verify curve shapes match
 
-5. **必要に応じて近似を使用**
-   - レンダリングや加工機がSPLINEをサポートしない場合、ポリラインやベジェ曲線に変換
+5. **Use approximation as needed**
+   - Convert to polylines or Bezier curves when rendering or machines don't support SPLINE
 
-### 点列から曲線への変換：判断基準と実装
+### Converting Point Sequences to Curves: Decision Criteria and Implementation
 
-点列で表現された曲線をDXFにエクスポートする際、**曲線エンティティ（ARC、SPLINE）に変換すべきか、それとも点列のまま（LINEやLWPOLYLINE）として出力すべきか**は、用途と互換性によって判断が分かれます。
+When exporting curves represented as point sequences to DXF, **whether to convert to curve entities (ARC, SPLINE) or output as point sequences (LINE or LWPOLYLINE)** depends on purpose and compatibility.
 
-::: tip 詳細な背景情報
-加工機がSPLINEをサポートしない理由について、技術的な背景を詳しく知りたい場合は、[加工機とDXFの互換性](./cnc-machine-compatibility.md)を参照してください。
+::: tip Detailed Background Information
+For detailed technical background on why machines don't support SPLINE, see [CNC Machine Compatibility](./cnc-machine-compatibility.md).
 :::
 
-#### 判断基準：変換 vs 点列のまま
+#### Decision Criteria: Convert vs Keep as Point Sequence
 
-以下の表に、用途別の推奨方法をまとめます：
+The following table summarizes recommended methods by purpose:
 
-| 用途 | 推奨方法 | 理由 |
+| Purpose | Recommended Method | Reason |
 | :--- | :--- | :--- |
-| **CNC加工機・レーザー加工機** | **点列のまま（LWPOLYLINE）** | 多くの加工機はSPLINEをサポートせず、点列を直接使用する |
-| **古いCADソフト（R12以前）** | **点列のまま（LWPOLYLINE）** | SPLINEが使用不可 |
-| **CAD編集・設計** | **曲線エンティティ（ARC/SPLINE）** | 編集しやすく、ファイルサイズが小さい |
-| **高精度な曲線表現** | **曲線エンティティ（SPLINE）** | 数学的に正確な曲線を表現可能 |
-| **互換性重視** | **点列のまま（LWPOLYLINE）** | すべてのCADソフトで確実に読み込める |
-| **ファイルサイズ重視** | **曲線エンティティ（ARC/SPLINE）** | 点列より大幅にファイルサイズが小さい |
+| **CNC Machines / Laser Processing Machines** | **Keep as point sequence (LWPOLYLINE)** | Many machines don't support SPLINE and use point sequences directly |
+| **Old CAD Software (Pre-R12)** | **Keep as point sequence (LWPOLYLINE)** | SPLINE unavailable |
+| **CAD Editing / Design** | **Curve entities (ARC/SPLINE)** | Easy to edit, smaller file size |
+| **High-precision curve representation** | **Curve entities (SPLINE)** | Mathematically accurate curve representation possible |
+| **Compatibility Priority** | **Keep as point sequence (LWPOLYLINE)** | Can be reliably read by all CAD software |
+| **File Size Priority** | **Curve entities (ARC/SPLINE)** | Significantly smaller file size than point sequences |
 
-#### 実装方法
+#### Implementation Methods
 
-##### 1. 点列のまま出力（LWPOLYLINE）
+##### 1. Output as Point Sequence (LWPOLYLINE)
 
-**推奨される場合**:
-- CNC加工機やレーザー加工機への出力
-- 古いCADソフトとの互換性が必要
-- 点列が既に加工用に最適化されている
+**Recommended When**:
+- Outputting to CNC machines or laser processing machines
+- Compatibility with old CAD software needed
+- Point sequence already optimized for processing
 
 ```python
 import ezdxf
 
 def export_points_as_polyline(points, output_path, closed=False):
-    """点列をLWPOLYLINEとして出力"""
+    """Export point sequence as LWPOLYLINE"""
     doc = ezdxf.new('R2010')
     msp = doc.modelspace()
     
-    # LWPOLYLINEとして追加
+    # Add as LWPOLYLINE
     msp.add_lwpolyline(
         points,
-        dxfattribs={'flags': 1 if closed else 0}  # 1=閉じた線
+        dxfattribs={'flags': 1 if closed else 0}  # 1=closed line
     )
     
     doc.saveas(output_path)
-    print(f"点列をLWPOLYLINEとして出力: {len(points)}個の点")
+    print(f"Exported point sequence as LWPOLYLINE: {len(points)} points")
 
-# 使用例
+# Usage example
 points = [(0, 0), (5, 10), (10, 5), (15, 15), (20, 10)]
 export_points_as_polyline(points, "output_polyline.dxf", closed=False)
 ```
 
-**メリット**:
-- ✅ すべてのCADソフトで確実に読み込める
-- ✅ 加工機で直接使用可能
-- ✅ 点列の精度をそのまま保持
+**Advantages**:
+- ✅ Can be reliably read by all CAD software
+- ✅ Can be used directly by machines
+- ✅ Maintains point sequence accuracy
 
-**デメリット**:
-- ❌ ファイルサイズが大きくなる（点が多い場合）
-- ❌ CADソフトでの編集が困難（点を個別に編集する必要がある）
+**Disadvantages**:
+- ❌ File size increases (when many points)
+- ❌ Difficult to edit in CAD software (need to edit points individually)
 
-##### 2. ARCへの変換（円弧の場合）
+##### 2. Conversion to ARC (for arcs)
 
-**推奨される場合**:
-- 点列が円弧の一部であることが明確
-- 円弧として表現できる精度がある
+**Recommended When**:
+- Point sequence clearly represents part of an arc
+- Accuracy allows arc representation
 
 ```python
 import ezdxf
@@ -2114,35 +2114,35 @@ from ezdxf.math import Vec3
 import math
 
 def fit_arc_to_points(points, tolerance=1e-6):
-    """点列を円弧にフィッティング"""
+    """Fit point sequence to arc"""
     if len(points) < 3:
         return None
     
-    # 3点から円弧を計算（簡略化した例）
+    # Calculate arc from 3 points (simplified example)
     p1 = Vec3(points[0])
     p2 = Vec3(points[len(points) // 2])
     p3 = Vec3(points[-1])
     
-    # 3点から円の中心と半径を計算
-    # （実際の実装では、より高度なフィッティングアルゴリズムを使用）
-    # ここでは簡略化した例を示す
+    # Calculate circle center and radius from 3 points
+    # (Actual implementation uses more advanced fitting algorithms)
+    # Simplified example here
     
-    # 実際の実装では、最小二乗法などで最適な円弧を求める
-    # ezdxfには直接的なフィッティング機能はないため、
-    # 外部ライブラリ（scipy等）を使用することを推奨
+    # Actual implementation finds optimal arc using least squares, etc.
+    # ezdxf doesn't have direct fitting functionality, so
+    # recommend using external libraries (scipy, etc.)
     
-    return None  # 実装例のため省略
+    return None  # Omitted for example
 
 def export_points_as_arc_if_possible(points, output_path, tolerance=1e-3):
-    """点列が円弧に適合する場合はARCとして出力"""
+    """Export as ARC if point sequence fits arc"""
     doc = ezdxf.new('R2010')
     msp = doc.modelspace()
     
-    # 円弧フィッティングを試みる
+    # Attempt arc fitting
     arc_params = fit_arc_to_points(points, tolerance)
     
     if arc_params:
-        # ARCとして出力
+        # Export as ARC
         center, radius, start_angle, end_angle = arc_params
         msp.add_arc(
             center,
@@ -2150,37 +2150,37 @@ def export_points_as_arc_if_possible(points, output_path, tolerance=1e-3):
             start_angle,
             end_angle
         )
-        print("点列をARCとして出力")
+        print("Exported point sequence as ARC")
     else:
-        # 円弧に適合しない場合はLWPOLYLINEとして出力
+        # Export as LWPOLYLINE if doesn't fit arc
         msp.add_lwpolyline(points)
-        print("点列をLWPOLYLINEとして出力（円弧に適合しない）")
+        print("Exported point sequence as LWPOLYLINE (doesn't fit arc)")
     
     doc.saveas(output_path)
 ```
 
-**注意**: ezdxfには直接的な円弧フィッティング機能がないため、`scipy`などの外部ライブラリを使用する必要があります。
+**Note**: ezdxf doesn't have direct arc fitting functionality, so external libraries like `scipy` are needed.
 
-##### 3. SPLINEへの変換（一般的な曲線）
+##### 3. Conversion to SPLINE (general curves)
 
-**推奨される場合**:
-- 点列が複雑な曲線を表現している
-- CADソフトでの編集が必要
-- ファイルサイズを小さくしたい
+**Recommended When**:
+- Point sequence represents complex curves
+- CAD software editing needed
+- Want to reduce file size
 
 ```python
 import ezdxf
 from ezdxf.math import global_bspline_interpolation
 
 def export_points_as_spline(points, output_path, degree=3, method='chord'):
-    """点列をSPLINEとして出力"""
-    doc = ezdxf.new('R2010')  # R2000以降を推奨
+    """Export point sequence as SPLINE"""
+    doc = ezdxf.new('R2010')  # Recommend R2000+
     msp = doc.modelspace()
     
-    # 方法1: Fit Pointsを使用（簡単だが互換性に注意）
+    # Method 1: Use Fit Points (simple but note compatibility)
     spline = msp.add_spline(points)
     
-    # 方法2: 制御点を明示的に計算（推奨、互換性が高い）
+    # Method 2: Explicitly calculate control points (recommended, high compatibility)
     from ezdxf.math import global_bspline_interpolation
     
     bspline = global_bspline_interpolation(
@@ -2189,11 +2189,11 @@ def export_points_as_spline(points, output_path, degree=3, method='chord'):
         method=method  # 'chord', 'uniform', 'centripetal'
     )
     
-    # 制御点とノットベクトルを取得
+    # Get control points and knot vector
     control_points = bspline.control_points
     knots = bspline.knots()
     
-    # SPLINEエンティティとして追加
+    # Add as SPLINE entity
     spline = msp.add_spline_control_frame(
         control_points=control_points,
         degree=degree,
@@ -2201,25 +2201,25 @@ def export_points_as_spline(points, output_path, degree=3, method='chord'):
     )
     
     doc.saveas(output_path)
-    print(f"点列をSPLINEとして出力: {len(points)}個の点 -> {len(control_points)}個の制御点")
+    print(f"Exported point sequence as SPLINE: {len(points)} points -> {len(control_points)} control points")
 
-# 使用例
+# Usage example
 points = [(0, 0), (5, 10), (10, 5), (15, 15), (20, 10), (25, 5)]
 export_points_as_spline(points, "output_spline.dxf", degree=3, method='chord')
 ```
 
-**メリット**:
-- ✅ ファイルサイズが小さい（点列より大幅に削減）
-- ✅ CADソフトでの編集が容易
-- ✅ 数学的に正確な曲線表現
+**Advantages**:
+- ✅ Small file size (significantly reduced from point sequences)
+- ✅ Easy to edit in CAD software
+- ✅ Mathematically accurate curve representation
 
-**デメリット**:
-- ❌ 古いCADソフトや加工機では読み込めない可能性
-- ❌ Fit Pointsのみの場合、CADソフト間で形状が変わる可能性
+**Disadvantages**:
+- ❌ May not be readable in old CAD software or machines
+- ❌ With Fit Points only, shapes may differ between CAD software
 
-##### 4. ハイブリッドアプローチ（推奨）
+##### 4. Hybrid Approach (Recommended)
 
-用途に応じて自動的に最適な形式を選択する方法です。
+Method to automatically select optimal format based on purpose.
 
 ```python
 import ezdxf
@@ -2233,19 +2233,19 @@ def export_curve_intelligently(
     target_use='cnc',  # 'cnc', 'cad', 'universal'
     tolerance=1e-3
 ):
-    """用途に応じて最適な形式で曲線を出力"""
+    """Export curve in optimal format based on purpose"""
     doc = ezdxf.new(target_cad_version)
     msp = doc.modelspace()
     
     if target_use == 'cnc' or target_cad_version == 'R12':
-        # CNC加工機や古いCADソフト向け：点列のまま
+        # For CNC machines or old CAD software: keep as point sequence
         msp.add_lwpolyline(points)
-        print(f"点列をLWPOLYLINEとして出力（{len(points)}個の点）")
+        print(f"Exported point sequence as LWPOLYLINE ({len(points)} points)")
     
     elif target_use == 'cad':
-        # CAD編集向け：SPLINEに変換
+        # For CAD editing: convert to SPLINE
         if len(points) >= 4:
-            # 制御点を明示的に計算
+            # Explicitly calculate control points
             bspline = global_bspline_interpolation(
                 points,
                 degree=3,
@@ -2256,23 +2256,23 @@ def export_curve_intelligently(
                 degree=3,
                 knots=bspline.knots()
             )
-            print(f"点列をSPLINEとして出力（{len(points)}個の点 -> {len(bspline.control_points)}個の制御点）")
+            print(f"Exported point sequence as SPLINE ({len(points)} points -> {len(bspline.control_points)} control points)")
         else:
-            # 点が少ない場合はLWPOLYLINE
+            # LWPOLYLINE if too few points
             msp.add_lwpolyline(points)
-            print(f"点列をLWPOLYLINEとして出力（点が少ないため）")
+            print(f"Exported point sequence as LWPOLYLINE (too few points)")
     
     else:  # 'universal'
-        # 互換性重視：点列のまま（最も安全）
+        # Compatibility priority: keep as point sequence (safest)
         msp.add_lwpolyline(points)
-        print(f"点列をLWPOLYLINEとして出力（互換性重視）")
+        print(f"Exported point sequence as LWPOLYLINE (compatibility priority)")
     
     doc.saveas(output_path)
 
-# 使用例
+# Usage examples
 points = [(0, 0), (5, 10), (10, 5), (15, 15), (20, 10)]
 
-# CNC加工機向け
+# For CNC machines
 export_curve_intelligently(
     points,
     "output_cnc.dxf",
@@ -2280,7 +2280,7 @@ export_curve_intelligently(
     target_use='cnc'
 )
 
-# CAD編集向け
+# For CAD editing
 export_curve_intelligently(
     points,
     "output_cad.dxf",
@@ -2288,7 +2288,7 @@ export_curve_intelligently(
     target_use='cad'
 )
 
-# 互換性重視
+# Compatibility priority
 export_curve_intelligently(
     points,
     "output_universal.dxf",
@@ -2297,23 +2297,23 @@ export_curve_intelligently(
 )
 ```
 
-#### 実装時の注意点
+#### Implementation Considerations
 
-##### 1. 点列の密度と精度
+##### 1. Point Sequence Density and Accuracy
 
 ```python
 def should_convert_to_spline(points, min_points=4, max_deviation=None):
-    """点列をSPLINEに変換すべきか判断"""
-    # 点が少なすぎる場合は変換しない
+    """Determine if point sequence should be converted to SPLINE"""
+    # Don't convert if too few points
     if len(points) < min_points:
-        return False, "点が少なすぎます"
+        return False, "Too few points"
     
-    # 点列が直線に近い場合はLINEとして出力
-    # （実装例：最初と最後の点を結ぶ直線からの偏差を計算）
+    # Output as LINE if point sequence is close to straight line
+    # (Implementation example: calculate deviation from line connecting first and last points)
     
-    return True, "SPLINEに変換可能"
+    return True, "Can convert to SPLINE"
 
-# 使用例
+# Usage example
 points = [(0, 0), (5, 10), (10, 5), (15, 15)]
 should_convert, reason = should_convert_to_spline(points)
 if should_convert:
@@ -2322,15 +2322,15 @@ else:
     export_points_as_polyline(points, "output.dxf")
 ```
 
-##### 2. ファイルサイズの比較
+##### 2. File Size Comparison
 
 ```python
 import ezdxf
 import os
 
 def compare_file_sizes(points, output_dir="."):
-    """点列とSPLINEのファイルサイズを比較"""
-    # LWPOLYLINEとして出力
+    """Compare file sizes of point sequence and SPLINE"""
+    # Export as LWPOLYLINE
     doc1 = ezdxf.new('R2010')
     msp1 = doc1.modelspace()
     msp1.add_lwpolyline(points)
@@ -2338,7 +2338,7 @@ def compare_file_sizes(points, output_dir="."):
     doc1.saveas(polyline_path)
     polyline_size = os.path.getsize(polyline_path)
     
-    # SPLINEとして出力
+    # Export as SPLINE
     doc2 = ezdxf.new('R2010')
     msp2 = doc2.modelspace()
     from ezdxf.math import global_bspline_interpolation
@@ -2352,145 +2352,145 @@ def compare_file_sizes(points, output_dir="."):
     doc2.saveas(spline_path)
     spline_size = os.path.getsize(spline_path)
     
-    print(f"点列数: {len(points)}")
+    print(f"Point count: {len(points)}")
     print(f"LWPOLYLINE: {polyline_size} bytes")
     print(f"SPLINE: {spline_size} bytes")
-    print(f"削減率: {(1 - spline_size / polyline_size) * 100:.1f}%")
+    print(f"Reduction rate: {(1 - spline_size / polyline_size) * 100:.1f}%")
     
     return polyline_size, spline_size
 
-# 使用例
-points = [(i, i**2 / 10) for i in range(100)]  # 100個の点
+# Usage example
+points = [(i, i**2 / 10) for i in range(100)]  # 100 points
 compare_file_sizes(points)
 ```
 
-#### まとめ：判断フローチャート
+#### Summary: Decision Flowchart
 
 ```
-点列で表現された曲線をエクスポート
+Export curve represented as point sequence
     │
-    ├─ 用途は？
+    ├─ What is the purpose?
     │   │
-    │   ├─ CNC加工機・レーザー加工機
-    │   │   └─> LWPOLYLINE（点列のまま）を推奨
+    │   ├─ CNC machines / Laser processing machines
+    │   │   └─> Recommend LWPOLYLINE (keep as point sequence)
     │   │
-    │   ├─ CAD編集・設計
-    │   │   └─> SPLINEに変換を推奨
+    │   ├─ CAD editing / Design
+    │   │   └─> Recommend converting to SPLINE
     │   │
-    │   └─ 互換性重視
-    │       └─> LWPOLYLINE（点列のまま）を推奨
+    │   └─ Compatibility priority
+    │       └─> Recommend LWPOLYLINE (keep as point sequence)
     │
-    ├─ DXFバージョンは？
+    ├─ What is the DXF version?
     │   │
-    │   ├─ R12以前
-    │   │   └─> LWPOLYLINE（SPLINEが使用不可）
+    │   ├─ Pre-R12
+    │   │   └─> LWPOLYLINE (SPLINE unavailable)
     │   │
-    │   └─ R2000以降
-    │       └─> 用途に応じて選択可能
+    │   └─ R2000+
+    │       └─> Can choose based on purpose
     │
-    └─ 点列の特徴は？
+    └─ What are the point sequence characteristics?
         │
-        ├─ 円弧に適合
-        │   └─> ARCに変換（オプション）
+        ├─ Fits arc
+        │   └─> Convert to ARC (optional)
         │
-        ├─ 複雑な曲線（点が多い）
-        │   └─> SPLINEに変換（ファイルサイズ削減）
+        ├─ Complex curve (many points)
+        │   └─> Convert to SPLINE (file size reduction)
         │
-        └─ 単純な曲線（点が少ない）
-            └─> LWPOLYLINEのままでも可
+        └─ Simple curve (few points)
+            └─> Can keep as LWPOLYLINE
 ```
 
-#### ベストプラクティス
+#### Best Practices
 
-1. **用途を明確にする**
-   - CNC加工機向けなら点列のまま
-   - CAD編集向けならSPLINEに変換
+1. **Clarify purpose**
+   - Keep as point sequence for CNC machines
+   - Convert to SPLINE for CAD editing
 
-2. **互換性を優先する**
-   - 不明な場合は点列のまま（LWPOLYLINE）を選択
+2. **Prioritize compatibility**
+   - Choose point sequence (LWPOLYLINE) when uncertain
 
-3. **ファイルサイズを考慮する**
-   - 点が100個以上ある場合は、SPLINEへの変換で大幅にファイルサイズが削減される
+3. **Consider file size**
+   - With 100+ points, converting to SPLINE significantly reduces file size
 
-4. **精度を維持する**
-   - 変換時に元の点列からの偏差を確認
-   - 必要に応じて許容誤差を設定
+4. **Maintain accuracy**
+   - Verify deviation from original point sequence during conversion
+   - Set tolerance as needed
 
-5. **テストを実施する**
-   - 実際の使用環境（CADソフト、加工機）で動作確認
-
----
-
-## 9. チェックリストとベストプラクティス
-
-### 読み込み時のチェックリスト
-
-実装時に以下の項目を確認してください：
-
-- [ ] ファイルパスの存在確認
-- [ ] 適切なエラーハンドリング（IOError, DXFStructureError等）
-- [ ] エンコーディングの確認（特に古いバージョンのファイル）
-- [ ] メモリ使用量の監視（大きなファイルの場合）
-- [ ] 破損ファイルへの対応（リカバリモードの検討）
-
-### 書き込み時のチェックリスト
-
-- [ ] バックアップの作成（既存ファイルを上書きする場合）
-- [ ] DXFバージョンの確認（互換性を考慮）
-- [ ] 必須属性の存在確認（レイヤー、線種等）
-- [ ] 座標値の妥当性チェック（NaN、Infinity、範囲外の値）
-- [ ] エンコーディングの指定（日本語テキストを含む場合）
-- [ ] 点列から曲線への変換判断（用途に応じてLWPOLYLINE vs SPLINEを選択）
-
-### エンティティ操作時のチェックリスト
-
-- [ ] 座標系の確認（WCS vs OCS）
-- [ ] レイヤーの存在確認（存在しない場合は作成）
-- [ ] ブロック参照の循環チェック
-- [ ] ハンドルの一意性確認（手動設定は避ける）
-- [ ] 削除後の参照クリーンアップ
-- [ ] スプラインの互換性確認（制御点とノットベクトルを明示的に指定）
-- [ ] DXFバージョンの確認（R12以前ではSPLINEが使用不可）
-
-### ベストプラクティス
-
-1. **防御的プログラミング**: すべてのファイル操作でエラーハンドリングを実装
-2. **バリデーション**: データの妥当性チェックを各段階で実施
-3. **ログ記録**: 問題発生時のデバッグに役立つログを記録
-4. **テストデータ**: 様々なケース（破損ファイル、大きなファイル等）でのテスト
-5. **ドキュメント化**: コード内のコメントと外部ドキュメントの充実
-6. **バージョン管理**: DXFバージョンは互換性を考慮して選択
-7. **リソース管理**: 大きなファイルの処理時はメモリ効率を考慮
-8. **バックアップ**: 重要なファイルを変更する前に必ずバックアップを作成
+5. **Perform testing**
+   - Verify operation in actual usage environment (CAD software, machines)
 
 ---
 
-## まとめ
+## 9. Checklists and Best Practices
 
-このガイドでは、ezdxfを使用したDXFファイルのインポートとエクスポートについて、基本的な操作方法から高度な機能、よくある間違いとリスク排除まで、実装時に役立つ情報を網羅的に解説しました。
+### Reading Checklist
 
-**重要なポイント**:
-- 適切なエラーハンドリングとバリデーションの実装
-- ファイル操作時のバックアップ作成
-- 座標系や単位系の理解と適切な処理
-- メモリ効率を考慮した実装
-- チェックリストを活用した実装の確認
-- **スプライン・NURBSの互換性**: 制御点とノットベクトルを明示的に指定することで、他のCADソフトとの互換性を確保
+When implementing, verify the following items:
 
-**スプライン・NURBS・B-splineについて**:
-- ezdxfはSPLINE、B-spline、NURBS（有理B-spline）のすべてを完全にサポート
-- Fit Pointsのみで作成すると、CADソフト間で曲線の形状が変わる可能性がある
-- 互換性を重視する場合は、制御点とノットベクトルを明示的に指定することを強く推奨
-- R12以前のバージョンではSPLINEが使用不可（R2000以降を推奨）
+- [ ] File path existence check
+- [ ] Proper error handling (IOError, DXFStructureError, etc.)
+- [ ] Encoding verification (especially for old version files)
+- [ ] Memory usage monitoring (for large files)
+- [ ] Handling corrupted files (consider recovery mode)
 
-**点列から曲線への変換について**:
-- **CNC加工機・レーザー加工機向け**: 点列のまま（LWPOLYLINE）を推奨（多くの加工機はSPLINEをサポートしない）
-- **CAD編集・設計向け**: SPLINEに変換を推奨（ファイルサイズが小さく、編集しやすい）
-- **互換性重視**: 点列のまま（LWPOLYLINE）を推奨（すべてのCADソフトで確実に読み込める）
-- 用途に応じて最適な形式を選択することが重要
+### Writing Checklist
 
-ezdxfは強力なライブラリですが、DXFの概念を理解することで、より効果的に活用できます。問題が発生した場合は、このガイドや関連ドキュメントを参照してください。
+- [ ] Backup creation (when overwriting existing files)
+- [ ] DXF version verification (consider compatibility)
+- [ ] Required attribute existence check (layers, linetypes, etc.)
+- [ ] Coordinate value validity check (NaN, Infinity, out-of-range values)
+- [ ] Encoding specification (when including non-ASCII text)
+- [ ] Point sequence to curve conversion decision (choose LWPOLYLINE vs SPLINE based on purpose)
+
+### Entity Operation Checklist
+
+- [ ] Coordinate system verification (WCS vs OCS)
+- [ ] Layer existence check (create if doesn't exist)
+- [ ] Block reference circular check
+- [ ] Handle uniqueness verification (avoid manual setting)
+- [ ] Reference cleanup after deletion
+- [ ] Spline compatibility verification (explicitly specify control points and knot vector)
+- [ ] DXF version verification (SPLINE unavailable in R12 and earlier)
+
+### Best Practices
+
+1. **Defensive Programming**: Implement error handling for all file operations
+2. **Validation**: Perform data validity checks at each stage
+3. **Logging**: Record logs useful for debugging when problems occur
+4. **Test Data**: Test with various cases (corrupted files, large files, etc.)
+5. **Documentation**: Enrich code comments and external documentation
+6. **Version Management**: Select DXF version considering compatibility
+7. **Resource Management**: Consider memory efficiency when processing large files
+8. **Backup**: Always create backups before modifying important files
 
 ---
 
-関連：[主要ライブラリ](./libraries.md) | [よくある罠と対処法](./common-pitfalls.md) | [パーサーの設計](./parsing-strategy.md) | [加工機とDXFの互換性](./cnc-machine-compatibility.md)
+## Summary
+
+This guide comprehensively explained information useful for implementation, from basic operations to advanced features, common mistakes and risk mitigation, regarding importing and exporting DXF files using ezdxf.
+
+**Important Points**:
+- Proper error handling and validation implementation
+- Backup creation during file operations
+- Understanding and proper handling of coordinate systems and unit systems
+- Memory-efficient implementation
+- Implementation verification using checklists
+- **Spline/NURBS Compatibility**: Ensure compatibility with other CAD software by explicitly specifying control points and knot vector
+
+**About Splines/NURBS/B-spline**:
+- ezdxf fully supports SPLINE, B-spline, and NURBS (rational B-spline)
+- Creating with Fit Points only may cause curve shapes to differ between CAD software
+- For compatibility, strongly recommend explicitly specifying control points and knot vector
+- SPLINE unavailable in R12 and earlier (recommend R2000+)
+
+**About Converting Point Sequences to Curves**:
+- **For CNC Machines / Laser Processing Machines**: Recommend keeping as point sequence (LWPOLYLINE) (many machines don't support SPLINE)
+- **For CAD Editing / Design**: Recommend converting to SPLINE (smaller file size, easier to edit)
+- **Compatibility Priority**: Recommend keeping as point sequence (LWPOLYLINE) (can be reliably read by all CAD software)
+- It's important to select optimal format based on purpose
+
+ezdxf is a powerful library, but understanding DXF concepts enables more effective use. If problems occur, refer to this guide and related documentation.
+
+---
+
+Related: [Major Libraries](./libraries.md) | [Common Pitfalls and Solutions](./common-pitfalls.md) | [Parser Design](./parsing-strategy.md) | [CNC Machine Compatibility](./cnc-machine-compatibility.md)

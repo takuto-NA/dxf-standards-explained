@@ -1,203 +1,203 @@
-# 加工機とDXFの互換性：SPLINEがサポートされない理由
+# CNC Machine Compatibility: Why SPLINE is Not Supported
 
-CNC工作機械やレーザーカッターなどの加工機でDXFファイルを使用する際、**SPLINEエンティティがサポートされない**ことが頻繁に発生します。このドキュメントでは、その技術的な背景と理由を詳しく解説します。
-
----
-
-## 1. なぜ加工機はSPLINEをサポートしないのか？
-
-### 1.1 歴史的な理由
-
-**SPLINEエンティティの導入時期**:
-- DXFのSPLINEエンティティは、**AutoCAD R13（1995年）**で導入されました
-- しかし、多くのCNC工作機械やレーザーカッターのコントローラーは、**それ以前から存在**していました
-- これらの古いコントローラーは、**LINE、ARC、CIRCLE、POLYLINE**などの基本的なエンティティのみをサポートするように設計されています
-
-**互換性の維持**:
-- 加工機メーカーは、既存のコントローラーとの互換性を維持する必要があります
-- 新しいSPLINEエンティティをサポートするには、コントローラーのファームウェアを更新する必要がありますが、多くの古い機械では更新が困難です
-
-### 1.2 実装の複雑さ
-
-**NURBSの計算コスト**:
-- SPLINEエンティティは、内部的に**NURBS（Non-Uniform Rational B-Spline）**として表現されます
-- NURBSの評価（曲線上の点を計算する）には、以下の複雑な計算が必要です：
-  - ノットベクトルからの基底関数の計算
-  - 制御点の重み付け
-  - 有理B-splineの評価（重み付き和の計算）
-  - パラメータtから座標への変換
-
-**リアルタイム処理の制約**:
-- 加工機は、**リアルタイムで工具を動かす**必要があります
-- 曲線を滑らかに加工するには、曲線上に多数の点を計算する必要がありますが、NURBSの計算は計算コストが高く、リアルタイム処理には不向きです
-
-### 1.3 メモリとCPUリソースの制約
-
-**組み込みシステムの制約**:
-- 多くの加工機のコントローラーは、**組み込みシステム**（組み込みコンピュータ）です
-- メモリやCPUリソースが限られているため、複雑なNURBS計算を実行するには不十分です
-- 特に古いコントローラーでは、**8ビットや16ビットのマイクロコントローラー**が使用されており、浮動小数点演算も限定的です
-
-**メモリ使用量**:
-- SPLINEエンティティを処理するには、以下のデータを保持する必要があります：
-  - 制御点の配列
-  - ノットベクトル
-  - 重み（有理スプラインの場合）
-  - 中間計算結果のバッファ
-- これらのデータは、限られたメモリを持つコントローラーには負担が大きすぎます
-
-### 1.4 Gコードへの変換の複雑さ
-
-**Gコードの特性**:
-- 加工機は、最終的に**Gコード**（NCプログラム）を実行します
-- Gコードは、**線形補間（G01）**や**円弧補間（G02/G03）**などの単純な命令で構成されています
-- **注意**: 一部の高級CNCコントローラー（Fanuc、Siemens等）では、**G06.2（NURBS補間）**や**G06.1（スプライン補間）**というGコード命令が存在します
-- しかし、これらの命令は**DXFファイルから直接SPLINEエンティティを読み込んで実行する機能ではありません**
-- これらの命令は、**CAMソフトがSPLINEを解析してG06.2形式のGコードを生成する**必要があります
-
-**変換の困難さ**:
-- SPLINEをGコードに変換するには、以下の処理が必要です：
-  1. NURBS曲線を多数の小さな線分に分割
-  2. 各線分をG01（線形補間）命令に変換
-  3. 精度を保つために、十分な数の点を生成する必要がある
-- この変換処理は、コントローラー側で実行するには複雑すぎます
-
-**CAMソフトでの変換**:
-- 実際には、**CAMソフト**（Computer-Aided Manufacturing）が、SPLINEを点列に変換してからGコードを生成します
-- しかし、多くの加工機は、**DXFファイルを直接読み込む**機能を持っており、CAMソフトを経由しない場合があります
-- この場合、コントローラーが直接SPLINEを処理する必要がありますが、それができないため、SPLINEは無視されるか、エラーになります
-
-### 1.5 標準化の問題
-
-**DXF仕様の複雑さ**:
-- DXFのSPLINEエンティティの仕様は複雑で、以下の要素を含みます：
-  - Fit Points（通過点）
-  - Control Points（制御点）
-  - Knot Vector（ノットベクトル）
-  - Weights（重み）
-  - Degree（次数）
-- これらの要素をすべて正しく解釈し、処理するには、高度な実装が必要です
-
-**メーカー間の実装の違い**:
-- 各加工機メーカーは、独自のDXFパーサーを実装しています
-- しかし、SPLINEエンティティの実装は複雑なため、多くのメーカーは**実装を避けています**
-- その結果、SPLINEをサポートする加工機は限られています
-
-### 1.6 精度と品質の問題
-
-**近似の必要性**:
-- SPLINEを加工するには、曲線を点列に近似する必要があります
-- この近似の精度は、以下の要因に依存します：
-  - 分割する点の数
-  - 使用するアルゴリズム
-  - 許容誤差の設定
-- コントローラー側でこの近似を実行する場合、**品質が不安定**になる可能性があります
-
-**CAMソフトでの事前処理**:
-- 高品質な加工を実現するには、**CAMソフトで事前にSPLINEを点列に変換**し、最適化されたGコードを生成する方が確実です
-- そのため、多くの加工機メーカーは、SPLINEの直接サポートよりも、CAMソフトとの連携を重視しています
+When using DXF files with CNC machine tools and laser cutters, **SPLINE entities are often not supported**. This document explains the technical background and reasons in detail.
 
 ---
 
-## 2. 加工機の種類とSPLINEサポート状況
+## 1. Why Don't Machines Support SPLINE?
 
-### 2.1 CNC工作機械
+### 1.1 Historical Reasons
 
-| 機械の種類 | DXF SPLINE直接読み込み | GコードNURBS補間 | 備考 |
+**SPLINE Entity Introduction**:
+- DXF's SPLINE entity was introduced in **AutoCAD R13 (1995)**
+- However, many CNC machine tool and laser cutter controllers **existed before that**
+- These older controllers were designed to support only basic entities such as **LINE, ARC, CIRCLE, POLYLINE**
+
+**Compatibility Maintenance**:
+- Machine manufacturers need to maintain compatibility with existing controllers
+- Supporting the new SPLINE entity requires updating controller firmware, which is difficult for many older machines
+
+### 1.2 Implementation Complexity
+
+**NURBS Computational Cost**:
+- SPLINE entities are internally represented as **NURBS (Non-Uniform Rational B-Spline)**
+- Evaluating NURBS (calculating points on the curve) requires complex calculations:
+  - Basis function calculation from knot vectors
+  - Control point weighting
+  - Rational B-spline evaluation (weighted sum calculation)
+  - Parameter t to coordinate conversion
+
+**Real-time Processing Constraints**:
+- Machines need to **move tools in real-time**
+- Smooth curve machining requires calculating many points on the curve, but NURBS calculations are computationally expensive and unsuitable for real-time processing
+
+### 1.3 Memory and CPU Resource Constraints
+
+**Embedded System Constraints**:
+- Many machine controllers are **embedded systems** (embedded computers)
+- Limited memory and CPU resources are insufficient for complex NURBS calculations
+- Especially older controllers use **8-bit or 16-bit microcontrollers** with limited floating-point operations
+
+**Memory Usage**:
+- Processing SPLINE entities requires maintaining the following data:
+  - Control point arrays
+  - Knot vectors
+  - Weights (for rational splines)
+  - Intermediate calculation result buffers
+- This data is too burdensome for controllers with limited memory
+
+### 1.4 Complexity of G-code Conversion
+
+**G-code Characteristics**:
+- Machines ultimately execute **G-code** (NC programs)
+- G-code consists of simple commands like **linear interpolation (G01)** and **circular interpolation (G02/G03)**
+- **Note**: Some advanced CNC controllers (Fanuc, Siemens, etc.) have G-code commands like **G06.2 (NURBS interpolation)** or **G06.1 (spline interpolation)**
+- However, these commands are **not features that directly read SPLINE entities from DXF files and execute them**
+- These commands require **CAM software to analyze SPLINE and generate G06.2 format G-code**
+
+**Conversion Difficulty**:
+- Converting SPLINE to G-code requires the following processing:
+  1. Dividing NURBS curves into many small line segments
+  2. Converting each segment to G01 (linear interpolation) commands
+  3. Generating sufficient points to maintain accuracy
+- This conversion process is too complex to execute on the controller side
+
+**CAM Software Conversion**:
+- In practice, **CAM software** (Computer-Aided Manufacturing) converts SPLINE to point sequences before generating G-code
+- However, many machines have **direct DXF file reading** capabilities and may not go through CAM software
+- In this case, the controller needs to process SPLINE directly, but since it cannot, SPLINE is ignored or causes errors
+
+### 1.5 Standardization Issues
+
+**DXF Specification Complexity**:
+- DXF's SPLINE entity specification is complex and includes:
+  - Fit Points
+  - Control Points
+  - Knot Vector
+  - Weights
+  - Degree
+- Correctly interpreting and processing all these elements requires advanced implementation
+
+**Implementation Differences Between Manufacturers**:
+- Each machine manufacturer implements its own DXF parser
+- However, SPLINE entity implementation is complex, so many manufacturers **avoid implementing it**
+- As a result, machines supporting SPLINE are limited
+
+### 1.6 Accuracy and Quality Issues
+
+**Approximation Necessity**:
+- Machining SPLINE requires approximating curves as point sequences
+- Approximation accuracy depends on:
+  - Number of division points
+  - Algorithm used
+  - Tolerance settings
+- When controllers perform this approximation, **quality can be unstable**
+
+**CAM Software Preprocessing**:
+- For high-quality machining, it's more reliable to **preprocess SPLINE in CAM software**, converting to point sequences and generating optimized G-code
+- Therefore, many machine manufacturers prioritize CAM software integration over direct SPLINE support
+
+---
+
+## 2. Machine Types and SPLINE Support Status
+
+### 2.1 CNC Machine Tools
+
+| Machine Type | DXF SPLINE Direct Import | G-code NURBS Interpolation | Notes |
 | :--- | :--- | :--- | :--- |
-| **汎用CNCフライス盤** | ❌ ほとんど非対応 | ❌ 非対応 | 古いコントローラーが多い |
-| **CNC旋盤** | ❌ ほとんど非対応 | ❌ 非対応 | 2D加工が中心のため、SPLINEの必要性が低い |
-| **Fanuc Plus Control** | ⚠️ DXFインポート機能あり | ✅ G06.2対応（オプション） | DXFからSPLINEを読み込めるが、通常は近似される。G06.2はCAMソフトが生成するGコードとして使用 |
-| **Siemens Sinumerik** | ⚠️ DXFインポート機能あり | ✅ 一部モデルでNURBS対応 | DXFからSPLINEを読み込めるが、通常は近似される。高級機種ではNURBS補間が可能 |
-| **5軸加工機（高級機種）** | ⚠️ 一部対応 | ✅ G06.2対応 | 複雑な曲面加工に対応。DXFから直接ではなく、CAMソフト経由でG06.2を生成 |
+| **General CNC Milling Machines** | ❌ Mostly unsupported | ❌ Unsupported | Many older controllers |
+| **CNC Lathes** | ❌ Mostly unsupported | ❌ Unsupported | Primarily 2D machining, low need for SPLINE |
+| **Fanuc Plus Control** | ⚠️ DXF import available | ✅ G06.2 support (optional) | Can read SPLINE from DXF but usually approximates. G06.2 used as G-code generated by CAM software |
+| **Siemens Sinumerik** | ⚠️ DXF import available | ✅ NURBS support on some models | Can read SPLINE from DXF but usually approximates. High-end models support NURBS interpolation |
+| **5-Axis Machines (High-end)** | ⚠️ Some support | ✅ G06.2 support | Handles complex surface machining. G06.2 generated via CAM software, not directly from DXF |
 
-**重要な区別**:
-- **DXF SPLINE直接読み込み**: DXFファイルからSPLINEエンティティを読み込んで、そのままNURBS補間を実行する機能
-- **GコードNURBS補間**: CAMソフトがSPLINEを解析してG06.2形式のGコードを生成し、それを実行する機能
+**Important Distinction**:
+- **DXF SPLINE Direct Import**: Feature to read SPLINE entities from DXF files and execute NURBS interpolation directly
+- **G-code NURBS Interpolation**: Feature where CAM software analyzes SPLINE and generates G06.2 format G-code for execution
 
-**実際の状況**:
-- 多くの高級CNCコントローラーは、**GコードレベルでNURBS補間（G06.2）をサポート**しています
-- しかし、**DXFファイルから直接SPLINEエンティティを読み込んでNURBS補間を実行する機能**は、一般的ではありません
-- 通常は、CAMソフトがSPLINEを解析し、G06.2形式のGコードを生成する必要があります
+**Actual Situation**:
+- Many advanced CNC controllers **support NURBS interpolation (G06.2) at the G-code level**
+- However, **features that directly read SPLINE entities from DXF files and execute NURBS interpolation** are not common
+- Usually, CAM software needs to analyze SPLINE and generate G06.2 format G-code
 
-### 2.2 レーザーカッター・レーザー加工機
+### 2.2 Laser Cutters and Laser Processing Machines
 
-| 機械の種類 | DXF SPLINE直接読み込み | 備考 |
+| Machine Type | DXF SPLINE Direct Import | Notes |
 | :--- | :--- | :--- |
-| **CO2レーザーカッター** | ❌ ほとんど非対応 | 主に2D切断用途、SPLINEの必要性が低い。SPLINEは無視されるか、エラーになる |
-| **ファイバーレーザー加工機** | ❌ ほとんど非対応 | 同様に2D加工が中心。SPLINEは無視されるか、エラーになる |
-| **高級レーザー加工機** | ⚠️ 一部で自動変換 | 最新のコントローラーを持つ一部モデルでは、SPLINEを自動的にポリラインに変換する機能があるが、直接SPLINEとして処理はしない |
-| **LightBurn等のソフト** | ⚠️ 改善中 | 一部のレーザー制御ソフトは、SPLINEのインポート機能を改善しているが、最終的にはポリラインやアークに変換される |
+| **CO2 Laser Cutters** | ❌ Mostly unsupported | Primarily 2D cutting, low need for SPLINE. SPLINE is ignored or causes errors |
+| **Fiber Laser Processing Machines** | ❌ Mostly unsupported | Similarly centered on 2D processing. SPLINE is ignored or causes errors |
+| **High-end Laser Processing Machines** | ⚠️ Some auto-conversion | Some models with latest controllers have features to automatically convert SPLINE to polylines, but don't process as SPLINE directly |
+| **LightBurn and Similar Software** | ⚠️ Improving | Some laser control software is improving SPLINE import, but ultimately converts to polylines or arcs |
 
-**実用的な推奨事項**:
-- レーザーカッターに送るDXFファイルでは、**SPLINEを事前にLWPOLYLINEに変換**することを強く推奨します
-- 多くのレーザー加工業者も、SPLINEを含むDXFファイルを拒否するか、変換を要求します
+**Practical Recommendations**:
+- For DXF files sent to laser cutters, **strongly recommend converting SPLINE to LWPOLYLINE beforehand**
+- Many laser processing services also reject DXF files containing SPLINE or request conversion
 
-### 2.3 その他の加工機
+### 2.3 Other Processing Machines
 
-| 機械の種類 | DXF SPLINE直接読み込み | 備考 |
+| Machine Type | DXF SPLINE Direct Import | Notes |
 | :--- | :--- | :--- |
-| **プラズマカッター** | ❌ ほとんど非対応 | 2D切断用途。SPLINEは無視されるか、エラーになる |
-| **水ジェットカッター** | ❌ ほとんど非対応 | 2D切断用途。SPLINEは無視されるか、エラーになる |
-| **ワイヤーカット放電加工機** | ❌ ほとんど非対応 | 2D加工が中心。SPLINEは無視されるか、エラーになる |
+| **Plasma Cutters** | ❌ Mostly unsupported | 2D cutting. SPLINE is ignored or causes errors |
+| **Waterjet Cutters** | ❌ Mostly unsupported | 2D cutting. SPLINE is ignored or causes errors |
+| **Wire EDM Machines** | ❌ Mostly unsupported | Primarily 2D processing. SPLINE is ignored or causes errors |
 
-### 2.4 GコードレベルでのNURBS補間（補足）
+### 2.4 G-code Level NURBS Interpolation (Supplement)
 
-**Fanuc G06.2（NURBS補間）**:
-- Fanucの一部のコントローラーでは、**G06.2**というGコード命令でNURBS補間を実行できます
-- しかし、これは**DXFファイルから直接SPLINEを読み込む機能ではありません**
-- CAMソフトがSPLINEを解析し、制御点、ノットベクトル、重みを抽出して、G06.2形式のGコードを生成する必要があります
-- この機能を使用するには、**オプション/ライセンス**が必要な場合が多く、すべてのFanucコントローラーが標準で持っているわけではありません
+**Fanuc G06.2 (NURBS Interpolation)**:
+- Some Fanuc controllers can execute NURBS interpolation with **G06.2** G-code command
+- However, this is **not a feature that directly reads SPLINE from DXF files**
+- CAM software needs to analyze SPLINE, extract control points, knot vectors, and weights, then generate G06.2 format G-code
+- Using this feature often requires **options/licenses** and is not standard on all Fanuc controllers
 
-**Siemens Sinumerik NURBS補間**:
-- Siemensの一部の高級コントローラー（Sinumerik 840D等）では、NURBS補間が可能です
-- しかし、これも**DXFから直接ではなく、専用のデータ交換形式やCAMソフト経由**で使用されます
+**Siemens Sinumerik NURBS Interpolation**:
+- Some high-end Siemens controllers (Sinumerik 840D, etc.) support NURBS interpolation
+- However, this is also used **not directly from DXF, but via dedicated data exchange formats or CAM software**
 
-**実用的な意味**:
-- これらの機能は、**高精度な5軸加工や複雑な曲面加工**に使用されます
-- 一般的な2D加工（レーザーカッター、プラズマカッター等）では使用されません
-- DXFファイルから直接SPLINEを読み込んで加工する用途では、**依然としてSPLINEをLWPOLYLINEに変換する必要があります**
+**Practical Meaning**:
+- These features are used for **high-precision 5-axis machining and complex surface machining**
+- Not used in general 2D processing (laser cutters, plasma cutters, etc.)
+- For directly reading SPLINE from DXF files for machining, **SPLINE still needs to be converted to LWPOLYLINE**
 
 ---
 
-## 3. 実際の問題と対処法
+## 3. Actual Problems and Solutions
 
-### 3.1 問題の症状
+### 3.1 Problem Symptoms
 
-**SPLINEが無視される**:
-- DXFファイルにSPLINEエンティティが含まれている場合、多くの加工機では**SPLINEが無視**されます
-- 図面を読み込んでも、SPLINE部分が表示されない、または加工されない
+**SPLINE is Ignored**:
+- When DXF files contain SPLINE entities, many machines **ignore SPLINE**
+- Even after loading drawings, SPLINE parts don't display or aren't machined
 
-**エラーメッセージ**:
-- 一部の加工機では、SPLINEエンティティを検出すると**エラーメッセージ**を表示します
-- 「未対応のエンティティが検出されました」などのメッセージが表示されることがあります
+**Error Messages**:
+- Some machines display **error messages** when detecting SPLINE entities
+- Messages like "Unsupported entity detected" may appear
 
-**加工パスの欠損**:
-- SPLINEが無視されることで、**加工パスが欠損**し、意図した形状が加工されないことがあります
+**Missing Machining Paths**:
+- When SPLINE is ignored, **machining paths are missing**, and intended shapes aren't machined
 
-### 3.2 対処法
+### 3.2 Solutions
 
-#### 方法1: SPLINEをLWPOLYLINEに変換（推奨）
+#### Method 1: Convert SPLINE to LWPOLYLINE (Recommended)
 
-**CAMソフトを使用**:
-- CAMソフト（例：Fusion 360、Mastercam、GibbsCAM等）を使用して、SPLINEを点列に変換します
-- CAMソフトは、加工精度を考慮して最適な点列を生成します
+**Using CAM Software**:
+- Use CAM software (e.g., Fusion 360, Mastercam, GibbsCAM) to convert SPLINE to point sequences
+- CAM software generates optimal point sequences considering machining accuracy
 
-**ezdxfを使用した変換**:
+**Conversion Using ezdxf**:
 ```python
 import ezdxf
 from ezdxf.math import BSpline
 
 def convert_spline_to_polyline(spline_entity, segments=100):
-    """SPLINEをLWPOLYLINEに変換"""
-    # BSplineオブジェクトを作成
+    """Convert SPLINE to LWPOLYLINE"""
+    # Create BSpline object
     bspline = BSpline(
         spline_entity.control_points,
         order=spline_entity.dxf.degree + 1,
         knots=spline_entity.knots
     )
     
-    # スプライン上に点をサンプリング
+    # Sample points on spline
     points = []
     for i in range(segments + 1):
         t = i / segments
@@ -206,7 +206,7 @@ def convert_spline_to_polyline(spline_entity, segments=100):
     
     return points
 
-# 使用例
+# Usage example
 doc = ezdxf.readfile("input.dxf")
 msp = doc.modelspace()
 new_doc = ezdxf.new('R2010')
@@ -214,166 +214,166 @@ new_msp = new_doc.modelspace()
 
 for entity in msp:
     if entity.dxftype() == "SPLINE":
-        # SPLINEをLWPOLYLINEに変換
+        # Convert SPLINE to LWPOLYLINE
         points = convert_spline_to_polyline(entity, segments=200)
         new_msp.add_lwpolyline(points)
     else:
-        # その他のエンティティはそのままコピー
-        # （簡略化のため、実際の実装では適切なコピー処理が必要）
+        # Copy other entities as-is
+        # (Simplified - actual implementation needs proper copying)
 
 new_doc.saveas("output.dxf")
 ```
 
-#### 方法2: CADソフトで事前に変換
+#### Method 2: Pre-convert in CAD Software
 
-**AutoCADでの変換**:
-1. AutoCADでDXFファイルを開く
-2. SPLINEエンティティを選択
-3. `EXPLODE`コマンドを実行して、SPLINEをポリラインに変換
-4. R12形式で保存（互換性を最大化）
+**Conversion in AutoCAD**:
+1. Open DXF file in AutoCAD
+2. Select SPLINE entities
+3. Execute `EXPLODE` command to convert SPLINE to polyline
+4. Save in R12 format (maximize compatibility)
 
-**LibreCAD/QCADでの変換**:
-1. DXFファイルを開く
-2. SPLINEエンティティが表示されない場合、元のCADソフトで事前に変換
-3. R12形式で保存
+**Conversion in LibreCAD/QCAD**:
+1. Open DXF file
+2. If SPLINE entities don't display, pre-convert in original CAD software
+3. Save in R12 format
 
-#### 方法3: 加工機の設定を確認
+#### Method 3: Check Machine Settings
 
-**コントローラーの設定**:
-- 一部の最新の加工機では、コントローラーの設定で**SPLINEの自動変換**機能が有効になっている場合があります
-- マニュアルを確認して、この機能が利用可能か確認してください
-
----
-
-## 4. 技術的な詳細
-
-### 4.1 NURBSの計算コスト
-
-**計算量の比較**:
-
-| 操作 | 計算量 | 備考 |
-| :--- | :--- | :--- |
-| **LINEの評価** | O(1) | 単純な線形補間 |
-| **ARCの評価** | O(1) | 三角関数の計算 |
-| **NURBSの評価** | O(d²) | dは次数、通常3〜5 |
-
-**実装の複雑さ**:
-- NURBSの評価には、**再帰的な基底関数の計算**が必要です
-- 有理B-splineの場合、さらに**重み付けの計算**が必要です
-- これらの計算は、組み込みシステムでは実行が困難です
-
-### 4.2 Gコードへの変換アルゴリズム
-
-**一般的な変換プロセス**:
-
-1. **曲線の分割**:
-   - NURBS曲線を、許容誤差内で線分に分割
-   - 分割の方法：
-     - 均等分割（簡単だが精度が低い）
-     - 適応的分割（曲率に応じて分割密度を調整）
-
-2. **点の生成**:
-   - 各分割区間で、曲線上の点を計算
-   - 点の数は、許容誤差と曲線の複雑さに依存
-
-3. **Gコードの生成**:
-   - 各点をG01（線形補間）命令に変換
-   - 工具の速度や加速度を考慮して最適化
-
-**変換の精度**:
-- 変換の精度は、**許容誤差（tolerance）**によって制御されます
-- 許容誤差が小さいほど、点の数が増え、Gコードが長くなります
-- 許容誤差が大きいほど、点の数が減りますが、曲線の精度が低下します
-
-### 4.3 メモリ使用量の比較
-
-**エンティティごとのメモリ使用量**（概算）:
-
-| エンティティタイプ | メモリ使用量 | 備考 |
-| :--- | :--- | :--- |
-| **LINE** | 約50バイト | 始点・終点の座標のみ |
-| **ARC** | 約80バイト | 中心点・半径・角度 |
-| **LWPOLYLINE（10点）** | 約200バイト | 10個の頂点 |
-| **SPLINE（10制御点）** | 約500バイト | 制御点・ノットベクトル・重み |
-
-**加工時のメモリ使用量**:
-- 加工時には、**Gコードのバッファ**も必要です
-- SPLINEを変換した場合、点の数に比例してGコードが長くなり、メモリ使用量が増加します
+**Controller Settings**:
+- Some latest machines may have **SPLINE auto-conversion** enabled in controller settings
+- Check manual to see if this feature is available
 
 ---
 
-## 5. ベストプラクティス
+## 4. Technical Details
 
-### 5.1 加工機向けDXFファイルの作成
+### 4.1 NURBS Computational Cost
 
-**推奨されるエンティティ**:
-- ✅ `LINE`（線分）
-- ✅ `ARC`（円弧）
-- ✅ `CIRCLE`（円）
-- ✅ `LWPOLYLINE`（軽量ポリライン）
+**Computational Complexity Comparison**:
 
-**避けるべきエンティティ**:
-- ❌ `SPLINE`（スプライン）
-- ❌ `ELLIPSE`（楕円）- 一部の加工機で非対応
-- ❌ `MTEXT`（複数行テキスト）- 加工機では無視される
-- ❌ `HATCH`（ハッチング）- 加工機では無視される
+| Operation | Complexity | Notes |
+| :--- | :--- | :--- |
+| **LINE evaluation** | O(1) | Simple linear interpolation |
+| **ARC evaluation** | O(1) | Trigonometric calculation |
+| **NURBS evaluation** | O(d²) | d is degree, usually 3-5 |
 
-### 5.2 変換時の注意点
+**Implementation Complexity**:
+- NURBS evaluation requires **recursive basis function calculation**
+- For rational B-splines, **weighting calculation** is also needed
+- These calculations are difficult to execute on embedded systems
 
-**精度の設定**:
-- SPLINEをLWPOLYLINEに変換する際は、**許容誤差を適切に設定**します
-- 一般的には、加工精度の10倍程度の許容誤差が推奨されます
-  - 例：加工精度が0.01mmの場合、許容誤差は0.1mm程度
+### 4.2 G-code Conversion Algorithm
 
-**点の数の最適化**:
-- 点の数が多すぎると、Gコードが長くなり、加工時間が増加します
-- 点の数が少なすぎると、曲線の精度が低下します
-- **バランスの取れた点の数**を選択することが重要です
+**General Conversion Process**:
 
-**閉じた曲線の処理**:
-- 閉じたSPLINEを変換する場合、**LWPOLYLINEの閉じたフラグ**を設定します
-- これにより、加工機が正しく閉じたパスとして認識します
+1. **Curve Division**:
+   - Divide NURBS curves into line segments within tolerance
+   - Division methods:
+     - Uniform division (simple but low accuracy)
+     - Adaptive division (adjust density based on curvature)
 
-### 5.3 ワークフローの推奨
+2. **Point Generation**:
+   - Calculate points on curve for each division interval
+   - Number of points depends on tolerance and curve complexity
 
-**推奨されるワークフロー**:
+3. **G-code Generation**:
+   - Convert each point to G01 (linear interpolation) commands
+   - Optimize considering tool speed and acceleration
 
-1. **CADソフトで設計**:
-   - SPLINEを使用して自由な曲線を設計
-   - 設計段階では、SPLINEの柔軟性を活用
+**Conversion Accuracy**:
+- Conversion accuracy is controlled by **tolerance**
+- Smaller tolerance increases point count and G-code length
+- Larger tolerance decreases point count but reduces curve accuracy
 
-2. **CAMソフトで変換**:
-   - CAMソフトを使用して、SPLINEを最適化された点列に変換
-   - 加工パラメータ（工具径、切削速度等）を考慮
+### 4.3 Memory Usage Comparison
 
-3. **加工機への出力**:
-   - 変換されたDXFファイル（またはGコード）を加工機に送信
-   - テストカットで精度を確認
+**Memory Usage per Entity** (approximate):
 
-**ezdxfを使用した自動変換**:
+| Entity Type | Memory Usage | Notes |
+| :--- | :--- | :--- |
+| **LINE** | ~50 bytes | Only start/end coordinates |
+| **ARC** | ~80 bytes | Center point, radius, angles |
+| **LWPOLYLINE (10 points)** | ~200 bytes | 10 vertices |
+| **SPLINE (10 control points)** | ~500 bytes | Control points, knot vectors, weights |
+
+**Memory Usage During Machining**:
+- **G-code buffers** are also needed during machining
+- When SPLINE is converted, G-code length increases proportionally with point count, increasing memory usage
+
+---
+
+## 5. Best Practices
+
+### 5.1 Creating DXF Files for Machines
+
+**Recommended Entities**:
+- ✅ `LINE` (line segment)
+- ✅ `ARC` (arc)
+- ✅ `CIRCLE` (circle)
+- ✅ `LWPOLYLINE` (lightweight polyline)
+
+**Entities to Avoid**:
+- ❌ `SPLINE` (spline)
+- ❌ `ELLIPSE` (ellipse) - unsupported on some machines
+- ❌ `MTEXT` (multiline text) - ignored by machines
+- ❌ `HATCH` (hatching) - ignored by machines
+
+### 5.2 Conversion Considerations
+
+**Tolerance Settings**:
+- When converting SPLINE to LWPOLYLINE, **set tolerance appropriately**
+- Generally, tolerance about 10 times machining accuracy is recommended
+  - Example: For 0.01mm machining accuracy, tolerance around 0.1mm
+
+**Point Count Optimization**:
+- Too many points increases G-code length and machining time
+- Too few points reduces curve accuracy
+- **Selecting balanced point count** is important
+
+**Closed Curve Handling**:
+- When converting closed SPLINE, set **LWPOLYLINE closed flag**
+- This allows machines to recognize it as a closed path correctly
+
+### 5.3 Recommended Workflow
+
+**Recommended Workflow**:
+
+1. **Design in CAD Software**:
+   - Use SPLINE to design free-form curves
+   - Leverage SPLINE flexibility in design phase
+
+2. **Convert in CAM Software**:
+   - Use CAM software to convert SPLINE to optimized point sequences
+   - Consider machining parameters (tool diameter, cutting speed, etc.)
+
+3. **Output to Machine**:
+   - Send converted DXF file (or G-code) to machine
+   - Verify accuracy with test cuts
+
+**Automatic Conversion Using ezdxf**:
 ```python
 import ezdxf
 from ezdxf.math import BSpline
 
 def prepare_for_cnc(input_path, output_path, tolerance=0.1):
-    """加工機向けにDXFファイルを準備"""
+    """Prepare DXF file for machines"""
     doc = ezdxf.readfile(input_path)
     msp = doc.modelspace()
-    new_doc = ezdxf.new('R12')  # R12形式で保存（最大の互換性）
+    new_doc = ezdxf.new('R12')  # Save in R12 format (maximum compatibility)
     new_msp = new_doc.modelspace()
     
     for entity in msp:
         if entity.dxftype() == "SPLINE":
-            # SPLINEをLWPOLYLINEに変換
+            # Convert SPLINE to LWPOLYLINE
             bspline = BSpline(
                 entity.control_points,
                 order=entity.dxf.degree + 1,
                 knots=entity.knots
             )
             
-            # 許容誤差に基づいて点を生成
+            # Generate points based on tolerance
             points = []
-            # 簡略化した実装（実際には適応的分割を使用）
+            # Simplified implementation (actual should use adaptive division)
             segments = max(10, int(bspline.arc_length() / tolerance))
             for i in range(segments + 1):
                 t = i / segments
@@ -382,55 +382,55 @@ def prepare_for_cnc(input_path, output_path, tolerance=0.1):
             
             new_msp.add_lwpolyline(points)
         elif entity.dxftype() in ["LINE", "ARC", "CIRCLE", "LWPOLYLINE"]:
-            # 対応しているエンティティはそのままコピー
-            # （実際の実装では適切なコピー処理が必要）
+            # Copy supported entities as-is
+            # (Actual implementation needs proper copying)
             pass
     
     new_doc.saveas(output_path)
-    print(f"加工機向けに変換完了: {output_path}")
+    print(f"Conversion for machines complete: {output_path}")
 
-# 使用例
+# Usage example
 prepare_for_cnc("design.dxf", "cnc_ready.dxf", tolerance=0.1)
 ```
 
 ---
 
-## 6. まとめ
+## 6. Summary
 
-### 加工機がSPLINEを直接サポートしない主な理由
+### Main Reasons Machines Don't Directly Support SPLINE
 
-1. **歴史的な理由**: SPLINEの導入以前から存在するコントローラーが多い
-2. **実装の複雑さ**: NURBSの計算は複雑で、リアルタイム処理には不向き
-3. **リソースの制約**: 組み込みシステムのメモリ・CPUリソースが限られている
-4. **DXFからGコードへの変換の複雑さ**: DXFファイルから直接SPLINEを読み込んでNURBS補間を実行する機能は一般的ではない
-5. **標準化の問題**: DXF仕様が複雑で、実装が困難
-6. **精度と品質**: CAMソフトでの事前処理の方が品質が安定
+1. **Historical Reasons**: Many controllers existed before SPLINE introduction
+2. **Implementation Complexity**: NURBS calculations are complex and unsuitable for real-time processing
+3. **Resource Constraints**: Embedded system memory/CPU resources are limited
+4. **DXF to G-code Conversion Complexity**: Features to directly read SPLINE from DXF files and execute NURBS interpolation are not common
+5. **Standardization Issues**: DXF specification is complex and difficult to implement
+6. **Accuracy and Quality**: Preprocessing in CAM software provides more stable quality
 
-### 重要な区別：GコードレベルでのNURBS補間
+### Important Distinction: G-code Level NURBS Interpolation
 
-**GコードレベルでのNURBS補間（G06.2）**:
-- FanucやSiemensの一部の高級コントローラーでは、**G06.2（NURBS補間）**というGコード命令が存在します
-- しかし、これは**DXFファイルから直接SPLINEエンティティを読み込んで実行する機能ではありません**
-- CAMソフトがSPLINEを解析し、制御点、ノットベクトル、重みを抽出して、G06.2形式のGコードを生成する必要があります
-- この機能は、**高精度な5軸加工や複雑な曲面加工**に使用され、一般的な2D加工では使用されません
+**G-code Level NURBS Interpolation (G06.2)**:
+- Some high-end controllers (Fanuc, Siemens) have **G06.2 (NURBS interpolation)** G-code command
+- However, this is **not a feature that directly reads SPLINE entities from DXF files and executes them**
+- CAM software needs to analyze SPLINE, extract control points, knot vectors, and weights, then generate G06.2 format G-code
+- This feature is used for **high-precision 5-axis machining and complex surface machining**, not general 2D processing
 
-**DXF SPLINE直接読み込み**:
-- DXFファイルから直接SPLINEエンティティを読み込んで、そのままNURBS補間を実行する機能は、**一般的ではありません**
-- 多くの加工機では、SPLINEは無視されるか、エラーになるか、自動的にポリラインに変換されます
+**DXF SPLINE Direct Import**:
+- Features that directly read SPLINE entities from DXF files and execute NURBS interpolation are **not common**
+- On many machines, SPLINE is ignored, causes errors, or is automatically converted to polylines
 
-### 実用的な推奨事項
+### Practical Recommendations
 
-- **2D加工（レーザーカッター、プラズマカッター等）**: SPLINEを事前にLWPOLYLINEに変換することを強く推奨
-- **3D加工（5軸加工機等）**: CAMソフトを使用して、SPLINEをG06.2形式のGコードに変換することを推奨
-- **互換性重視**: 不明な場合は、常にSPLINEをLWPOLYLINEに変換することを推奨
+- **2D Processing (Laser Cutters, Plasma Cutters, etc.)**: Strongly recommend converting SPLINE to LWPOLYLINE beforehand
+- **3D Processing (5-Axis Machines, etc.)**: Recommend using CAM software to convert SPLINE to G06.2 format G-code
+- **Compatibility Priority**: When uncertain, always recommend converting SPLINE to LWPOLYLINE
 
-### 推奨される対処法
+### Recommended Solutions
 
-- **SPLINEをLWPOLYLINEに変換**: 加工機向けにDXFファイルを準備する際は、SPLINEを点列に変換
-- **CAMソフトの活用**: 高品質な加工には、CAMソフトでの事前処理を推奨
-- **R12形式での保存**: 最大の互換性を確保するため、R12形式での保存を推奨
-- **テストカットの実施**: 変換後のファイルでテストカットを実施し、精度を確認
+- **Convert SPLINE to LWPOLYLINE**: When preparing DXF files for machines, convert SPLINE to point sequences
+- **Utilize CAM Software**: Recommend preprocessing in CAM software for high-quality machining
+- **Save in R12 Format**: Recommend saving in R12 format for maximum compatibility
+- **Perform Test Cuts**: Perform test cuts with converted files and verify accuracy
 
 ---
 
-関連：[ezdxf 実践ガイド](./ezdxf-guide.md) | [フリーソフトでのDXF活用ガイドライン](./free-software-guide.md) | [産業用フォーマットとの比較](../comparison/dxf-vs-industrial-formats.md) | [Gコードの基礎とバージョニング](../comparison/g-code-overview.md)
+Related: [ezdxf Practical Guide](./ezdxf-guide.md) | [Free Software Usage Guidelines](./free-software-guide.md) | [Comparison with Industrial Formats](../comparison/dxf-vs-industrial-formats.md) | [G-code Overview and Versioning](../comparison/g-code-overview.md)
