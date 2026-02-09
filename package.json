@@ -11,7 +11,10 @@
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:preview": "vitepress preview",
+    "viewer:dev": "vite --config apps/viewer-web/vite.config.ts",
+    "viewer:build": "vite build --config apps/viewer-web/vite.config.ts",
+    "viewer:preview": "vite preview --config apps/viewer-web/vite.config.ts"
   },
   "keywords": [
     "dxf",
@@ -22,15 +25,18 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.4",
     "markdown-it-mathjax3": "^4.3.2",
     "mermaid": "^10.9.0",
+    "vite": "^5.4.21",
     "vitepress": "^1.5.0",
     "vitepress-plugin-mermaid": "^2.0.16"
   },
   "dependencies": {
     "dxf-parser": "^1.1.2",
     "three": "0.171.0",
-    "three-dxf-viewer": "^1.0.44"
+    "three-dxf-viewer": "^1.0.44",
+    "vue": "^3.5.28"
   },
   "overrides": {
     "three": "0.171.0"

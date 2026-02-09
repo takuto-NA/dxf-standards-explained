@@ -1,13 +1,55 @@
 <template>
-  <div ref="container" class="dxf-viewer-container">
-    <div v-if="loading" class="dxf-loading">Loading DXF...</div>
-    <div v-if="error" class="dxf-error">{{ error }}</div>
+  <div
+    ref="container"
+    class="dxf-viewer-container"
+    @dragover.prevent
+    @drop.prevent="onDropFile"
+  >
+    <div class="dxf-viewer-toolbar">
+      <button type="button" class="dxf-viewer-button" @click="openFilePicker">
+        Open DXF
+      </button>
+      <button type="button" class="dxf-viewer-button" @click="fitToView">
+        Fit
+      </button>
+      <button
+        type="button"
+        class="dxf-viewer-button"
+        :aria-pressed="isMeasureModeEnabled"
+        @click="toggleMeasureMode"
+      >
+        Measure
+      </button>
+      <div v-if="measureDistanceText" class="dxf-viewer-measure">
+        {{ measureDistanceText }}
+      </div>
+    </div>
+
+    <input
+      ref="fileInput"
+      class="dxf-viewer-file-input"
+      type="file"
+      accept=".dxf"
+      @change="onFilePicked"
+    />
+
+    <div v-if="isLoading" class="dxf-loading">Loading DXF...</div>
+    <div v-if="errorMessage" class="dxf-error">{{ errorMessage }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+/**
+ * Responsibility:
+ * - Provide a lightweight DXF viewer UI for VitePress pages.
+ * - Delegate rendering/loading/controls to the shared viewer core.
+ */
+
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { withBase } from 'vitepress'
+
+import helvetikerFontUrl from 'three/examples/fonts/helvetiker_regular.typeface.json?url'
+import { createDxfViewer } from '../../../src/viewer/createDxfViewer'
 
 const props = defineProps({
   src: {
@@ -16,150 +58,88 @@ const props = defineProps({
   }
 })
 
-const container = ref(null)
-const loading = ref(true)
-const error = ref(null)
-let renderer = null
-let animationId = null
-let camera = null
-let scene = null
-let controls = null
+const container = ref(/** @type {HTMLElement | null} */ (null))
+const fileInput = ref(/** @type {HTMLInputElement | null} */ (null))
 
-const FONT_URL = 'https://unpkg.com/three@0.171.0/examples/fonts/helvetiker_regular.typeface.json'
+const isLoading = ref(true)
+const errorMessage = ref(/** @type {string | null} */ (null))
+const isMeasureModeEnabled = ref(false)
+const measureDistance = ref(/** @type {number | null} */ (null))
 
-onMounted(async () => {
-  try {
-    const [THREE, { DXFViewer, Merger }, { OrbitControls }] = await Promise.all([
-      import('three'),
-      import('three-dxf-viewer'),
-      import('three/examples/jsm/controls/OrbitControls.js')
-    ])
-
-    if (!container.value) return
-
-    const width = container.value.clientWidth
-    const height = container.value.clientHeight
-
-    scene = new THREE.Scene()
-    camera = new THREE.OrthographicCamera(-width/2, width/2, height/2, -height/2, 0.1, 1000000)
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    renderer.setSize(width, height)
-    renderer.setPixelRatio(window.devicePixelRatio)
-    container.value.appendChild(renderer.domElement)
-
-    controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableRotate = false
-    controls.enableDamping = true
-    controls.screenSpacePanning = true
-    
-    controls.mouseButtons = {
-      LEFT: THREE.MOUSE.PAN,
-      MIDDLE: THREE.MOUSE.DOLLY,
-      RIGHT: THREE.MOUSE.ROTATE
-    }
-
-    const dxfViewer = new DXFViewer()
-    const url = withBase(props.src)
-    
-    const response = await fetch(url)
-    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`)
-    const data = await response.blob()
-    const file = new File([data], 'model.dxf')
-
-    // DXFの読み込み
-    const dxfScene = await dxfViewer.getFromFile(file, FONT_URL)
-    if (!dxfScene) throw new Error('DXFのパースに失敗しました')
-    
-    // Mergerを使用して、ブロック定義(BLOCK)を実体(INSERT)として正しく展開・統合する
-    const merger = new Merger()
-    const finalScene = merger.merge(dxfScene)
-    
-    // NaNデータのクリーンアップと更新
-    finalScene.traverse((child) => {
-      if (child.geometry && child.geometry.attributes.position) {
-        const pos = child.geometry.attributes.position
-        let hasNan = false
-        for (let i = 0; i < pos.array.length; i++) {
-          if (isNaN(pos.array[i])) {
-            pos.array[i] = 0
-            hasNan = true
-          }
-        }
-        if (hasNan) pos.needsUpdate = true
-        child.geometry.computeBoundingBox()
-        child.geometry.computeBoundingSphere()
-      }
-    })
-
-    scene.add(finalScene)
-
-    // 表示範囲の自動調整
-    const box = new THREE.Box3().setFromObject(finalScene)
-    
-    if (!box.isEmpty() && !isNaN(box.min.x)) {
-      const center = box.getCenter(new THREE.Vector3())
-      const size = box.getSize(new THREE.Vector3())
-      const maxDim = Math.max(size.x, size.y)
-      const aspect = width / height
-      
-      let viewW, viewH
-      if (aspect > 1) {
-        viewW = maxDim * aspect
-        viewH = maxDim
-      } else {
-        viewW = maxDim
-        viewH = maxDim / aspect
-      }
-      
-      camera.left = -viewW / 2
-      camera.right = viewW / 2
-      camera.top = viewH / 2
-      camera.bottom = -viewH / 2
-      camera.zoom = 0.8
-      camera.updateProjectionMatrix()
-      
-      camera.position.set(center.x, center.y, 5000)
-      camera.lookAt(center)
-      controls.target.copy(center)
-    }
-    
-    controls.update()
-    loading.value = false
-
-    const animate = () => {
-      if (!renderer) return
-      animationId = requestAnimationFrame(animate)
-      controls.update()
-      renderer.render(scene, camera)
-    }
-    animate()
-
-    window.addEventListener('resize', onWindowResize)
-
-  } catch (e) {
-    console.error('DxfViewer Error:', e)
-    error.value = `エラー: ${e.message}`
-    loading.value = false
-  }
+const measureDistanceText = computed(() => {
+  if (measureDistance.value === null) return null
+  return `Distance: ${measureDistance.value.toFixed(3)}`
 })
 
-const onWindowResize = () => {
-  if (!container.value || !camera || !renderer) return
-  const w = container.value.clientWidth
-  const h = container.value.clientHeight
-  const aspect = w / h
-  const currentHeight = camera.top - camera.bottom
-  const viewW = currentHeight * aspect
-  camera.left = -viewW / 2
-  camera.right = viewW / 2
-  camera.updateProjectionMatrix()
-  renderer.setSize(w, h)
+let viewerHandle = /** @type {Awaited<ReturnType<typeof createDxfViewer>> | null} */ (null)
+
+onMounted(async () => {
+  if (!container.value) return
+
+  const dxfUrl = withBase(props.src)
+  const resolvedFontUrl = withBase(helvetikerFontUrl)
+
+  viewerHandle = await createDxfViewer({
+    containerElement: container.value,
+    fontUrl: resolvedFontUrl,
+    initialSource: { type: 'url', url: dxfUrl },
+    onStatusChange: (status) => {
+      isLoading.value = status.isLoading
+      errorMessage.value = status.errorMessage
+    },
+    onMeasureDistanceChange: (nextDistance) => {
+      measureDistance.value = nextDistance
+    }
+  })
+})
+
+const openFilePicker = () => {
+  if (!fileInput.value) return
+  fileInput.value.value = ''
+  fileInput.value.click()
+}
+
+const setViewerFile = async (file) => {
+  if (!viewerHandle) return
+  await viewerHandle.setSource({ type: 'file', file })
+}
+
+const onFilePicked = async (event) => {
+  const inputElement = event.target
+  const fileList = inputElement?.files
+  if (!fileList) return
+
+  const firstFile = fileList.item(0)
+  if (!firstFile) return
+
+  await setViewerFile(firstFile)
+}
+
+const onDropFile = async (event) => {
+  const fileList = event.dataTransfer?.files
+  if (!fileList) return
+
+  const firstFile = fileList.item(0)
+  if (!firstFile) return
+
+  await setViewerFile(firstFile)
+}
+
+const fitToView = () => {
+  if (!viewerHandle) return
+  viewerHandle.fitToView()
+}
+
+const toggleMeasureMode = () => {
+  if (!viewerHandle) return
+
+  const nextEnabled = !isMeasureModeEnabled.value
+  isMeasureModeEnabled.value = nextEnabled
+  viewerHandle.setMeasureModeEnabled(nextEnabled)
 }
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', onWindowResize)
-  if (animationId) cancelAnimationFrame(animationId)
-  if (renderer) renderer.dispose()
+  viewerHandle?.dispose()
+  viewerHandle = null
 })
 </script>
